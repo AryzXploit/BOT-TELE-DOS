@@ -70,13 +70,8 @@ Semua method dari Python version tersedia di Node.js:
 |--------|---------|--------|
 | UDP | UDP | ✅ Tersedia |
 | TCP | TCP | ✅ Tersedia |
-| SYN | SYN | 🔄 Coming soon |
 | MINECRAFT | MINECRAFT | ✅ Tersedia |
 | MCBOT | MCBOT | ✅ Tersedia |
-| VSE | VSE | 🔄 Coming soon |
-| TS3 | TS3 | 🔄 Coming soon |
-| MCPE | MCPE | 🔄 Coming soon |
-| FIVEM | FIVEM | 🔄 Coming soon |
 
 ### Layer 7 Methods
 | Python | Node.js | Status |
@@ -87,11 +82,6 @@ Semua method dari Python version tersedia di Node.js:
 | BYPASS | BYPASS | ✅ Tersedia |
 | SLOW | SLOW | ✅ Tersedia |
 | BOT | BOT | ✅ Tersedia |
-| STRESS | STRESS | 🔄 Coming soon |
-| NULL | NULL | 🔄 Coming soon |
-| DYN | DYN | 🔄 Coming soon |
-
-**Note:** Methods yang belum tersedia akan ditambahkan dalam update berikutnya.
 
 ---
 
