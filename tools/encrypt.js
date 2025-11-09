@@ -10,6 +10,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import chalk from 'chalk';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -107,7 +108,7 @@ function encryptFile(inputPath, outputPath) {
 /**
  * Encrypt entire directory
  */
-function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
+function encryptDirectory(inputDir, outputDir, extensions = ['.js'], createZip = true) {
     try {
         console.log(chalk.bold.cyan('\n╔═══════════════════════════════════════════════════════════╗'));
         console.log(chalk.bold.cyan('║') + chalk.bold.yellow('        🔐 ARYZZ-DEV SOURCE CODE ENCRYPTION 🔐        ') + chalk.bold.cyan('║'));
@@ -122,6 +123,7 @@ function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
         
         let encrypted = 0;
         let failed = 0;
+        let copiedFiles = 0;
         
         // Walk through directory
         function walkDir(dir, baseDir) {
@@ -132,8 +134,8 @@ function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
                 const stat = fs.statSync(filePath);
                 
                 if (stat.isDirectory()) {
-                    // Skip node_modules and hidden directories
-                    if (file === 'node_modules' || file.startsWith('.')) {
+                    // Skip node_modules, hidden directories, tools, logs, docs
+                    if (file === 'node_modules' || file.startsWith('.') || file === 'tools' || file === 'logs' || file === 'docs') {
                         continue;
                     }
                     
@@ -147,10 +149,11 @@ function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
                     // Recurse
                     walkDir(filePath, baseDir);
                 } else {
-                    // Check if file should be encrypted
                     const ext = path.extname(file);
+                    const relPath = path.relative(baseDir, filePath);
+                    
+                    // Encrypt .js files
                     if (extensions.includes(ext)) {
-                        const relPath = path.relative(baseDir, filePath);
                         const outPath = path.join(outputDir, relPath + '.encrypted');
                         
                         if (encryptFile(filePath, outPath)) {
@@ -158,6 +161,23 @@ function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
                         } else {
                             failed++;
                         }
+                    } 
+                    // Copy important non-JS files
+                    else if (['.json', '.txt', '.sh', '.example', '.md'].includes(ext) || file === 'Dockerfile' || file === 'docker-compose.yml' || file === 'LICENSE') {
+                        // Skip .md files except README.md
+                        if (ext === '.md' && file !== 'README.md') {
+                            continue;
+                        }
+                        
+                        const outPath = path.join(outputDir, relPath);
+                        const outDir = path.dirname(outPath);
+                        
+                        if (!fs.existsSync(outDir)) {
+                            fs.mkdirSync(outDir, { recursive: true });
+                        }
+                        
+                        fs.copyFileSync(filePath, outPath);
+                        copiedFiles++;
                     }
                 }
             }
@@ -165,18 +185,61 @@ function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
         
         walkDir(inputDir, inputDir);
         
+        // Copy files directory if exists
+        const filesDir = path.join(inputDir, 'files');
+        if (fs.existsSync(filesDir)) {
+            const outFilesDir = path.join(outputDir, 'files');
+            if (!fs.existsSync(outFilesDir)) {
+                fs.mkdirSync(outFilesDir, { recursive: true });
+            }
+            
+            console.log(chalk.cyan('\n📁 Copying files directory...'));
+            execSync(`cp -r "${filesDir}"/* "${outFilesDir}/" 2>/dev/null || true`);
+        }
+        
         console.log(chalk.bold.green('\n╔═══════════════════════════════════════════════════════════╗'));
         console.log(chalk.bold.green('║') + chalk.bold.white(`           ✅ ENCRYPTION COMPLETED!                  `) + chalk.bold.green('║'));
         console.log(chalk.bold.green('╚═══════════════════════════════════════════════════════════╝'));
-        console.log(chalk.yellow(`  📊 Encrypted: ${encrypted} files`));
+        console.log(chalk.yellow(`  🔒 Encrypted: ${encrypted} JS files`));
+        console.log(chalk.cyan(`  📄 Copied: ${copiedFiles} config files`));
         console.log(chalk.red(`  ❌ Failed: ${failed} files`));
         console.log(chalk.gray(`  📁 Output directory: ${outputDir}`));
+        
+        // Create ZIP archive
+        if (createZip) {
+            console.log(chalk.cyan('\n📦 Creating ZIP archive...'));
+            const zipName = path.basename(outputDir) + '.zip';
+            const zipPath = path.join(path.dirname(outputDir), zipName);
+            
+            try {
+                // Remove old zip if exists
+                if (fs.existsSync(zipPath)) {
+                    fs.unlinkSync(zipPath);
+                }
+                
+                // Create zip
+                execSync(`cd "${path.dirname(outputDir)}" && zip -r "${zipName}" "${path.basename(outputDir)}" -q`);
+                
+                const zipSize = (fs.statSync(zipPath).size / 1024 / 1024).toFixed(2);
+                
+                console.log(chalk.bold.green('\n📦 ZIP ARCHIVE CREATED!'));
+                console.log(chalk.yellow(`  📦 File: ${zipPath}`));
+                console.log(chalk.gray(`  💾 Size: ${zipSize} MB`));
+            } catch (zipError) {
+                console.log(chalk.yellow(`\n⚠️  ZIP creation failed: ${zipError.message}`));
+                console.log(chalk.gray('  Manual zip: zip -r output.zip ' + path.basename(outputDir)));
+            }
+        }
+        
         console.log(chalk.bold.cyan(`\n  👨‍💻 Encrypted by: Aryzz-Dev`));
         console.log(chalk.gray(`  🔐 Algorithm: ${ENCRYPTION_ALGO.toUpperCase()}`));
         console.log(chalk.gray(`  🔑 Key derivation: PBKDF2 (${KEY_DERIVATION_ITERATIONS} iterations)\n`));
         
+        return { encrypted, failed, copiedFiles };
+        
     } catch (error) {
         console.log(chalk.red(`\n❌ Directory encryption failed: ${error.message}\n`));
+        return null;
     }
 }
 
@@ -185,23 +248,43 @@ function encryptDirectory(inputDir, outputDir, extensions = ['.js']) {
  */
 const args = process.argv.slice(2);
 
-if (args.length < 2) {
+if (args.length < 1) {
     console.log(chalk.bold.cyan('\n╔═══════════════════════════════════════════════════════════╗'));
     console.log(chalk.bold.cyan('║') + chalk.bold.yellow('         🔐 ARYZZ-DEV ENCRYPTION TOOL 🔐              ') + chalk.bold.cyan('║'));
     console.log(chalk.bold.cyan('╚═══════════════════════════════════════════════════════════╝'));
     console.log(chalk.white('\nUsage:'));
-    console.log(chalk.yellow('  node tools/encrypt.js <input> <output>'));
+    console.log(chalk.yellow('  node tools/encrypt.js <output-name>'));
     console.log(chalk.gray('\nExamples:'));
-    console.log(chalk.gray('  # Encrypt single file'));
-    console.log(chalk.cyan('  node tools/encrypt.js index.js index.js.encrypted'));
-    console.log(chalk.gray('\n  # Encrypt entire project'));
-    console.log(chalk.cyan('  node tools/encrypt.js ./src ./encrypted-src'));
-    console.log(chalk.gray('\nNote: Only .js files will be encrypted\n'));
+    console.log(chalk.gray('  # Encrypt current project'));
+    console.log(chalk.cyan('  node tools/encrypt.js aryzz-stresser-encrypted'));
+    console.log(chalk.gray('  Output: ../aryzz-stresser-encrypted/ + .zip\n'));
+    console.log(chalk.gray('  # Encrypt with custom path'));
+    console.log(chalk.cyan('  node tools/encrypt.js ~/Desktop/aryzz-stresser-v4'));
+    console.log(chalk.gray('  Output: ~/Desktop/aryzz-stresser-v4/ + .zip\n'));
+    console.log(chalk.bold.yellow('Features:'));
+    console.log(chalk.gray('  ✓ Encrypts all .js files'));
+    console.log(chalk.gray('  ✓ Copies config files (.json, .txt, etc)'));
+    console.log(chalk.gray('  ✓ Copies files/ directory'));
+    console.log(chalk.gray('  ✓ Keeps only README.md (other .md excluded)'));
+    console.log(chalk.gray('  ✓ Auto-creates .zip archive'));
+    console.log(chalk.gray('  ✓ Skips node_modules, logs, tools, docs\n'));
     process.exit(1);
 }
 
-const input = path.resolve(args[0]);
-const output = path.resolve(args[1]);
+// Get current directory and output name
+const currentDir = process.cwd();
+const outputName = args[0];
+
+// Determine output path
+let output;
+if (path.isAbsolute(outputName)) {
+    output = outputName;
+} else {
+    // Put output in parent directory
+    output = path.join(path.dirname(currentDir), outputName);
+}
+
+const input = currentDir;
 
 // Check if input exists
 if (!fs.existsSync(input)) {
