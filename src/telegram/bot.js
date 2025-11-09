@@ -604,7 +604,7 @@ export class TelegramBot {
             }
             
             const imagePath = './files/image.jpg';
-            const message = `🚀 *Welcome to MHDDoS Control Panel*\n\n` +
+            const message = `🚀 *Welcome to Aryzz-Stresser Control Panel*\n\n` +
                 `Version: \`3.0.0\`\n` +
                 `Status: 🟢 Online\n\n` +
                 `Select an option below to get started:`;
