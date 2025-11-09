@@ -6,6 +6,7 @@ import { ProxyManager } from '../utils/proxy-manager.js';
 import { LAYER4_METHODS } from '../methods/layer4/index.js';
 import { LAYER7_METHODS } from '../methods/layer7/index.js';
 import { Tools } from '../utils/tools.js';
+import { hostChecker } from '../utils/host-checker.js';
 
 /**
  * Modern Telegram Bot with Interactive UI
@@ -1076,6 +1077,7 @@ export class TelegramBot {
                 `/status - Attack status\n` +
                 `/stop - Stop attack\n` +
                 `/methods - List methods\n` +
+                `/check <target> - Check if target is down\n` +
                 `/help - This help\n` +
                 `/credits - View credits\n\n` +
                 `💡 *Tip:* Use buttons for better experience!`;
@@ -1096,6 +1098,86 @@ export class TelegramBot {
             logger.error('Error in handleHelp:', error);
             const errorMsg = '❌ Error getting help information.';
             await ctx.reply(errorMsg).catch(() => {});
+        }
+    }
+
+    /**
+     * Handle Check Command - Check if target is down
+     */
+    async handleCheck(ctx) {
+        try {
+            // Get target from command
+            const commandText = ctx.message.text;
+            const parts = commandText.split(' ');
+            
+            if (parts.length < 2) {
+                await ctx.reply(
+                    `╔═══════════════════════════════╗\n` +
+                    `║  🔍 *HOST STATUS CHECKER* 🔍 ║\n` +
+                    `╚═══════════════════════════════╝\n\n` +
+                    `📝 *Usage:*\n` +
+                    `/check <target>\n\n` +
+                    `🎯 *Examples:*\n` +
+                    `/check example.com\n` +
+                    `/check https://example.com\n` +
+                    `/check 1.2.3.4:80\n\n` +
+                    `💡 *What it checks:*\n` +
+                    `• HTTP/HTTPS status\n` +
+                    `• Response time\n` +
+                    `• DNS resolution\n` +
+                    `• Port availability\n` +
+                    `• Ping test\n\n` +
+                    `🎯 Use this to verify if your attack worked!`,
+                    { parse_mode: 'Markdown' }
+                );
+                return;
+            }
+
+            const target = parts.slice(1).join(' ').trim();
+            
+            logger.bot(`User ${ctx.from.id} checking target: ${target}`);
+
+            // Send checking message
+            const checkingMsg = await ctx.reply(
+                `🔍 *Checking target...*\n\n` +
+                `🎯 Target: \`${target}\`\n` +
+                `⏳ Please wait...\n\n` +
+                `This may take 5-10 seconds`,
+                { parse_mode: 'Markdown' }
+            );
+
+            // Perform check
+            const results = await hostChecker.checkHost(target);
+            
+            // Format and send results
+            const message = hostChecker.formatForTelegram(results);
+            
+            // Delete checking message
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, checkingMsg.message_id);
+            } catch (e) {
+                // Ignore if can't delete
+            }
+            
+            // Send results
+            await ctx.reply(message, {
+                parse_mode: 'Markdown',
+                ...Markup.inlineKeyboard([
+                    [
+                        Markup.button.callback('🔄 Check Again', `recheck_${target}`),
+                        Markup.button.callback('⚡ Attack Now', 'new_attack')
+                    ]
+                ])
+            });
+
+        } catch (error) {
+            logger.error('Error in handleCheck:', error);
+            await ctx.reply(
+                `❌ *Error checking target*\n\n` +
+                `Error: ${error.message}\n\n` +
+                `Please try again or contact admin.`,
+                { parse_mode: 'Markdown' }
+            ).catch(() => {});
         }
     }
 
