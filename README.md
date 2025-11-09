@@ -32,10 +32,12 @@
 ## ✨ Features
 
 ### 🔥 Multiple Bypass Techniques
+- ✅ **PrivacyPass Token System** (Coming soon)
 - ✅ **Cloudscraper Challenge Solver** - Automatic Cloudflare bypass
 - ✅ **Real Browser Header Simulation** - Realistic traffic patterns
 - ✅ **TLS Fingerprint Spoofing** - Advanced evasion
 - ✅ **JavaScript Challenge Auto-Solve** - Bypass JS challenges
+- ✅ **CAPTCHA Bypass Integration** (Coming soon)
 
 ### 🌐 HTTP/1.1 Protocols
 - ✅ **Raw Socket Flood** - Low-level TCP/UDP attacks
@@ -56,6 +58,7 @@
 - ✅ **TLS Advanced v3** - Latest TLS bypass methods
 
 ### 🎯 HTTPS & Special Methods
+- ✅ **HTTPS v3 Protocol** - HTTP/3 support (Coming soon)
 - ✅ **Advanced Bypass Methods** - Multiple evasion techniques
 - ✅ **CONNECT Proxy Tunneling** - Proxy chaining support
 
@@ -197,8 +200,13 @@ Starts the Telegram bot for remote control.
 |--------|-------------|---------------|
 | `UDP` | UDP Flood | `ip:port` |
 | `TCP` | TCP Flood | `ip:port` |
+| `SYN` | SYN Flood | `ip:port` |
 | `MINECRAFT` | Minecraft Server Attack | `ip:port` |
 | `MCBOT` | Minecraft Bot Spam | `ip:port` |
+| `VSE` | Source Engine Query | `ip:port` |
+| `TS3` | TeamSpeak 3 Attack | `ip:port` |
+| `MCPE` | Minecraft PE Attack | `ip:port` |
+| `FIVEM` | FiveM Server Attack | `ip:port` |
 
 ### Layer 7 (Application Layer)
 
@@ -228,9 +236,11 @@ Starts the Telegram bot for remote control.
 #### Special Methods
 | Method | Description | Target Format |
 |--------|-------------|---------------|
+| `STRESS` | Stress Test (Large POST) | `https://target.com` |
 | `COOKIE` | Cookie-based Attack | `https://target.com` |
 | `APACHE` | Apache Range Attack | `https://target.com` |
 | `XMLRPC` | WordPress XMLRPC | `https://target.com` |
+| `NULL` | Null User-Agent | `https://target.com` |
 
 ---
 
