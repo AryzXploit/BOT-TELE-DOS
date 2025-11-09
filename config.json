@@ -6,6 +6,17 @@
     "admin_ids": ["8426540797"],
     "enabled": true
   },
+  "license_bot": {
+    "token": "",
+    "admin_ids": ["8426540797"],
+    "seller_ids": [],
+    "enabled": true
+  },
+  "license_system": {
+    "enabled": true,
+    "require_license": false,
+    "free_trial_enabled": false
+  },
   "attack_defaults": {
     "max_threads": 1000,
     "max_duration": 600,

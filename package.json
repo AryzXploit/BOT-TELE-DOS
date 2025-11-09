@@ -8,7 +8,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "telegram": "node src/telegram/bot.js"
+    "telegram": "node src/telegram/bot.js",
+    "license-bot": "node src/license/license-bot.js"
   },
   "keywords": [
     "ddos",

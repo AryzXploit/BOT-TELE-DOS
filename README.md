@@ -32,12 +32,12 @@
 ## ✨ Features
 
 ### 🔥 Multiple Bypass Techniques
-- ✅ **PrivacyPass Token System** (Coming soon)
+- 🔄 **PrivacyPass Token System** (Coming soon)
 - ✅ **Cloudscraper Challenge Solver** - Automatic Cloudflare bypass
 - ✅ **Real Browser Header Simulation** - Realistic traffic patterns
 - ✅ **TLS Fingerprint Spoofing** - Advanced evasion
 - ✅ **JavaScript Challenge Auto-Solve** - Bypass JS challenges
-- ✅ **CAPTCHA Bypass Integration** (Coming soon)
+- 🔄 **CAPTCHA Bypass Integration** (Coming soon)
 
 ### 🌐 HTTP/1.1 Protocols
 - ✅ **Raw Socket Flood** - Low-level TCP/UDP attacks
@@ -58,7 +58,7 @@
 - ✅ **TLS Advanced v3** - Latest TLS bypass methods
 
 ### 🎯 HTTPS & Special Methods
-- ✅ **HTTPS v3 Protocol** - HTTP/3 support (Coming soon)
+- 🔄 **HTTPS v3 Protocol** - HTTP/3 support (Coming soon)
 - ✅ **Advanced Bypass Methods** - Multiple evasion techniques
 - ✅ **CONNECT Proxy Tunneling** - Proxy chaining support
 

