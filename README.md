@@ -1,4 +1,4 @@
-# 🚀 MHDDoS - Node.js Edition
+# 🚀 Aryzz-Stresser - Node.js Edition
 
 <div align="center">
 
