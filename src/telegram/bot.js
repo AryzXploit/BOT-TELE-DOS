@@ -26,6 +26,47 @@ export class TelegramBot {
     }
 
     /**
+     * Safe edit message - fallback to new message if edit fails
+     */
+    async safeEditMessage(ctx, text, extra = {}) {
+        try {
+            if (ctx.callbackQuery && ctx.callbackQuery.message) {
+                // Try to edit the callback query message
+                return await ctx.editMessageText(text, extra);
+            } else if (ctx.update && ctx.update.callback_query && ctx.update.callback_query.message) {
+                // Alternative: edit via telegram API
+                return await ctx.telegram.editMessageText(
+                    ctx.chat.id,
+                    ctx.update.callback_query.message.message_id,
+                    null,
+                    text,
+                    extra
+                );
+            } else {
+                // Can't edit, send new message
+                return await ctx.reply(text, extra);
+            }
+        } catch (error) {
+            // If edit fails (e.g., "no text in message"), send new message
+            if (error.message && error.message.includes('no text')) {
+                try {
+                    // Delete old message if possible
+                    if (ctx.callbackQuery && ctx.callbackQuery.message) {
+                        await ctx.telegram.deleteMessage(
+                            ctx.chat.id,
+                            ctx.callbackQuery.message.message_id
+                        ).catch(() => {});
+                    }
+                } catch (e) {
+                    // Ignore delete errors
+                }
+                return await ctx.reply(text, extra);
+            }
+            throw error;
+        }
+    }
+
+    /**
      * Setup Attack Wizard Scene
      */
     setupWizard() {
@@ -79,7 +120,7 @@ export class TelegramBot {
                 }
                 methodButtons.push([Markup.button.callback('⬅️ Back', 'back'), Markup.button.callback('❌ Cancel', 'cancel')]);
 
-                ctx.editMessageText(
+                await this.safeEditMessage(ctx,
                     `╔═══════════════════════════╗\n` +
                     `║  🔧 *SELECT METHOD*  🔧  ║\n` +
                     `╚═══════════════════════════╝\n\n` +
@@ -113,7 +154,7 @@ export class TelegramBot {
                     ? 'https://example.com' 
                     : 'ip:port (e.g., 1.2.3.4:80)';
 
-                ctx.editMessageText(
+                await this.safeEditMessage(ctx,
                     `🎯 *Enter Target*\n\n` +
                     `Method: \`${method}\`\n\n` +
                     `Please enter the target:\n` +
