@@ -32,10 +32,12 @@
 ## ✨ Features
 
 ### 🔥 Multiple Bypass Techniques
+- ✅ **PrivacyPass Token System** - Cloudflare PrivacyPass challenge bypass
 - ✅ **Cloudscraper Challenge Solver** - Automatic Cloudflare bypass
 - ✅ **Real Browser Header Simulation** - Realistic traffic patterns
 - ✅ **TLS Fingerprint Spoofing** - Advanced evasion
 - ✅ **JavaScript Challenge Auto-Solve** - Bypass JS challenges
+- ✅ **CAPTCHA Bypass Integration** - 2Captcha, Anti-Captcha, CapMonster support
 - ✅ **Advanced Header Fingerprinting** - 2000+ header combinations
 - ✅ **Cookie Management System** - Realistic cookie handling
 
@@ -58,6 +60,7 @@
 - ✅ **TLS Advanced v3** - Latest TLS bypass methods
 
 ### 🎯 HTTPS & Special Methods
+- ✅ **HTTP/3 Protocol (QUIC)** - Next-gen HTTP/3 support with fallback
 - ✅ **HTTP/2 Protocol** - Full HTTP/2 support with multiplexing
 - ✅ **Advanced Bypass Methods** - Multiple evasion techniques
 - ✅ **CONNECT Proxy Tunneling** - Proxy chaining support
@@ -226,6 +229,12 @@ Starts the Telegram bot for remote control.
 | `HTTP2-POST` | HTTP/2 POST Flood | `https://target.com` |
 | `HTTP2-CF` | HTTP/2 Cloudflare Bypass | `https://target.com` |
 
+#### HTTP/3 (Next-Gen QUIC)
+| Method | Description | Target Format |
+|--------|-------------|---------------|
+| `HTTP3` | HTTP/3 GET Flood (QUIC Protocol) | `https://target.com` |
+| `HTTP3-POST` | HTTP/3 POST Flood | `https://target.com` |
+
 #### Bypass Methods
 | Method | Description | Target Format |
 |--------|-------------|---------------|
@@ -233,6 +242,9 @@ Starts the Telegram bot for remote control.
 | `BYPASS` | Advanced Bypass | `https://target.com` |
 | `BOT` | Bot Simulation | `https://target.com` |
 | `CFBUAM` | Cloudflare UAM Bypass | `https://target.com` |
+| `PRIVACYPASS` | PrivacyPass Token System | `https://target.com` |
+| `CAPTCHA` | CAPTCHA Bypass (2Captcha/Anti-Captcha) | `https://target.com` |
+| `ULTIMATE` | Ultimate Bypass (All Methods Combined) | `https://target.com` |
 
 #### Special Methods
 | Method | Description | Target Format |
@@ -602,11 +614,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **MHProDev** - Original Developer
 - GitHub: [@MHProDev](https://github.com/MHProDev)
 
-**Aryzz-Dev** - Maximization & License System
+**Aryzz-Dev** - Maximization, License System & Advanced Features
 - GitHub: [@AryzXploit](https://github.com/AryzXploit)
 - All methods maximized (100-1000x performance boost)
 - Complete encrypted license system
 - Telegram license bot integration
+- PrivacyPass Token System implementation
+- CAPTCHA Bypass Integration (2Captcha, Anti-Captcha, CapMonster)
+- HTTP/3 (QUIC) Protocol support with fallback
+- Ultimate Bypass method combining all techniques
 
 ---
 
