@@ -421,17 +421,20 @@ export class TelegramBot {
                 `   or use /status and /stop commands`;
             
             let statusMessageId = loadingMsg.message_id;
+            let messageDeleted = false;
             
             try {
-                // Try to delete the loading message first
-                try {
-                    await ctx.telegram.deleteMessage(ctx.chat.id, loadingMsg.message_id);
-                } catch (e) {
-                    // Ignore if can't delete
-                }
-                
                 // Send new message with image if available
                 if (existsSync(imagePath)) {
+                    // Delete loading message first
+                    try {
+                        await ctx.telegram.deleteMessage(ctx.chat.id, loadingMsg.message_id);
+                        messageDeleted = true;
+                    } catch (e) {
+                        // Ignore if can't delete
+                    }
+                    
+                    // Send photo message
                     const photoMsg = await ctx.telegram.sendPhoto(
                         ctx.chat.id,
                         { source: imagePath },
@@ -448,7 +451,7 @@ export class TelegramBot {
                     );
                     statusMessageId = photoMsg.message_id;
                 } else {
-                    // Fallback to edit text if no image
+                    // No image - edit existing message
                     await ctx.telegram.editMessageText(
                         ctx.chat.id,
                         loadingMsg.message_id,
@@ -464,28 +467,12 @@ export class TelegramBot {
                             ])
                         }
                     );
+                    statusMessageId = loadingMsg.message_id;
                 }
             } catch (error) {
                 logger.error('Error sending attack started message:', error);
-                // Try to update existing message as fallback
+                // Send new message instead of trying to edit (message might be deleted)
                 try {
-                    await ctx.telegram.editMessageText(
-                        ctx.chat.id,
-                        loadingMsg.message_id,
-                        null,
-                        attackMessage,
-                        {
-                            parse_mode: 'Markdown',
-                            ...Markup.inlineKeyboard([
-                                [
-                                    Markup.button.callback('📊 Status', 'status'),
-                                    Markup.button.callback('🛑 Stop', 'stop')
-                                ]
-                            ])
-                        }
-                    );
-                } catch (e) {
-                    // If all fails, send new message
                     const newMsg = await ctx.telegram.sendMessage(
                         ctx.chat.id,
                         attackMessage,
@@ -500,6 +487,8 @@ export class TelegramBot {
                         }
                     );
                     statusMessageId = newMsg.message_id;
+                } catch (e) {
+                    logger.error('Failed to send new message:', e.message);
                 }
             }
 
@@ -509,21 +498,15 @@ export class TelegramBot {
         } catch (error) {
             logger.error('Error starting attack:', error);
             logger.attack(`Failed to start attack for user ${ctx.from.id}: ${error.message}`);
+            // Always send new message instead of trying to edit
             try {
-                await ctx.telegram.editMessageText(
-                    ctx.chat.id,
-                    loadingMsg.message_id,
-                    null,
-                    `❌ *Error Starting Attack*\n\n${error.message}`,
-                    { parse_mode: 'Markdown' }
-                );
-            } catch (e) {
-                // If edit fails, send new message
                 await ctx.telegram.sendMessage(
                     ctx.chat.id,
                     `❌ *Error Starting Attack*\n\n${error.message}`,
                     { parse_mode: 'Markdown' }
                 );
+            } catch (e) {
+                logger.error('Failed to send error message:', e.message);
             }
         }
     }
