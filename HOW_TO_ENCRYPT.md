@@ -1,35 +1,46 @@
-# 🔐 How to Encrypt & Sell Aryzz-Stresser
+# 🔐 How to Obfuscate & Sell Aryzz-Stresser
 
-Complete guide untuk encrypt dan jual source code Aryzz-Stresser.
+Complete guide untuk obfuscate dan jual source code Aryzz-Stresser.
+
+**NEW: Menggunakan OBFUSCATION (bukan encryption)**
+- ✅ Files tetap `.js` (bisa di-run!)
+- ✅ Code jadi unreadable (gak bisa dibaca!)
+- ✅ Bisa run dengan `node index.js` & `npm start`
+- ✅ Buyer bisa pakai tapi gak bisa modify
 
 ---
 
 ## 🚀 Quick Start
 
-### 1️⃣ Encrypt Project (Super Simple!)
+### 1️⃣ Obfuscate Project (Super Simple!)
 
 ```bash
 # Masuk ke directory project
 cd ~/tele
 
-# Encrypt dengan 1 command!
-node tools/encrypt.js aryzz-stresser-encrypted
+# Obfuscate dengan 1 command!
+node tools/obfuscate.js aryzz-stresser-obfuscated
 ```
 
 **Output:**
-- Folder: `../aryzz-stresser-encrypted/` (encrypted files)
-- ZIP: `../aryzz-stresser-encrypted.zip` (ready to sell!)
+- Folder: `../aryzz-stresser-obfuscated/` (obfuscated files)
+- ZIP: `../aryzz-stresser-obfuscated.zip` (ready to sell!)
 
 ---
 
 ## 📦 What Happens?
 
-### ✅ Files Yang Di-Encrypt:
-- ✅ **All .js files** → `.js.encrypted`
-  - index.js → index.js.encrypted
-  - src/core/attack-manager.js → src/core/attack-manager.js.encrypted
-  - src/methods/layer7/http2.js → src/methods/layer7/http2.js.encrypted
+### ✅ Files Yang Di-Obfuscate:
+- ✅ **All .js files** → tetap `.js` (unreadable!)
+  - index.js → index.js (obfuscated)
+  - src/core/attack-manager.js → src/core/attack-manager.js (obfuscated)
+  - src/methods/layer7/http2.js → src/methods/layer7/http2.js (obfuscated)
   - ... (semua .js files!)
+  
+**PENTING:** Files tetap `.js` jadi bisa di-run dengan:
+- ✅ `node index.js`
+- ✅ `npm start`
+- ✅ `node index.js attack ...`
 
 ### ✅ Files Yang Di-Copy (Tidak Di-Encrypt):
 - ✅ package.json
@@ -74,11 +85,11 @@ ls tools/encrypt.js
 # If exists, you're good!
 ```
 
-### Step 2: Run Encryption
+### Step 2: Run Obfuscation
 
 ```bash
-# Run encryption tool
-node tools/encrypt.js aryzz-stresser-encrypted
+# Run obfuscation tool
+node tools/obfuscate.js aryzz-stresser-obfuscated
 ```
 
 **You'll see:**
