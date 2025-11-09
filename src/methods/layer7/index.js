@@ -10,6 +10,15 @@ export {
     ApacheRangeAttack,
     CookieAttack
 } from './advanced.js';
+export { 
+    PrivacyPassBypass,
+    CaptchaBypass,
+    UltimateBypass
+} from './privacy-captcha.js';
+export { 
+    HTTP3Attack,
+    HTTP3PostAttack
+} from './http3.js';
 
 /**
  * Layer 7 Attack Methods
@@ -22,10 +31,15 @@ export const LAYER7_METHODS = [
     'HTTP2',
     'HTTP2-POST',
     'HTTP2-CF',
+    'HTTP3',
+    'HTTP3-POST',
     'CFB',
     'CFBUAM',
     'BYPASS',
     'BOT',
+    'PRIVACYPASS',
+    'CAPTCHA',
+    'ULTIMATE',
     'XMLRPC',
     'STRESS',
     'DYN',
