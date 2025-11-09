@@ -70,28 +70,36 @@ Semua method dari Python version tersedia di Node.js:
 |--------|---------|--------|
 | UDP | UDP | ✅ Tersedia |
 | TCP | TCP | ✅ Tersedia |
-| SYN | SYN | 🔄 Coming soon |
+| SYN | SYN | ✅ Tersedia |
 | MINECRAFT | MINECRAFT | ✅ Tersedia |
 | MCBOT | MCBOT | ✅ Tersedia |
-| VSE | VSE | 🔄 Coming soon |
-| TS3 | TS3 | 🔄 Coming soon |
-| MCPE | MCPE | 🔄 Coming soon |
-| FIVEM | FIVEM | 🔄 Coming soon |
+| VSE | VSE | ✅ Tersedia |
+| TS3 | TS3 | ✅ Tersedia |
+| MCPE | MCPE | ✅ Tersedia |
+| FIVEM | FIVEM | ✅ Tersedia |
+| FIVEM-TOKEN | FIVEM-TOKEN | ✅ Tersedia |
+| CPS | CPS | ✅ Tersedia |
+| CONNECTION | CONNECTION | ✅ Tersedia |
+| OVH-UDP | OVH-UDP | ✅ Tersedia |
 
 ### Layer 7 Methods
 | Python | Node.js | Status |
 |--------|---------|--------|
 | GET | GET | ✅ Tersedia |
 | POST | POST | ✅ Tersedia |
+| HEAD | HEAD | ✅ Tersedia |
 | CFB | CFB / HTTP2-CF | ✅ Tersedia |
 | BYPASS | BYPASS | ✅ Tersedia |
 | SLOW | SLOW | ✅ Tersedia |
 | BOT | BOT | ✅ Tersedia |
-| STRESS | STRESS | 🔄 Coming soon |
-| NULL | NULL | 🔄 Coming soon |
-| DYN | DYN | 🔄 Coming soon |
+| STRESS | STRESS | ✅ Tersedia |
+| NULL | NULL | ✅ Tersedia |
+| DYN | DYN | ✅ Tersedia |
+| XMLRPC | XMLRPC | ✅ Tersedia |
+| APACHE | APACHE | ✅ Tersedia |
+| COOKIE | COOKIE | ✅ Tersedia |
 
-**Note:** Methods yang belum tersedia akan ditambahkan dalam update berikutnya.
+**Note:** Semua core methods sekarang tersedia!
 
 ---
 

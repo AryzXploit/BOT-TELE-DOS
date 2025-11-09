@@ -1,6 +1,17 @@
 export { UDPFlood } from './udp.js';
 export { TCPFlood } from './tcp.js';
 export { MinecraftFlood, MinecraftBot } from './minecraft.js';
+export { 
+    SYNFlood, 
+    VSEFlood, 
+    TS3Flood, 
+    MCPEFlood, 
+    FiveMFlood, 
+    FiveMTokenFlood,
+    CPSFlood,
+    ConnectionFlood,
+    OVHUDPFlood
+} from './advanced.js';
 
 /**
  * Layer 4 Attack Methods
