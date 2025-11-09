@@ -1062,7 +1062,7 @@ export class TelegramBot {
                 `Total: ${LAYER4_METHODS.length + LAYER7_METHODS.length} methods`;
 
             if (isCallback) {
-                await ctx.editMessageText(message, 
+                await this.safeEditMessage(ctx, message, 
                     {
                         parse_mode: 'Markdown',
                         ...Markup.inlineKeyboard([
@@ -1124,7 +1124,7 @@ export class TelegramBot {
                 `💡 *Tip:* Use buttons for better experience!`;
 
             if (isCallback) {
-                await ctx.editMessageText(message, 
+                await this.safeEditMessage(ctx, message, 
                     {
                         parse_mode: 'Markdown',
                         ...Markup.inlineKeyboard([
