@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  mhddos:
+    build: .
+    container_name: mhddos-nodejs
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./config.json:/app/config.json
+      - ./files:/app/files
+    # Uncomment for web interface (future feature)
+    # ports:
+    #   - "3000:3000"
+    command: node index.js methods
+    
+  # Telegram Bot Service (optional)
+  # Enable telegram.enabled in config.json first
+  telegram-bot:
+    build: .
+    container_name: mhddos-telegram-bot
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./config.json:/app/config.json
+      - ./files:/app/files
+    command: node index.js telegram
+    profiles:
+      - telegram

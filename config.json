@@ -1,0 +1,34 @@
+{
+  "MCBOT": "AryzzXStrezzer",
+  "MINECRAFT_DEFAULT_PROTOCOL": 47,
+  "telegram": {
+    "bot_token": "7952535432:AAGe8z85itPc63l_yOADCvaz7vtbkzhpVmo",
+    "admin_ids": ["8426540797"],
+    "enabled": true
+  },
+  "attack_defaults": {
+    "max_threads": 1000,
+    "max_duration": 600,
+    "max_rpc": 20,
+    "default_threads": 100,
+    "default_duration": 60,
+    "default_rpc": 1
+  },
+  "proxy-providers": [
+    {
+      "type": 4,
+      "url": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/refs/heads/master/socks4.txt",
+      "timeout": 5
+    },
+    {
+      "type": 5,
+      "url": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/refs/heads/master/socks5.txt",
+      "timeout": 5
+    },
+    {
+      "type": 1,
+      "url": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+      "timeout": 5
+    }
+  ]
+}

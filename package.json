@@ -1,0 +1,47 @@
+{
+  "name": "mhddos-nodejs",
+  "version": "3.0.0",
+  "description": "Advanced DDoS Testing Tool with Multiple Attack Vectors - Node.js Edition",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "telegram": "node src/telegram/bot.js"
+  },
+  "keywords": [
+    "ddos",
+    "stress-test",
+    "load-test",
+    "http2",
+    "layer4",
+    "layer7",
+    "telegram-bot"
+  ],
+  "author": "MHProDev",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "chalk": "^5.3.0",
+    "cloudscraper": "^4.6.0",
+    "commander": "^11.1.0",
+    "dns": "^0.2.2",
+    "http2": "^3.3.7",
+    "moment": "^2.29.4",
+    "node-telegram-bot-api": "^0.64.0",
+    "raw-socket": "^1.7.0",
+    "socks": "^2.7.1",
+    "socks-proxy-agent": "^8.0.2",
+    "telegraf": "^4.15.0",
+    "telegraf-session-local": "^2.1.0",
+    "user-agents": "^1.1.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
