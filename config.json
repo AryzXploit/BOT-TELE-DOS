@@ -2,7 +2,7 @@
   "MCBOT": "AryzzXStrezzer",
   "MINECRAFT_DEFAULT_PROTOCOL": 47,
   "telegram": {
-    "bot_token": "7952535432:AAGe8z85itPc63l_yOADCvaz7vtbkzhpVmo",
+    "bot_token": "",
     "admin_ids": ["8426540797"],
     "enabled": true
   },
