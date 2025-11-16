@@ -1,0 +1,124 @@
+[2025-11-09T17:10:56.901Z] [INFO] 🔧 Loading Telegram bot configuration...
+[2025-11-09T17:10:56.903Z] [INFO] 👤 Authorized Admin IDs: 8426540797
+[2025-11-09T17:10:57.025Z] [INFO] 🤖 Starting Telegram bot...
+[2025-11-09T17:10:57.026Z] [BOT] Telegram bot initialization started
+[2025-11-09T17:10:57.027Z] [SUCCESS] 🤖 Telegram bot is running!
+[2025-11-09T17:10:57.027Z] [INFO] 👤 Admin ID: 8426540797
+[2025-11-09T17:10:57.027Z] [BOT] Bot launched successfully with admin ID: 8426540797
+[2025-11-09T17:11:08.045Z] [BOT] User 8426540797 (AryzzXploit) entered attack wizard
+[2025-11-09T17:11:38.380Z] [BOT] User 8426540797 set target: https://store.aryapanel.xyz
+[2025-11-09T17:11:43.297Z] [BOT] User 8426540797 clicked confirmation button, moving to confirmation handler
+[2025-11-09T17:11:44.104Z] [BOT] User 8426540797 confirmed attack
+[2025-11-09T17:11:44.104Z] [ATTACK] Attack initiated by user 8426540797: {"layer":"layer_7","method":"CFB","target":"https://store.aryapanel.xyz","threads":100,"duration":60,"rpc":1}
+[2025-11-09T17:11:44.933Z] [ATTACK] Starting attack - Target: https://store.aryapanel.xyz, Method: CFB, Threads: 100, Duration: 60s
+[2025-11-09T17:11:44.934Z] [INFO] 🎯 Starting CFB attack on https://store.aryapanel.xyz
+[2025-11-09T17:11:44.934Z] [INFO] ⚙️  Threads: 100, Duration: 60s
+[2025-11-09T17:11:44.935Z] [ATTACK] Attack successfully started
+[2025-11-09T17:12:51.808Z] [INFO] 📊 Progress: 110% | Requests: 0 | Data: 54.31 MB | Time: 66s / 60s
+[2025-11-09T17:12:51.895Z] [INFO] 🛑 Stopping attack...
+[2025-11-09T17:12:51.899Z] [SUCCESS] ✅ Attack stopped successfully!
+[2025-11-09T17:12:51.900Z] [INFO] 📊 Final Stats - Requests: 0 | Data: 54.31 MB
+[2025-11-09T17:13:46.570Z] [INFO] 🔧 Loading Telegram bot configuration...
+[2025-11-09T17:13:46.581Z] [INFO] 👤 Authorized Admin IDs: 8426540797
+[2025-11-09T17:13:46.731Z] [INFO] 🤖 Starting Telegram bot...
+[2025-11-09T17:13:46.731Z] [BOT] Telegram bot initialization started
+[2025-11-09T17:13:46.733Z] [SUCCESS] 🤖 Telegram bot is running!
+[2025-11-09T17:13:46.734Z] [INFO] 👤 Admin ID: 8426540797
+[2025-11-09T17:13:46.734Z] [BOT] Bot launched successfully with admin ID: 8426540797
+[2025-11-09T17:13:48.014Z] [BOT] User 8426540797 (AryzzXploit) used /start command
+[2025-11-09T17:13:48.015Z] [WARNING] image.jpg not found, sending text-only message
+[2025-11-09T17:13:48.020Z] [BOT] User 8426540797 used /stop command
+[2025-11-09T17:13:53.371Z] [BOT] User 8426540797 (AryzzXploit) entered attack wizard
+[2025-11-09T17:14:06.221Z] [BOT] User 8426540797 set target: https://aryapanel.xyz
+[2025-11-09T17:14:11.265Z] [BOT] User 8426540797 clicked confirmation button, moving to confirmation handler
+[2025-11-09T17:14:12.076Z] [BOT] User 8426540797 confirmed attack
+[2025-11-09T17:14:12.077Z] [ATTACK] Attack initiated by user 8426540797: {"layer":"layer_7","method":"CFBUAM","target":"https://aryapanel.xyz","threads":100,"duration":60,"rpc":1}
+[2025-11-09T17:14:12.842Z] [ATTACK] Starting attack - Target: https://aryapanel.xyz, Method: CFBUAM, Threads: 100, Duration: 60s
+[2025-11-09T17:14:12.843Z] [INFO] 🎯 Starting CFBUAM attack on https://aryapanel.xyz
+[2025-11-09T17:14:12.843Z] [INFO] ⚙️  Threads: 100, Duration: 60s
+[2025-11-09T17:14:12.846Z] [ATTACK] Attack successfully started
+[2025-11-09T17:14:13.729Z] [ERROR] Error sending attack started message: 400: Bad Request: message to edit not found
+Error: 400: Bad Request: message to edit not found
+    at Telegram.callApi (/home/arya/tele/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async TelegramBot.startAttackFromWizard (file:///home/arya/tele/src/telegram/bot.js:452:21)
+    at async file:///home/arya/tele/src/telegram/bot.js:280:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async /home/arya/tele/node_modules/telegraf/lib/session.js:104:13
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+[2025-11-09T17:14:13.866Z] [INFO] 📊 Progress: 1% | Requests: 0 | Data: 0 B | Time: 1s / 60s
+[2025-11-09T17:14:14.866Z] [INFO] 📊 Progress: 3% | Requests: 0 | Data: 0 B | Time: 2s / 60s
+[2025-11-09T17:14:15.875Z] [INFO] 📊 Progress: 5% | Requests: 0 | Data: 0 B | Time: 3s / 60s
+[2025-11-09T17:14:16.875Z] [INFO] 📊 Progress: 6% | Requests: 0 | Data: 0 B | Time: 4s / 60s
+[2025-11-09T17:14:17.939Z] [INFO] 📊 Progress: 8% | Requests: 0 | Data: 0 B | Time: 5s / 60s
+[2025-11-09T17:14:18.990Z] [INFO] 📊 Progress: 10% | Requests: 0 | Data: 0 B | Time: 6s / 60s
+[2025-11-09T17:14:20.009Z] [INFO] 📊 Progress: 11% | Requests: 0 | Data: 0 B | Time: 7s / 60s
+[2025-11-09T17:14:21.055Z] [INFO] 📊 Progress: 13% | Requests: 0 | Data: 0 B | Time: 8s / 60s
+[2025-11-09T17:14:22.105Z] [INFO] 📊 Progress: 15% | Requests: 0 | Data: 0 B | Time: 9s / 60s
+[2025-11-09T17:14:23.195Z] [INFO] 📊 Progress: 16% | Requests: 0 | Data: 0 B | Time: 10s / 60s
+[2025-11-09T17:14:24.194Z] [INFO] 📊 Progress: 18% | Requests: 0 | Data: 0 B | Time: 11s / 60s
+[2025-11-09T17:14:25.206Z] [INFO] 📊 Progress: 20% | Requests: 0 | Data: 0 B | Time: 12s / 60s
+[2025-11-09T17:14:26.230Z] [INFO] 📊 Progress: 21% | Requests: 0 | Data: 0 B | Time: 13s / 60s
+[2025-11-09T17:14:27.235Z] [INFO] 📊 Progress: 23% | Requests: 0 | Data: 0 B | Time: 14s / 60s
+[2025-11-09T17:14:28.235Z] [INFO] 📊 Progress: 25% | Requests: 0 | Data: 0 B | Time: 15s / 60s
+[2025-11-09T17:14:29.236Z] [INFO] 📊 Progress: 26% | Requests: 0 | Data: 0 B | Time: 16s / 60s
+[2025-11-09T17:14:30.235Z] [INFO] 📊 Progress: 28% | Requests: 0 | Data: 0 B | Time: 17s / 60s
+[2025-11-09T17:14:31.253Z] [INFO] 📊 Progress: 30% | Requests: 0 | Data: 0 B | Time: 18s / 60s
+[2025-11-09T17:14:32.310Z] [INFO] 📊 Progress: 31% | Requests: 0 | Data: 0 B | Time: 19s / 60s
+[2025-11-09T17:14:33.353Z] [INFO] 📊 Progress: 33% | Requests: 0 | Data: 0 B | Time: 20s / 60s
+[2025-11-09T17:14:34.354Z] [INFO] 📊 Progress: 35% | Requests: 0 | Data: 0 B | Time: 21s / 60s
+[2025-11-09T17:14:35.381Z] [INFO] 📊 Progress: 36% | Requests: 0 | Data: 0 B | Time: 22s / 60s
+[2025-11-09T17:14:36.632Z] [INFO] 📊 Progress: 38% | Requests: 0 | Data: 0 B | Time: 23s / 60s
+[2025-11-09T17:14:37.644Z] [INFO] 📊 Progress: 40% | Requests: 0 | Data: 0 B | Time: 24s / 60s
+[2025-11-09T17:14:38.669Z] [INFO] 📊 Progress: 41% | Requests: 0 | Data: 0 B | Time: 25s / 60s
+[2025-11-09T17:14:39.681Z] [INFO] 📊 Progress: 43% | Requests: 0 | Data: 0 B | Time: 26s / 60s
+[2025-11-09T17:14:40.690Z] [INFO] 📊 Progress: 45% | Requests: 0 | Data: 0 B | Time: 27s / 60s
+[2025-11-09T17:14:41.811Z] [INFO] 📊 Progress: 46% | Requests: 0 | Data: 0 B | Time: 28s / 60s
+[2025-11-09T17:14:42.949Z] [INFO] 📊 Progress: 50% | Requests: 0 | Data: 0 B | Time: 30s / 60s
+[2025-11-09T17:14:43.959Z] [INFO] 📊 Progress: 51% | Requests: 0 | Data: 0 B | Time: 31s / 60s
+[2025-11-09T17:14:45.039Z] [INFO] 📊 Progress: 53% | Requests: 0 | Data: 0 B | Time: 32s / 60s
+[2025-11-09T17:14:46.054Z] [INFO] 📊 Progress: 55% | Requests: 0 | Data: 0 B | Time: 33s / 60s
+[2025-11-09T17:14:47.073Z] [INFO] 📊 Progress: 56% | Requests: 0 | Data: 0 B | Time: 34s / 60s
+[2025-11-09T17:14:48.124Z] [INFO] 📊 Progress: 58% | Requests: 0 | Data: 0 B | Time: 35s / 60s
+[2025-11-09T17:14:49.504Z] [INFO] 📊 Progress: 60% | Requests: 0 | Data: 0 B | Time: 36s / 60s
+[2025-11-09T17:14:50.712Z] [INFO] 📊 Progress: 61% | Requests: 0 | Data: 0 B | Time: 37s / 60s
+[2025-11-09T17:14:51.717Z] [INFO] 📊 Progress: 63% | Requests: 0 | Data: 0 B | Time: 38s / 60s
+[2025-11-09T17:14:52.750Z] [INFO] 📊 Progress: 65% | Requests: 0 | Data: 0 B | Time: 39s / 60s
+[2025-11-09T17:14:54.049Z] [INFO] 📊 Progress: 68% | Requests: 0 | Data: 0 B | Time: 41s / 60s
+[2025-11-09T17:14:55.280Z] [INFO] 📊 Progress: 70% | Requests: 0 | Data: 0 B | Time: 42s / 60s
+[2025-11-09T17:14:56.315Z] [INFO] 📊 Progress: 71% | Requests: 0 | Data: 0 B | Time: 43s / 60s
+[2025-11-09T17:14:57.345Z] [INFO] 📊 Progress: 73% | Requests: 0 | Data: 0 B | Time: 44s / 60s
+[2025-11-09T17:14:58.418Z] [INFO] 📊 Progress: 75% | Requests: 0 | Data: 0 B | Time: 45s / 60s
+[2025-11-09T17:14:59.438Z] [INFO] 📊 Progress: 76% | Requests: 0 | Data: 0 B | Time: 46s / 60s
+[2025-11-09T17:15:00.581Z] [INFO] 📊 Progress: 78% | Requests: 0 | Data: 0 B | Time: 47s / 60s
+[2025-11-09T17:15:01.900Z] [INFO] 📊 Progress: 81% | Requests: 0 | Data: 0 B | Time: 49s / 60s
+[2025-11-09T17:15:03.227Z] [INFO] 📊 Progress: 83% | Requests: 0 | Data: 0 B | Time: 50s / 60s
+[2025-11-09T17:15:04.488Z] [INFO] 📊 Progress: 85% | Requests: 0 | Data: 0 B | Time: 51s / 60s
+[2025-11-09T17:15:05.610Z] [INFO] 📊 Progress: 86% | Requests: 0 | Data: 0 B | Time: 52s / 60s
+[2025-11-09T17:15:06.680Z] [INFO] 📊 Progress: 88% | Requests: 0 | Data: 0 B | Time: 53s / 60s
+[2025-11-09T17:15:07.818Z] [INFO] 📊 Progress: 90% | Requests: 0 | Data: 0 B | Time: 54s / 60s
+[2025-11-09T17:15:08.886Z] [INFO] 📊 Progress: 93% | Requests: 0 | Data: 0 B | Time: 56s / 60s
+[2025-11-09T17:15:10.032Z] [INFO] 📊 Progress: 95% | Requests: 0 | Data: 0 B | Time: 57s / 60s
+[2025-11-09T17:15:11.032Z] [INFO] 📊 Progress: 96% | Requests: 0 | Data: 0 B | Time: 58s / 60s
+[2025-11-09T17:15:12.179Z] [INFO] 📊 Progress: 98% | Requests: 0 | Data: 0 B | Time: 59s / 60s
+[2025-11-09T17:15:12.964Z] [INFO] 🛑 Stopping attack...
+[2025-11-09T17:15:12.965Z] [SUCCESS] ✅ Attack stopped successfully!
+[2025-11-09T17:15:12.966Z] [INFO] 📊 Final Stats - Requests: 0 | Data: 0 B
+[2025-11-09T17:16:41.796Z] [BOT] User 8426540797 (AryzzXploit) used /start command
+[2025-11-09T17:16:41.798Z] [WARNING] image.jpg not found, sending text-only message
+[2025-11-09T17:29:11.918Z] [BOT] Received SIGINT, stopping bot...

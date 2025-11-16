@@ -18,6 +18,7 @@ export class TelegramBot {
         this.attackManager = null;
         this.statsInterval = null;
         this.lastMessageContent = null; // Track last message content to prevent duplicate edits
+		this.statusMessage = null; // Track current status message (chatId, messageId)
         
         this.setupWizard();
         this.setupCommands();
@@ -78,25 +79,33 @@ export class TelegramBot {
                 }
                 methodButtons.push([Markup.button.callback('⬅️ Back', 'back'), Markup.button.callback('❌ Cancel', 'cancel')]);
 
-                ctx.editMessageText(
-                    `╔═══════════════════════════╗\n` +
-                    `║  🔧 *SELECT METHOD*  🔧  ║\n` +
-                    `╚═══════════════════════════╝\n\n` +
-                    `📍 *Layer:* ${layer === 'layer_7' ? '🌐 Layer 7 (HTTP/Web)' : '⚡ Layer 4 (Network)'}\n\n` +
-                    `${layer === 'layer_7' ? 
-                        '💡 *HTTP Methods:* GET, POST, HTTP2, CFB\n' +
-                        '🛡️ *Bypass:* Cloudflare, WAF, Rate Limiting\n' +
-                        '🎯 *Target:* Websites, APIs, Web Apps' : 
-                        '💡 *Network:* UDP, TCP, SYN Floods\n' +
-                        '🎮 *Games:* Minecraft, MCPE, FiveM\n' +
-                        '🎯 *Target:* Servers, IPs, Game Servers'}\n\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `⚡ Choose your attack method:`,
-                    {
-                        parse_mode: 'Markdown',
-                        ...Markup.inlineKeyboard(methodButtons)
+                try {
+                    await ctx.editMessageText(
+                        `╔═══════════════════════════╗\n` +
+                        `║  🔧 *SELECT METHOD*  🔧  ║\n` +
+                        `╚═══════════════════════════╝\n\n` +
+                        `📍 *Layer:* ${layer === 'layer_7' ? '🌐 Layer 7 (HTTP/Web)' : '⚡ Layer 4 (Network)'}\n\n` +
+                        `${layer === 'layer_7' ? 
+                            '💡 *HTTP Methods:* GET, POST, HTTP2, CFB\n' +
+                            '🛡️ *Bypass:* Cloudflare, WAF, Rate Limiting\n' +
+                            '🎯 *Target:* Websites, APIs, Web Apps' : 
+                            '💡 *Network:* UDP, TCP, SYN Floods\n' +
+                            '🎮 *Games:* Minecraft, MCPE, FiveM\n' +
+                            '🎯 *Target:* Servers, IPs, Game Servers'}\n\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                        `⚡ Choose your attack method:`,
+                        {
+                            parse_mode: 'Markdown',
+                            ...Markup.inlineKeyboard(methodButtons)
+                        }
+                    );
+                } catch (e) {
+                    if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                        logger.debug('Message edit skipped:', e.message);
+                    } else {
+                        logger.error('Error editing message:', e.message);
                     }
-                );
+                }
                 
                 return ctx.wizard.next();
             },
@@ -420,17 +429,10 @@ export class TelegramBot {
                 `💡 Use buttons below to monitor\n` +
                 `   or use /status and /stop commands`;
             
-            let statusMessageId = loadingMsg.message_id;
+			let statusMessageId = loadingMsg.message_id;
             
             try {
-                // Try to delete the loading message first
-                try {
-                    await ctx.telegram.deleteMessage(ctx.chat.id, loadingMsg.message_id);
-                } catch (e) {
-                    // Ignore if can't delete
-                }
-                
-                // Send new message with image if available
+				// Prefer sending a new message first; only delete loading after success
                 if (existsSync(imagePath)) {
                     const photoMsg = await ctx.telegram.sendPhoto(
                         ctx.chat.id,
@@ -447,8 +449,10 @@ export class TelegramBot {
                         }
                     );
                     statusMessageId = photoMsg.message_id;
+					// Best-effort delete of loading message after success
+					try { await ctx.telegram.deleteMessage(ctx.chat.id, loadingMsg.message_id); } catch {}
                 } else {
-                    // Fallback to edit text if no image
+					// If no image, update the loading message in-place
                     await ctx.telegram.editMessageText(
                         ctx.chat.id,
                         loadingMsg.message_id,
@@ -467,7 +471,7 @@ export class TelegramBot {
                 }
             } catch (error) {
                 logger.error('Error sending attack started message:', error);
-                // Try to update existing message as fallback
+				// Try to update existing loading message as fallback (if it still exists)
                 try {
                     await ctx.telegram.editMessageText(
                         ctx.chat.id,
@@ -485,7 +489,7 @@ export class TelegramBot {
                         }
                     );
                 } catch (e) {
-                    // If all fails, send new message
+					// If all fails (e.g., message was deleted), send a completely new message
                     const newMsg = await ctx.telegram.sendMessage(
                         ctx.chat.id,
                         attackMessage,
@@ -504,7 +508,8 @@ export class TelegramBot {
             }
 
             // Start monitoring with the correct message ID
-            this.startMonitoring(ctx.chat.id, statusMessageId);
+			this.statusMessage = { chatId: ctx.chat.id, messageId: statusMessageId };
+			this.startMonitoring(ctx.chat.id, statusMessageId);
 
         } catch (error) {
             logger.error('Error starting attack:', error);
@@ -557,23 +562,53 @@ export class TelegramBot {
                     // Only update if message content has changed
                     if (this.lastMessageContent !== completionMessage) {
                         try {
-                            await this.bot.telegram.editMessageText(
-                                chatId,
-                                messageId,
-                                null,
-                                completionMessage,
-                                {
-                                    parse_mode: 'Markdown',
-                                    ...Markup.inlineKeyboard([
-                                        [Markup.button.callback('🔄 New Attack', 'new_attack')]
-                                    ])
-                                }
-                            );
-                            this.lastMessageContent = completionMessage;
+							// Validate message exists and has text before editing
+							if (this.statusMessage?.messageId && this.statusMessage?.chatId) {
+								await this.bot.telegram.editMessageText(
+									this.statusMessage.chatId,
+									this.statusMessage.messageId,
+									null,
+									completionMessage,
+									{
+										parse_mode: 'Markdown',
+										...Markup.inlineKeyboard([
+											[Markup.button.callback('🔄 New Attack', 'new_attack')]
+										])
+									}
+								);
+								this.lastMessageContent = completionMessage;
+							} else {
+								// No valid message to edit, send new one
+								throw new Error('No valid message to edit');
+							}
                         } catch (e) {
-                            if (!e.message.includes('not modified')) {
-                                logger.debug('Failed to update completion message:', e.message);
-                            }
+							// Silently ignore "message is not modified" and "no text" errors
+							if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+								logger.debug('Message edit skipped:', e.message);
+								return;
+							}
+							
+							// If message not found or other error, send new message
+							if (e.message && (e.message.includes('message to edit not found') || e.message.includes('No valid message'))) {
+								try {
+									const newMsg = await this.bot.telegram.sendMessage(
+										chatId,
+										completionMessage,
+										{
+											parse_mode: 'Markdown',
+											...Markup.inlineKeyboard([
+												[Markup.button.callback('🔄 New Attack', 'new_attack')]
+											])
+										}
+									);
+									this.statusMessage = { chatId: chatId, messageId: newMsg.message_id };
+									this.lastMessageContent = completionMessage;
+								} catch (sendErr) {
+									logger.debug('Failed to send completion message:', sendErr.message);
+								}
+							} else {
+								logger.debug('Edit message error:', e.message);
+							}
                         }
                     }
                     
@@ -603,27 +638,59 @@ export class TelegramBot {
                 // Only update if message content has changed
                 if (this.lastMessageContent !== statusMessage) {
                     try {
-                        await this.bot.telegram.editMessageText(
-                            chatId,
-                            messageId,
-                            null,
-                            statusMessage,
-                            {
-                                parse_mode: 'Markdown',
-                                ...Markup.inlineKeyboard([
-                                    [
-                                        Markup.button.callback('🔄 Refresh', 'status'),
-                                        Markup.button.callback('🛑 Stop', 'stop')
-                                    ]
-                                ])
-                            }
-                        );
-                        this.lastMessageContent = statusMessage;
+						// Validate message exists and has text before editing
+						if (this.statusMessage?.messageId && this.statusMessage?.chatId) {
+							await this.bot.telegram.editMessageText(
+								this.statusMessage.chatId,
+								this.statusMessage.messageId,
+								null,
+								statusMessage,
+								{
+									parse_mode: 'Markdown',
+									...Markup.inlineKeyboard([
+										[
+											Markup.button.callback('🔄 Refresh', 'status'),
+											Markup.button.callback('🛑 Stop', 'stop')
+										]
+									])
+								}
+							);
+							this.lastMessageContent = statusMessage;
+						} else {
+							// No valid message to edit, send new one
+							throw new Error('No valid message to edit');
+						}
                     } catch (e) {
-                        // Message not modified or rate limited, skip silently
-                        if (!e.message.includes('not modified')) {
-                            logger.debug('Failed to update stats message:', e.message);
-                        }
+						// Silently ignore "message is not modified" and "no text" errors
+						if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+							logger.debug('Message edit skipped:', e.message);
+							return;
+						}
+						
+						// If message not found or other error, send new message
+						if (e.message && (e.message.includes('message to edit not found') || e.message.includes('No valid message'))) {
+							try {
+								const newMsg = await this.bot.telegram.sendMessage(
+									chatId,
+									statusMessage,
+									{
+										parse_mode: 'Markdown',
+										...Markup.inlineKeyboard([
+											[
+												Markup.button.callback('🔄 Refresh', 'status'),
+												Markup.button.callback('🛑 Stop', 'stop')
+											]
+										])
+									}
+								);
+								this.statusMessage = { chatId: chatId, messageId: newMsg.message_id };
+								this.lastMessageContent = statusMessage;
+							} catch (sendErr) {
+								logger.debug('Failed to recreate status message:', sendErr.message);
+							}
+						} else {
+							logger.debug('Edit message error:', e.message);
+						}
                     }
                 }
             } catch (error) {
@@ -932,8 +999,12 @@ export class TelegramBot {
                     try {
                         await ctx.editMessageText(message);
                     } catch (e) {
-                        // If can't edit, just notify via callback query (already answered above)
-                        logger.debug('Could not edit message:', e.message);
+                        // Silently ignore expected errors
+                        if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                            logger.debug('Message edit skipped:', e.message);
+                        } else {
+                            logger.debug('Could not edit message:', e.message);
+                        }
                     }
                 } else {
                     await ctx.reply(message);
@@ -946,7 +1017,12 @@ export class TelegramBot {
                 try {
                     await ctx.editMessageText(errorMsg);
                 } catch (e) {
-                    await ctx.reply(errorMsg);
+                    // Silently ignore expected errors
+                    if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                        logger.debug('Message edit skipped:', e.message);
+                    } else {
+                        await ctx.reply(errorMsg).catch(() => {});
+                    }
                 }
             } else {
                 await ctx.reply(errorMsg);
@@ -979,14 +1055,23 @@ export class TelegramBot {
                     `⏱ Time: \`${stats.elapsed}s / ${stats.duration}s\``;
 
                 if (isCallback) {
-                    await ctx.editMessageText(message, 
-                        {
-                            parse_mode: 'Markdown',
-                            ...Markup.inlineKeyboard([
-                                [Markup.button.callback('🔄 Refresh', 'status'), Markup.button.callback('🛑 Stop', 'stop')]
-                            ])
+                    try {
+                        await ctx.editMessageText(message, 
+                            {
+                                parse_mode: 'Markdown',
+                                ...Markup.inlineKeyboard([
+                                    [Markup.button.callback('🔄 Refresh', 'status'), Markup.button.callback('🛑 Stop', 'stop')]
+                                ])
+                            }
+                        );
+                    } catch (e) {
+                        // Silently ignore expected errors
+                        if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                            logger.debug('Message edit skipped:', e.message);
+                        } else {
+                            await ctx.reply(message, { parse_mode: 'Markdown' }).catch(() => {});
                         }
-                    );
+                    }
                 } else {
                     await ctx.reply(message, { parse_mode: 'Markdown' });
                 }
@@ -997,8 +1082,12 @@ export class TelegramBot {
                     try {
                         await ctx.editMessageText(message);
                     } catch (e) {
-                        // Already answered callback query above
-                        logger.debug('Could not edit message:', e.message);
+                        // Silently ignore expected errors
+                        if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                            logger.debug('Message edit skipped:', e.message);
+                        } else {
+                            logger.debug('Could not edit message:', e.message);
+                        }
                     }
                 } else {
                     await ctx.reply(message);
@@ -1011,7 +1100,12 @@ export class TelegramBot {
                 try {
                     await ctx.editMessageText(errorMsg);
                 } catch (e) {
-                    await ctx.reply(errorMsg);
+                    // Silently ignore expected errors
+                    if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                        logger.debug('Message edit skipped:', e.message);
+                    } else {
+                        await ctx.reply(errorMsg).catch(() => {});
+                    }
                 }
             } else {
                 await ctx.reply(errorMsg);
@@ -1194,11 +1288,40 @@ export class TelegramBot {
         logger.info('🤖 Starting Telegram bot...');
         logger.bot('Telegram bot initialization started');
         
+        // Add global error handlers for unhandled promises
+        process.on('unhandledRejection', (reason, promise) => {
+            logger.error('Unhandled Promise Rejection:', reason);
+            logger.debug('Promise:', promise);
+        });
+        
+        process.on('uncaughtException', (error) => {
+            logger.error('Uncaught Exception:', error);
+            // Don't exit - keep bot running
+        });
+        
         // Add error handlers
         this.bot.catch((err, ctx) => {
             // Silently ignore "message not modified" errors - these are expected when trying to update with same content
             if (err.message && err.message.includes('message is not modified')) {
                 return; // Skip logging and notification for this expected error
+            }
+            
+            // Silently ignore "message to edit not found" - message was deleted
+            if (err.message && err.message.includes('message to edit not found')) {
+                logger.debug('Message to edit not found - likely deleted by user');
+                return;
+            }
+            
+            // Silently ignore "there is no text in the message to edit" - message has no text
+            if (err.message && err.message.includes('there is no text')) {
+                logger.debug('No text in message to edit - skipping');
+                return;
+            }
+            
+            // Silently ignore "Bad Request: message to delete not found"
+            if (err.message && err.message.includes('message to delete not found')) {
+                logger.debug('Message to delete not found - already deleted');
+                return;
             }
             
             logger.error('Bot error:', err);
@@ -1211,15 +1334,32 @@ export class TelegramBot {
             }
         });
         
-        this.bot.launch();
+        this.bot.launch().catch((err) => {
+            logger.error('Failed to launch bot:', err);
+            process.exit(1);
+        });
         
         // Enable graceful stop
         process.once('SIGINT', () => {
             logger.bot('Received SIGINT, stopping bot...');
+            if (this.attackManager && this.attackManager.isActive()) {
+                try {
+                    this.attackManager.stop();
+                } catch (err) {
+                    logger.error('Error stopping attack:', err);
+                }
+            }
             this.bot.stop('SIGINT');
         });
         process.once('SIGTERM', () => {
             logger.bot('Received SIGTERM, stopping bot...');
+            if (this.attackManager && this.attackManager.isActive()) {
+                try {
+                    this.attackManager.stop();
+                } catch (err) {
+                    logger.error('Error stopping attack:', err);
+                }
+            }
             this.bot.stop('SIGTERM');
         });
         

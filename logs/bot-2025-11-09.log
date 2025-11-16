@@ -1,0 +1,16 @@
+[2025-11-09T17:10:57.026Z] [BOT] Telegram bot initialization started
+[2025-11-09T17:10:57.027Z] [BOT] Bot launched successfully with admin ID: 8426540797
+[2025-11-09T17:11:08.045Z] [BOT] User 8426540797 (AryzzXploit) entered attack wizard
+[2025-11-09T17:11:38.380Z] [BOT] User 8426540797 set target: https://store.aryapanel.xyz
+[2025-11-09T17:11:43.297Z] [BOT] User 8426540797 clicked confirmation button, moving to confirmation handler
+[2025-11-09T17:11:44.104Z] [BOT] User 8426540797 confirmed attack
+[2025-11-09T17:13:46.731Z] [BOT] Telegram bot initialization started
+[2025-11-09T17:13:46.734Z] [BOT] Bot launched successfully with admin ID: 8426540797
+[2025-11-09T17:13:48.014Z] [BOT] User 8426540797 (AryzzXploit) used /start command
+[2025-11-09T17:13:48.020Z] [BOT] User 8426540797 used /stop command
+[2025-11-09T17:13:53.371Z] [BOT] User 8426540797 (AryzzXploit) entered attack wizard
+[2025-11-09T17:14:06.221Z] [BOT] User 8426540797 set target: https://aryapanel.xyz
+[2025-11-09T17:14:11.265Z] [BOT] User 8426540797 clicked confirmation button, moving to confirmation handler
+[2025-11-09T17:14:12.076Z] [BOT] User 8426540797 confirmed attack
+[2025-11-09T17:16:41.796Z] [BOT] User 8426540797 (AryzzXploit) used /start command
+[2025-11-09T17:29:11.918Z] [BOT] Received SIGINT, stopping bot...

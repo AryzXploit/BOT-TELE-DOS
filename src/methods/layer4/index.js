@@ -12,6 +12,11 @@ export {
     ConnectionFlood,
     OVHUDPFlood
 } from './advanced.js';
+export {
+    DNSAmplification,
+    NTPAmplification,
+    SSDPAmplification
+} from './amplification.js';
 
 /**
  * Layer 4 Attack Methods
@@ -29,5 +34,8 @@ export const LAYER4_METHODS = [
     'MCPE',
     'FIVEM',
     'FIVEM-TOKEN',
-    'OVH-UDP'
+    'OVH-UDP',
+    'DNS-AMP',
+    'NTP-AMP',
+    'SSDP-AMP'
 ];

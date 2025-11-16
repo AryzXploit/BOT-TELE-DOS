@@ -5,10 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node --max-old-space-size=8192 --expose-gc index.js",
+    "attack": "node --max-old-space-size=8192 --expose-gc index.js attack",
+    "combo": "node --max-old-space-size=8192 --expose-gc index.js combo",
+    "scan": "node --max-old-space-size=8192 --expose-gc index.js scan",
+    "smart": "node --max-old-space-size=8192 --expose-gc index.js smart",
+    "telegram": "node --max-old-space-size=8192 --expose-gc index.js telegram",
+    "dev": "nodemon --max-old-space-size=8192 index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "telegram": "node src/telegram/bot.js",
     "license-bot": "node src/license/license-bot.js"
   },
   "keywords": [

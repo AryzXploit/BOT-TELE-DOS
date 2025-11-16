@@ -78,12 +78,18 @@ export class Tools {
      */
     static send(socket, data) {
         try {
+            if (!socket || socket.destroyed) {
+                return false;
+            }
             const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
-            socket.write(buffer);
-            BYTES_SENT.add(buffer.length);
-            REQUESTS_SENT.add(1);
-            return true;
+            const result = socket.write(buffer);
+            if (result) {
+                BYTES_SENT.add(buffer.length);
+                REQUESTS_SENT.add(1);
+            }
+            return result;
         } catch (error) {
+            // Silent fail - this is expected during attacks
             return false;
         }
     }
@@ -93,12 +99,20 @@ export class Tools {
      */
     static sendTo(socket, data, port, address) {
         try {
+            if (!socket) {
+                return false;
+            }
             const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
-            socket.send(buffer, 0, buffer.length, port, address);
+            socket.send(buffer, 0, buffer.length, port, address, (err) => {
+                if (err) {
+                    // Silent fail - expected during attacks
+                }
+            });
             BYTES_SENT.add(buffer.length);
             REQUESTS_SENT.add(1);
             return true;
         } catch (error) {
+            // Silent fail - this is expected during attacks
             return false;
         }
     }
@@ -108,11 +122,26 @@ export class Tools {
      */
     static safeClose(socket) {
         try {
-            if (socket && !socket.destroyed) {
-                socket.destroy();
+            if (!socket) return;
+            
+            // For dgram sockets
+            if (socket.close && typeof socket.close === 'function') {
+                try {
+                    socket.close();
+                    return;
+                } catch (e) {
+                    // Try destroy as fallback
+                }
+            }
+            
+            // For net sockets
+            if (socket.destroy && typeof socket.destroy === 'function') {
+                if (!socket.destroyed) {
+                    socket.destroy();
+                }
             }
         } catch (error) {
-            // Silent fail
+            // Silent fail - socket might already be closed
         }
     }
 

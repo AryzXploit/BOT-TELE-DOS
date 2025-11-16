@@ -1,0 +1,24 @@
+[2025-11-09T17:14:13.729Z] [ERROR] Error sending attack started message: 400: Bad Request: message to edit not found
+Error: 400: Bad Request: message to edit not found
+    at Telegram.callApi (/home/arya/tele/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async TelegramBot.startAttackFromWizard (file:///home/arya/tele/src/telegram/bot.js:452:21)
+    at async file:///home/arya/tele/src/telegram/bot.js:280:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async /home/arya/tele/node_modules/telegraf/lib/session.js:104:13
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)
+    at async /home/arya/tele/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/home/arya/tele/node_modules/telegraf/lib/composer.js:518:17)

