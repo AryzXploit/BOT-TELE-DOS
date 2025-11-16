@@ -11,12 +11,14 @@ export class Tools {
     static humanBytes(bytes, binary = false, precision = 2) {
         const MULTIPLES = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         
-        if (bytes === 0) return '0 B';
+        // Handle invalid input
+        if (!bytes || bytes === 0 || isNaN(bytes)) return '0 B';
+        if (bytes < 0) return '0 B';
         
         const base = binary ? 1024 : 1000;
-        const multiple = Math.floor(Math.log(bytes) / Math.log(base));
+        const multiple = Math.min(Math.floor(Math.log(bytes) / Math.log(base)), MULTIPLES.length - 1);
         const value = bytes / Math.pow(base, multiple);
-        const suffix = MULTIPLES[multiple].replace('B', binary ? 'iB' : 'B');
+        const suffix = MULTIPLES[multiple] ? MULTIPLES[multiple].replace('B', binary ? 'iB' : 'B') : 'B';
         
         return `${value.toFixed(precision)} ${suffix}`;
     }

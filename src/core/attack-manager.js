@@ -531,8 +531,8 @@ export class AttackManager {
 
             logger.info(
                 `📊 Progress: ${progress}% | ` +
-                `Requests: ${Tools.humanFormat(REQUESTS_SENT.get())} | ` +
-                `Data: ${Tools.humanBytes(BYTES_SENT.get())} | ` +
+                `Requests: ${Tools.humanFormat(REQUESTS_SENT.get() || 0)} | ` +
+                `Data: ${Tools.humanBytes(BYTES_SENT.get() || 0)} | ` +
                 `Time: ${elapsed}s / ${this.duration}s`
             );
 
@@ -615,7 +615,7 @@ export class AttackManager {
             }
 
             logger.success('✅ Attack stopped successfully!');
-            logger.info(`📊 Final Stats - Requests: ${Tools.humanFormat(REQUESTS_SENT.get())} | Data: ${Tools.humanBytes(BYTES_SENT.get())}`);
+            logger.info(`📊 Final Stats - Requests: ${Tools.humanFormat(REQUESTS_SENT.get() || 0)} | Data: ${Tools.humanBytes(BYTES_SENT.get() || 0)}`);
         } catch (err) {
             logger.error(`Error stopping attack: ${err.message}`);
             // Force cleanup even if there's an error
@@ -653,8 +653,8 @@ export class AttackManager {
             threads: this.threads,
             duration: this.duration,
             elapsed: elapsed,
-            requestsSent: Tools.humanFormat(REQUESTS_SENT.get()),
-            bytesSent: Tools.humanBytes(BYTES_SENT.get())
+            requestsSent: Tools.humanFormat(REQUESTS_SENT.get() || 0),
+            bytesSent: Tools.humanBytes(BYTES_SENT.get() || 0)
         };
     }
 }
