@@ -62,7 +62,8 @@ export class TargetMonitor {
                 this.consecutiveFailures++;
                 this.consecutiveSuccess = 0;
                 
-                if (!this.isDown && this.consecutiveFailures >= 3) {
+                // Require 5 consecutive failures to declare DOWN (more strict)
+                if (!this.isDown && this.consecutiveFailures >= 5) {
                     // Target is down!
                     this.isDown = true;
                     this.downTime = new Date();
@@ -80,7 +81,8 @@ export class TargetMonitor {
             logger.debug(`Health check error: ${err.message}`);
             this.consecutiveFailures++;
             
-            if (!this.isDown && this.consecutiveFailures >= 3) {
+            // Require 5 consecutive failures (more strict)
+            if (!this.isDown && this.consecutiveFailures >= 5) {
                 this.isDown = true;
                 this.downTime = new Date();
                 this.printTargetDown();
@@ -109,11 +111,18 @@ export class TargetMonitor {
             };
 
             const req = protocol.request(options, (res) => {
-                // Any response means server is up
-                resolve(res.statusCode < 500);
+                // Accept any response (even 4xx) as UP
+                // Only 5xx or no response = DOWN
+                const isUp = res.statusCode >= 200 && res.statusCode < 600;
+                resolve(isUp);
             });
 
-            req.on('error', () => resolve(false));
+            req.on('error', (err) => {
+                // Network errors = DOWN
+                logger.debug(`Request error: ${err.code}`);
+                resolve(false);
+            });
+                
             req.on('timeout', () => {
                 req.destroy();
                 resolve(false);
@@ -238,7 +247,7 @@ export class TargetMonitor {
         
         console.log(
             chalk.yellow(`\n${emoji} ${chalk.bold('Target lagi lemot nih')}\n`) +
-            chalk.gray(`   Failed attempts: ${this.consecutiveFailures}/3\n`) +
+            chalk.gray(`   Failed attempts: ${this.consecutiveFailures}/5\n`) +
             chalk.yellow(`   Status: `) + chalk.yellow('🟡 STRUGGLING') + '\n'
         );
     }
