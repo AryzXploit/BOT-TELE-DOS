@@ -390,6 +390,19 @@ export class TelegramBot {
                 }
             }
 
+            // Load proxies from files
+            let proxies = [];
+            try {
+                const proxyManager = new ProxyManager(this.config);
+                proxies = proxyManager.loadFromFile('./files/proxies/http.txt');
+                const socks4 = proxyManager.loadFromFile('./files/proxies/socks4.txt');
+                const socks5 = proxyManager.loadFromFile('./files/proxies/socks5.txt');
+                proxies = [...proxies, ...socks4, ...socks5];
+                logger.info(`✅ Loaded ${proxies.length} proxies from files`);
+            } catch (err) {
+                logger.warning(`⚠️  Failed to load proxies: ${err.message}`);
+            }
+
             // Create attack manager
             this.attackManager = new AttackManager({
                 target: state.target,
@@ -397,7 +410,7 @@ export class TelegramBot {
                 threads: state.threads,
                 duration: state.duration,
                 rpc: state.rpc,
-                proxies: null,
+                proxies: proxies.length > 0 ? proxies : null,
                 userAgents: userAgents,
                 referers: referers
             });
