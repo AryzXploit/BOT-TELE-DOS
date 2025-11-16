@@ -11,6 +11,11 @@ export class Counter {
         return this;
     }
 
+    increment() {
+        this.value += 1;
+        return this;
+    }
+
     set(value) {
         this.value = value;
         return this;
