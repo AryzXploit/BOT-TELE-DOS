@@ -6,6 +6,7 @@ import { ProxyManager } from '../utils/proxy-manager.js';
 import { LAYER4_METHODS } from '../methods/layer4/index.js';
 import { LAYER7_METHODS } from '../methods/layer7/index.js';
 import { Tools } from '../utils/tools.js';
+import { DomainMonitor } from '../utils/domain-monitor.js';
 
 /**
  * Modern Telegram Bot with Interactive UI
@@ -19,6 +20,7 @@ export class TelegramBot {
         this.statsInterval = null;
         this.lastMessageContent = null; // Track last message content to prevent duplicate edits
 		this.statusMessage = null; // Track current status message (chatId, messageId)
+        this.domainMonitor = new DomainMonitor(this.bot); // Domain monitoring
         
         this.setupWizard();
         this.setupCommands();
@@ -839,6 +841,7 @@ export class TelegramBot {
                             Markup.button.callback('📊 Status', 'status'),
                             Markup.button.callback('🔧 Methods', 'methods')
                         ],
+                        [Markup.button.callback('🎯 Monitor Domains', 'monitor_menu')],
                         [Markup.button.callback('❓ Help & Info', 'help')],
                         [Markup.button.callback('👨‍💻 Credits', 'credits')]
                     ])
@@ -876,6 +879,81 @@ export class TelegramBot {
         this.bot.command('credits', (ctx) => {
             if (!this.isAdmin(ctx)) return;
             this.handleCredits(ctx);
+        });
+
+        // Monitor command - Add domain to monitor
+        this.bot.command('monitor', (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            
+            const args = ctx.message.text.split(' ').slice(1);
+            if (args.length === 0) {
+                ctx.reply(
+                    '🎯 *Domain Monitoring*\n\n' +
+                    '*Usage:*\n' +
+                    '`/monitor add domain.com` - Add domain\n' +
+                    '`/monitor remove domain.com` - Remove domain\n' +
+                    '`/monitor list` - List all monitored domains\n' +
+                    '`/monitor status` - Check status of all domains\n\n' +
+                    '*Features:*\n' +
+                    '✅ Real-time monitoring (30s interval)\n' +
+                    '✅ Auto-notification when domain down/up\n' +
+                    '✅ Max 5 domains per user\n' +
+                    '✅ Gen Z style notifications 🔥',
+                    { parse_mode: 'Markdown' }
+                );
+                return;
+            }
+
+            const action = args[0].toLowerCase();
+            const domain = args[1];
+
+            if (action === 'add') {
+                if (!domain) {
+                    ctx.reply('⚠️ Please provide a domain!\nExample: `/monitor add target.com`', { parse_mode: 'Markdown' });
+                    return;
+                }
+                const result = this.domainMonitor.addDomain(ctx.chat.id, domain);
+                ctx.reply(result.message);
+            } else if (action === 'remove') {
+                if (!domain) {
+                    ctx.reply('⚠️ Please provide a domain!\nExample: `/monitor remove target.com`', { parse_mode: 'Markdown' });
+                    return;
+                }
+                const result = this.domainMonitor.removeDomain(ctx.chat.id, domain);
+                ctx.reply(result.message);
+            } else if (action === 'list') {
+                const domains = this.domainMonitor.getDomains(ctx.chat.id);
+                if (domains.length === 0) {
+                    ctx.reply('⚠️ Tidak ada domain yang di-monitor!');
+                    return;
+                }
+                const list = domains.map((d, i) => `${i + 1}. \`${d}\``).join('\n');
+                ctx.reply(
+                    `🎯 *Monitored Domains (${domains.length}/5)*\n\n${list}\n\n` +
+                    `💡 Use \`/monitor remove domain.com\` to remove`,
+                    { parse_mode: 'Markdown' }
+                );
+            } else if (action === 'status') {
+                const statuses = this.domainMonitor.getStatus(ctx.chat.id);
+                if (statuses.length === 0) {
+                    ctx.reply('⚠️ Tidak ada domain yang di-monitor!');
+                    return;
+                }
+                
+                let message = '📊 *Domain Status*\n\n';
+                for (const status of statuses) {
+                    const emoji = status.isUp ? '🟢' : '🔴';
+                    const statusText = status.isUp ? 'UP' : 'DOWN';
+                    const responseTime = status.responseTime ? `${status.responseTime}ms` : 'N/A';
+                    message += `${emoji} \`${status.domain}\`\n`;
+                    message += `   Status: *${statusText}*\n`;
+                    message += `   Response: ${responseTime}\n`;
+                    message += `   Last Check: ${status.lastCheck ? status.lastCheck.toLocaleTimeString() : 'Never'}\n\n`;
+                }
+                ctx.reply(message, { parse_mode: 'Markdown' });
+            } else {
+                ctx.reply('⚠️ Invalid action! Use: add, remove, list, or status');
+            }
         });
 
         // Redirect /confirm command to use buttons
@@ -940,6 +1018,152 @@ export class TelegramBot {
         this.bot.action('credits', async (ctx) => {
             if (!this.isAdmin(ctx)) return;
             await this.handleCredits(ctx, true);
+        });
+
+        // Monitor Menu
+        this.bot.action('monitor_menu', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            try {
+                await ctx.answerCbQuery();
+                const domains = this.domainMonitor.getDomains(ctx.chat.id);
+                const message = 
+                    `🎯 *Domain Monitoring*\n\n` +
+                    `*Monitored Domains:* ${domains.length}/5\n\n` +
+                    `*Commands:*\n` +
+                    `\`/monitor add domain.com\` - Add domain\n` +
+                    `\`/monitor remove domain.com\` - Remove\n` +
+                    `\`/monitor list\` - List all\n` +
+                    `\`/monitor status\` - Check status\n\n` +
+                    `*Features:*\n` +
+                    `✅ Real-time monitoring (30s)\n` +
+                    `✅ Auto-notification 🔔\n` +
+                    `✅ Gen Z style 🔥`;
+                
+                await ctx.editMessageText(message, {
+                    parse_mode: 'Markdown',
+                    ...Markup.inlineKeyboard([
+                        [Markup.button.callback('📋 List Domains', 'monitor_list')],
+                        [Markup.button.callback('📊 Check Status', 'monitor_status')],
+                        [Markup.button.callback('⬅️ Back', 'back_to_menu')]
+                    ])
+                });
+            } catch (e) {
+                if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                    logger.debug('Message edit skipped:', e.message);
+                } else {
+                    logger.error('Error in monitor_menu:', e.message);
+                }
+            }
+        });
+
+        // Monitor List
+        this.bot.action('monitor_list', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            try {
+                await ctx.answerCbQuery();
+                const domains = this.domainMonitor.getDomains(ctx.chat.id);
+                
+                let message;
+                if (domains.length === 0) {
+                    message = '⚠️ *No domains monitored!*\n\nUse `/monitor add domain.com` to add a domain.';
+                } else {
+                    const list = domains.map((d, i) => `${i + 1}. \`${d}\``).join('\n');
+                    message = `🎯 *Monitored Domains (${domains.length}/5)*\n\n${list}\n\n💡 Use \`/monitor remove domain.com\` to remove`;
+                }
+                
+                await ctx.editMessageText(message, {
+                    parse_mode: 'Markdown',
+                    ...Markup.inlineKeyboard([
+                        [Markup.button.callback('⬅️ Back', 'monitor_menu')]
+                    ])
+                });
+            } catch (e) {
+                if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                    logger.debug('Message edit skipped:', e.message);
+                } else {
+                    logger.error('Error in monitor_list:', e.message);
+                }
+            }
+        });
+
+        // Monitor Status
+        this.bot.action('monitor_status', async (ctx) => {
+            if (!this.isAdmin(ctx)) return;
+            try {
+                await ctx.answerCbQuery('🔄 Checking status...');
+                const statuses = this.domainMonitor.getStatus(ctx.chat.id);
+                
+                let message;
+                if (statuses.length === 0) {
+                    message = '⚠️ *No domains monitored!*\n\nUse `/monitor add domain.com` to add a domain.';
+                } else {
+                    message = '📊 *Domain Status*\n\n';
+                    for (const status of statuses) {
+                        const emoji = status.isUp ? '🟢' : '🔴';
+                        const statusText = status.isUp ? 'UP' : 'DOWN';
+                        const responseTime = status.responseTime ? `${status.responseTime}ms` : 'N/A';
+                        message += `${emoji} \`${status.domain}\`\n`;
+                        message += `   Status: *${statusText}*\n`;
+                        message += `   Response: ${responseTime}\n`;
+                        message += `   Last: ${status.lastCheck ? status.lastCheck.toLocaleTimeString() : 'Never'}\n\n`;
+                    }
+                }
+                
+                await ctx.editMessageText(message, {
+                    parse_mode: 'Markdown',
+                    ...Markup.inlineKeyboard([
+                        [Markup.button.callback('🔄 Refresh', 'monitor_status')],
+                        [Markup.button.callback('⬅️ Back', 'monitor_menu')]
+                    ])
+                });
+            } catch (e) {
+                if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                    logger.debug('Message edit skipped:', e.message);
+                } else {
+                    logger.error('Error in monitor_status:', e.message);
+                }
+            }
+        });
+
+        // Back to menu
+        this.bot.action('back_to_menu', async (ctx) => {
+            try {
+                await ctx.answerCbQuery();
+                await ctx.editMessageText(
+                    `╔═══════════════════════════════╗\n` +
+                    `║  🔥 *ARYZZ STRESSER* 🔥     ║\n` +
+                    `╚═══════════════════════════════╝\n\n` +
+                    `🎯 *Welcome to the most powerful DDoS tool!*\n\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `⚡ *Features:*\n` +
+                    `   • 39 Attack Methods\n` +
+                    `   • Layer 4 & Layer 7\n` +
+                    `   • Smart Target Scanner\n` +
+                    `   • Combo Attacks\n` +
+                    `   • Domain Monitoring\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                    `💡 *Select an option to continue:*`,
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [Markup.button.callback('⚡ Launch Attack', 'new_attack')],
+                            [
+                                Markup.button.callback('📊 Status', 'status'),
+                                Markup.button.callback('🔧 Methods', 'methods')
+                            ],
+                            [Markup.button.callback('🎯 Monitor Domains', 'monitor_menu')],
+                            [Markup.button.callback('❓ Help & Info', 'help')],
+                            [Markup.button.callback('👨‍💻 Credits', 'credits')]
+                        ])
+                    }
+                );
+            } catch (e) {
+                if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
+                    logger.debug('Message edit skipped:', e.message);
+                } else {
+                    logger.error('Error in back_to_menu:', e.message);
+                }
+            }
         });
 
         // Cancel
