@@ -309,7 +309,17 @@ export class TargetMonitor {
         console.log(chalk.white(`✅ Success: ${chalk.green(this.consecutiveSuccess)}`));
         console.log(chalk.white(`❌ Failures: ${chalk.red(this.consecutiveFailures)}`));
         
-        if (this.isDown) {
+        // Check if ALL checks failed (0 success)
+        if (this.consecutiveSuccess === 0 && this.totalChecks > 0) {
+            console.log(chalk.white(`\n⚠️  Final Status: ${chalk.yellow.bold('🟡 BLOCKED')}`));
+            console.log(chalk.yellow.bold(`\n❌ REQUESTS TIDAK NYAMPE KE SERVER!\n`));
+            console.log(chalk.yellow(`Semua requests di-block oleh Cloudflare/WAF`));
+            console.log(chalk.yellow(`\n💡 Solusi:`));
+            console.log(chalk.white(`   1. Increase threads: -th 2000`));
+            console.log(chalk.white(`   2. Use proxies: npm run proxy`));
+            console.log(chalk.white(`   3. Increase RPC: -r 128`));
+            console.log(chalk.white(`   4. Longer duration: -d 600\n`));
+        } else if (this.isDown) {
             console.log(chalk.white(`\n💀 Final Status: ${chalk.red.bold('🔴 DOWN')}`));
             console.log(chalk.white(`⏰ Down Duration: ${chalk.red(totalTime + 's')}`));
             console.log(chalk.green.bold(`\n🔥 GG! TARGET BERHASIL DI-DOWN! 🔥\n`));

