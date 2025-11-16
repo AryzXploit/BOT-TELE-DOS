@@ -19,6 +19,7 @@ export {
     HTTP3Attack,
     HTTP3PostAttack
 } from './http3.js';
+export { CloudflareKiller } from './cloudflare-killer.js';
 
 /**
  * Layer 7 Attack Methods
@@ -45,5 +46,6 @@ export const LAYER7_METHODS = [
     'DYN',
     'COOKIE',
     'APACHE',
-    'NULL'
+    'NULL',
+    'CF-KILLER'
 ];

