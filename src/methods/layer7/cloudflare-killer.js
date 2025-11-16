@@ -23,6 +23,7 @@ export class CloudflareKiller {
         this.userAgents = userAgents;
         this.referers = referers;
         this.proxies = proxies;
+        this.proxyIndex = 0;
         this.active = true;
         
         // Cloudflare bypass headers
@@ -393,6 +394,46 @@ export class CloudflareKiller {
         ];
         
         return referers[Math.floor(Math.random() * referers.length)];
+    }
+
+    /**
+     * Get next proxy (rotating)
+     */
+    getNextProxy() {
+        if (!this.proxies || this.proxies.length === 0) return null;
+        
+        const proxy = this.proxies[this.proxyIndex];
+        this.proxyIndex = (this.proxyIndex + 1) % this.proxies.length;
+        return proxy;
+    }
+
+    /**
+     * Get random proxy
+     */
+    getRandomProxy() {
+        if (!this.proxies || this.proxies.length === 0) return null;
+        return this.proxies[Math.floor(Math.random() * this.proxies.length)];
+    }
+
+    /**
+     * Format proxy for HTTP agent
+     */
+    getProxyAgent(proxy) {
+        if (!proxy) return null;
+        
+        try {
+            const proxyUrl = `${proxy.protocol}://${proxy.ip}:${proxy.port}`;
+            
+            if (proxy.protocol.includes('socks')) {
+                const { SocksProxyAgent } = require('socks-proxy-agent');
+                return new SocksProxyAgent(proxyUrl);
+            } else {
+                const { HttpsProxyAgent } = require('https-proxy-agent');
+                return new HttpsProxyAgent(proxyUrl);
+            }
+        } catch (err) {
+            return null;
+        }
     }
 
     stop() {

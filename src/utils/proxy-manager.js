@@ -11,6 +11,8 @@ export class ProxyManager {
     constructor(config) {
         this.config = config;
         this.proxies = new Set();
+        this.proxyArray = [];
+        this.currentIndex = 0;
     }
 
     /**
@@ -195,5 +197,76 @@ export class ProxyManager {
     static getRandomProxy(proxies) {
         if (!proxies || proxies.length === 0) return null;
         return proxies[Math.floor(Math.random() * proxies.length)];
+    }
+
+    /**
+     * Initialize proxy rotation
+     */
+    initRotation(proxies) {
+        this.proxyArray = Array.isArray(proxies) ? proxies : Array.from(proxies);
+        this.currentIndex = 0;
+        this.shuffleProxies();
+        logger.success(`✅ Proxy rotation initialized with ${this.proxyArray.length} proxies`);
+    }
+
+    /**
+     * Get next proxy (rotating)
+     */
+    getNextProxy() {
+        if (!this.proxyArray || this.proxyArray.length === 0) return null;
+        
+        const proxy = this.proxyArray[this.currentIndex];
+        this.currentIndex = (this.currentIndex + 1) % this.proxyArray.length;
+        
+        // Reshuffle when we complete a full rotation
+        if (this.currentIndex === 0) {
+            this.shuffleProxies();
+        }
+        
+        return proxy;
+    }
+
+    /**
+     * Get random proxy
+     */
+    getRandomProxy() {
+        if (!this.proxyArray || this.proxyArray.length === 0) return null;
+        return this.proxyArray[Math.floor(Math.random() * this.proxyArray.length)];
+    }
+
+    /**
+     * Shuffle proxy array
+     */
+    shuffleProxies() {
+        for (let i = this.proxyArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.proxyArray[i], this.proxyArray[j]] = [this.proxyArray[j], this.proxyArray[i]];
+        }
+    }
+
+    /**
+     * Get rotation stats
+     */
+    getRotationStats() {
+        return {
+            totalProxies: this.proxyArray.length,
+            currentIndex: this.currentIndex,
+            rotationsCompleted: Math.floor(this.currentIndex / (this.proxyArray.length || 1))
+        };
+    }
+
+    /**
+     * Format proxy for use
+     */
+    formatProxy(proxy) {
+        if (!proxy) return null;
+        
+        return {
+            host: proxy.ip,
+            port: parseInt(proxy.port),
+            protocol: proxy.protocol,
+            type: proxy.type,
+            url: `${proxy.protocol}://${proxy.ip}:${proxy.port}`
+        };
     }
 }
