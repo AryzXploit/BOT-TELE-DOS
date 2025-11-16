@@ -183,6 +183,7 @@ program
     .option('-r, --rpc <number>', 'Requests per connection', '1')
     .option('-p, --proxy-type <type>', 'Proxy type (0=all, 1=http, 4=socks4, 5=socks5)', '0')
     .option('-pf, --proxy-file <file>', 'Proxy file path')
+    .option('--no-monitor', 'Disable target health monitoring')
     .option('--debug', 'Enable debug mode')
     .action(async (options) => {
         if (options.debug) {
@@ -249,7 +250,8 @@ program
             rpc: parseInt(options.rpc),
             proxies: proxies,
             userAgents: userAgents,
-            referers: referers
+            referers: referers,
+            enableMonitoring: options.monitor !== false // Default true unless --no-monitor
         });
 
         await attackManager.start();

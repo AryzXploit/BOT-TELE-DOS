@@ -972,7 +972,11 @@ export class TelegramBot {
     async handleStop(ctx, isCallback = false) {
         try {
             if (isCallback) {
-                await ctx.answerCbQuery();
+                try {
+                    await ctx.answerCbQuery('🛑 Stopping attack...');
+                } catch (e) {
+                    logger.debug('Failed to answer callback query:', e.message);
+                }
             }
             
             if (this.attackManager && this.attackManager.isActive()) {
@@ -1035,8 +1039,13 @@ export class TelegramBot {
      */
     async handleStatus(ctx, isCallback = false) {
         try {
+            // Answer callback query first to prevent timeout
             if (isCallback) {
-                await ctx.answerCbQuery();
+                try {
+                    await ctx.answerCbQuery('🔄 Refreshing status...');
+                } catch (e) {
+                    logger.debug('Failed to answer callback query:', e.message);
+                }
             }
             
             if (this.attackManager && this.attackManager.isActive()) {
@@ -1095,6 +1104,18 @@ export class TelegramBot {
             }
         } catch (error) {
             logger.error('Error in handleStatus:', error);
+            
+            // Don't show error to user if it's just a message edit issue
+            if (error.message && (
+                error.message.includes('message is not modified') || 
+                error.message.includes('there is no text') ||
+                error.message.includes('message to edit not found') ||
+                error.message.includes('Bad Request')
+            )) {
+                logger.debug('Skipping error display for:', error.message);
+                return;
+            }
+            
             const errorMsg = '❌ Error getting status. Please try again.';
             if (isCallback) {
                 try {
@@ -1104,11 +1125,20 @@ export class TelegramBot {
                     if (e.message && (e.message.includes('message is not modified') || e.message.includes('there is no text'))) {
                         logger.debug('Message edit skipped:', e.message);
                     } else {
-                        await ctx.reply(errorMsg).catch(() => {});
+                        // Send new message instead
+                        try {
+                            await ctx.reply(errorMsg);
+                        } catch (replyErr) {
+                            logger.debug('Failed to send error message:', replyErr.message);
+                        }
                     }
                 }
             } else {
-                await ctx.reply(errorMsg);
+                try {
+                    await ctx.reply(errorMsg);
+                } catch (e) {
+                    logger.debug('Failed to send error message:', e.message);
+                }
             }
         }
     }
@@ -1301,36 +1331,34 @@ export class TelegramBot {
         
         // Add error handlers
         this.bot.catch((err, ctx) => {
-            // Silently ignore "message not modified" errors - these are expected when trying to update with same content
-            if (err.message && err.message.includes('message is not modified')) {
-                return; // Skip logging and notification for this expected error
-            }
+            // List of errors to silently ignore
+            const silentErrors = [
+                'message is not modified',
+                'message to edit not found',
+                'there is no text',
+                'message to delete not found',
+                'Bad Request: message is not modified',
+                'Bad Request: there is no text in the message to edit',
+                'Bad Request: message to edit not found',
+                'Bad Request: message can\'t be edited',
+                'query is too old',
+                'BUTTON_DATA_INVALID'
+            ];
             
-            // Silently ignore "message to edit not found" - message was deleted
-            if (err.message && err.message.includes('message to edit not found')) {
-                logger.debug('Message to edit not found - likely deleted by user');
-                return;
-            }
-            
-            // Silently ignore "there is no text in the message to edit" - message has no text
-            if (err.message && err.message.includes('there is no text')) {
-                logger.debug('No text in message to edit - skipping');
-                return;
-            }
-            
-            // Silently ignore "Bad Request: message to delete not found"
-            if (err.message && err.message.includes('message to delete not found')) {
-                logger.debug('Message to delete not found - already deleted');
+            // Check if error should be silently ignored
+            if (err.message && silentErrors.some(silent => err.message.includes(silent))) {
+                logger.debug('Silently ignoring error:', err.message);
                 return;
             }
             
             logger.error('Bot error:', err);
             logger.bot(`Error in update from user ${ctx.from?.id}: ${err.message}`);
             
+            // Try to notify user, but don't spam if it fails
             try {
-                ctx.reply('❌ An error occurred. Please try again or contact admin.').catch(() => {});
+                ctx.reply('❌ An error occurred. Please try again.').catch(() => {});
             } catch (e) {
-                logger.error('Failed to send error message:', e);
+                logger.debug('Failed to send error message:', e.message);
             }
         });
         

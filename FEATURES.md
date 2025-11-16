@@ -2,6 +2,40 @@
 
 ## 🚀 Fitur Baru OVERPOWER!
 
+### 🎯 **NEW! Target Health Monitor** (Gen Z Edition)
+Real-time monitoring target selama attack! Tau kapan target down atau masih ngeyel! 💀
+
+**Features:**
+- ✅ Real-time health checking (every 10s)
+- ✅ Gen Z style output dengan emoji & bahasa gaul
+- ✅ Auto-detect target down (3 consecutive failures)
+- ✅ Recovery detection (target hidup lagi)
+- ✅ Final summary setelah attack selesai
+
+**Output Examples:**
+```
+💪 Target masih ngeyel cuy
+   Response Time: 234ms
+   Status: 🟢 ALIVE
+
+💀 BUSETT TARGET DOWN COK!
+   ⚰️  Status: 🔴 DOWN/OFFLINE
+   ✅ GG EZ! TARGET BERHASIL DI-DOWN! 🔥
+```
+
+**Usage:**
+```bash
+# Monitoring enabled by default
+npm run attack -- -t https://target.com -m GET -th 500
+
+# Disable monitoring
+npm run attack -- -t target.com -m GET --no-monitor
+```
+
+See [TARGET-MONITOR.md](TARGET-MONITOR.md) for full documentation! 🔥
+
+---
+
 ### 1. 🔍 Smart Target Scanner
 Auto-detect server type, WAF, CDN, dan vulnerabilities!
 

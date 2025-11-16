@@ -1,6 +1,7 @@
 import { REQUESTS_SENT, BYTES_SENT } from '../utils/counter.js';
 import { Tools } from '../utils/tools.js';
 import { logger } from '../utils/logger.js';
+import { startMonitoring } from '../utils/target-monitor.js';
 
 // Layer 4 Methods
 import {
@@ -79,6 +80,9 @@ export class AttackManager {
         this.attackThreads = [];
         this.startTime = null;
         this.statsInterval = null;
+        this.monitorInterval = null;
+        this.targetMonitor = null;
+        this.enableMonitoring = options.enableMonitoring !== false; // Default true
     }
 
     /**
@@ -129,6 +133,17 @@ export class AttackManager {
 
             // Start stats monitoring
             this.startStatsMonitoring();
+
+            // Start target health monitoring
+            if (this.enableMonitoring) {
+                try {
+                    const monitoring = await startMonitoring(this.target, 10);
+                    this.targetMonitor = monitoring.monitor;
+                    this.monitorInterval = monitoring.interval;
+                } catch (err) {
+                    logger.debug(`Could not start monitoring: ${err.message}`);
+                }
+            }
 
             // Auto-stop after duration
             this.autoStopTimeout = setTimeout(() => {
@@ -554,6 +569,26 @@ export class AttackManager {
                     logger.debug(`Error clearing stats interval: ${err.message}`);
                 }
                 this.statsInterval = null;
+            }
+
+            // Clear monitoring interval
+            if (this.monitorInterval) {
+                try {
+                    clearInterval(this.monitorInterval);
+                } catch (err) {
+                    logger.debug(`Error clearing monitor interval: ${err.message}`);
+                }
+                this.monitorInterval = null;
+            }
+
+            // Print monitoring summary
+            if (this.targetMonitor) {
+                try {
+                    this.targetMonitor.printSummary();
+                } catch (err) {
+                    logger.debug(`Error printing summary: ${err.message}`);
+                }
+                this.targetMonitor = null;
             }
 
             // Force garbage collection if available
