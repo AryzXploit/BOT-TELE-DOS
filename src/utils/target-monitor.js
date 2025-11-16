@@ -62,8 +62,8 @@ export class TargetMonitor {
                 this.consecutiveFailures++;
                 this.consecutiveSuccess = 0;
                 
-                // Require 5 consecutive failures to declare DOWN (more strict)
-                if (!this.isDown && this.consecutiveFailures >= 5) {
+                // Require 10 consecutive failures to declare DOWN (very strict)
+                if (!this.isDown && this.consecutiveFailures >= 10) {
                     // Target is down!
                     this.isDown = true;
                     this.downTime = new Date();
@@ -81,8 +81,8 @@ export class TargetMonitor {
             logger.debug(`Health check error: ${err.message}`);
             this.consecutiveFailures++;
             
-            // Require 5 consecutive failures (more strict)
-            if (!this.isDown && this.consecutiveFailures >= 5) {
+            // Require 10 consecutive failures (very strict)
+            if (!this.isDown && this.consecutiveFailures >= 10) {
                 this.isDown = true;
                 this.downTime = new Date();
                 this.printTargetDown();
@@ -104,17 +104,16 @@ export class TargetMonitor {
                 port: url.port || (url.protocol === 'https:' ? 443 : 80),
                 path: url.pathname || '/',
                 method: 'HEAD',
-                timeout: 5000,
+                timeout: 10000, // Increased timeout to 10s
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
             };
 
             const req = protocol.request(options, (res) => {
-                // Accept any response (even 4xx) as UP
-                // Only 5xx or no response = DOWN
-                const isUp = res.statusCode >= 200 && res.statusCode < 600;
-                resolve(isUp);
+                // Accept ANY response as UP (including errors)
+                // Only complete network failure = DOWN
+                resolve(true);
             });
 
             req.on('error', (err) => {
@@ -247,7 +246,7 @@ export class TargetMonitor {
         
         console.log(
             chalk.yellow(`\n${emoji} ${chalk.bold('Target lagi lemot nih')}\n`) +
-            chalk.gray(`   Failed attempts: ${this.consecutiveFailures}/5\n`) +
+            chalk.gray(`   Failed attempts: ${this.consecutiveFailures}/10\n`) +
             chalk.yellow(`   Status: `) + chalk.yellow('🟡 STRUGGLING') + '\n'
         );
     }
