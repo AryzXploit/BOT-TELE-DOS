@@ -4,8 +4,10 @@ import { Attack, Credit, User } from '../../database/models.js';
 import { AttackManager } from '../../core/attack-manager.js';
 import { ComboAttackManager } from '../../core/combo-attack.js';
 import { globalStats } from '../../utils/statistics-tracker.js';
-import { LAYER4_METHODS } from '../../methods/layer4/index.js';
-import { LAYER7_METHODS } from '../../methods/layer7/index.js';
+
+// Define methods manually to avoid import issues
+const LAYER4_METHODS = ['UDP', 'TCP', 'SYN', 'VSE', 'TS3', 'MINECRAFT', 'MINECRAFT-BOT', 'NTP-AMP', 'DNS-AMP', 'SSDP-AMP'];
+const LAYER7_METHODS = ['GET', 'POST', 'HTTP2', 'HTTP2-POST', 'STRESS', 'NULL', 'DYN', 'SLOW', 'APACHE', 'XMLRPC', 'CFB', 'BYPASS', 'HTTP2-CF', 'HTTP3'];
 
 const router = express.Router();
 

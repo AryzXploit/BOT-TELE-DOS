@@ -21,6 +21,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
+// Trust proxy for rate limiting (GitHub Codespaces/production)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

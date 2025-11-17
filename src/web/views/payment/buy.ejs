@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { font-size: 1.5em; }
+        .navbar a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .package-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; transition: transform 0.3s; }
+        .package-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .package-card h3 { color: #667eea; font-size: 1.5em; margin-bottom: 15px; }
+        .package-card .price { font-size: 2.5em; font-weight: bold; color: #333; margin: 15px 0; }
+        .package-card .credits { color: #666; font-size: 1.1em; margin-bottom: 20px; }
+        .package-card ul { list-style: none; text-align: left; margin: 20px 0; }
+        .package-card li { padding: 8px 0; color: #666; }
+        .package-card li:before { content: "✓ "; color: #28a745; font-weight: bold; }
+        .btn { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+        .btn:hover { transform: translateY(-2px); }
+        .section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .section h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        .payment-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .payment-info h4 { color: #333; margin-bottom: 15px; }
+        .payment-info p { color: #666; margin: 8px 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group select, .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; }
+        #paymentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; max-width: 600px; margin: 50px auto; padding: 30px; border-radius: 10px; }
+        .modal-close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🔥 Aryzz DDoS Panel</h1>
+        <div><a href="/dashboard">← Dashboard</a><a href="/auth/logout">Logout</a></div>
+    </div>
+    
+    <div class="container">
+        <div class="section">
+            <h2>💰 Buy Credits</h2>
+            <p style="color: #666; margin-bottom: 20px;">Choose a package that suits your needs. All packages include access to all attack methods.</p>
+        </div>
+        
+        <div class="packages-grid">
+            <% Object.keys(packages).forEach(key => { const pkg = packages[key]; %>
+                <div class="package-card">
+                    <h3><%= pkg.name %></h3>
+                    <div class="price">Rp <%= pkg.price.toLocaleString() %></div>
+                    <div class="credits">💎 <%= pkg.credits %> Credits</div>
+                    <ul>
+                        <% pkg.features.forEach(feature => { %>
+                            <li><%= feature %></li>
+                        <% }) %>
+                    </ul>
+                    <button class="btn" onclick="selectPackage('<%= key %>', '<%= pkg.name %>', <%= pkg.price %>, <%= pkg.credits %>)">Buy Now</button>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+    
+    <div id="paymentModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 20px;">💳 Payment Details</h2>
+            
+            <div class="payment-info">
+                <h4>Package: <span id="selectedPackage"></span></h4>
+                <p><strong>Price:</strong> Rp <span id="selectedPrice"></span></p>
+                <p><strong>Credits:</strong> <span id="selectedCredits"></span></p>
+            </div>
+            
+            <form id="paymentForm" enctype="multipart/form-data">
+                <input type="hidden" id="packageType" name="package">
+                
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select id="paymentMethod" name="paymentMethod" required onchange="updatePaymentInfo()">
+                        <option value="dana">DANA</option>
+                        <option value="qris">QRIS (All E-Wallets)</option>
+                    </select>
+                </div>
+                
+                <div class="payment-info" id="paymentInstructions">
+                    <h4>📱 DANA Payment</h4>
+                    <p><strong>Number:</strong> <%= settings.dana_number || '089998497763' %></p>
+                    <p><strong>Name:</strong> <%= settings.dana_name || 'Arya' %></p>
+                    <p><strong>Instructions:</strong></p>
+                    <ol style="margin-left: 20px; color: #666;">
+                        <li>Open DANA app</li>
+                        <li>Transfer to number above</li>
+                        <li>Add note: Your username</li>
+                        <li>Screenshot the proof</li>
+                        <li>Upload below</li>
+                    </ol>
+                </div>
+                
+                <div class="form-group">
+                    <label>Upload Payment Proof (Screenshot)</label>
+                    <input type="file" name="proof" accept="image/jpeg,image/png" required>
+                </div>
+                
+                <button type="submit" class="btn">Submit Payment</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let selectedPackageKey = '';
+        
+        function selectPackage(key, name, price, credits) {
+            selectedPackageKey = key;
+            document.getElementById('selectedPackage').textContent = name;
+            document.getElementById('selectedPrice').textContent = price.toLocaleString();
+            document.getElementById('selectedCredits').textContent = credits;
+            document.getElementById('packageType').value = key;
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+        
+        function updatePaymentInfo() {
+            const method = document.getElementById('paymentMethod').value;
+            const instructions = document.getElementById('paymentInstructions');
+            
+            if (method === 'dana') {
+                instructions.innerHTML = `
+                    <h4>📱 DANA Payment</h4>
+                    <p><strong>Number:</strong> <%= settings.dana_number || '089998497763' %></p>
+                    <p><strong>Name:</strong> <%= settings.dana_name || 'Arya' %></p>
+                    <p><strong>Instructions:</strong></p>
+                    <ol style="margin-left: 20px; color: #666;">
+                        <li>Open DANA app</li>
+                        <li>Transfer to number above</li>
+                        <li>Add note: Your username</li>
+                        <li>Screenshot the proof</li>
+                        <li>Upload below</li>
+                    </ol>
+                `;
+            } else {
+                instructions.innerHTML = `
+                    <h4>📱 QRIS Payment</h4>
+                    <p><strong>Scan QR Code:</strong></p>
+                    <img src="<%= settings.qris_image || '/uploads/qris.png' %>" style="max-width: 200px; margin: 10px 0;">
+                    <p><strong>Instructions:</strong></p>
+                    <ol style="margin-left: 20px; color: #666;">
+                        <li>Open any e-wallet (GoPay/OVO/ShopeePay/etc)</li>
+                        <li>Scan QR code above</li>
+                        <li>Enter amount</li>
+                        <li>Add note: Your username</li>
+                        <li>Screenshot the proof</li>
+                        <li>Upload below</li>
+                    </ol>
+                `;
+            }
+        }
+        
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/payment/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Payment submitted successfully! Please wait for admin approval.');
+                    window.location.href = '/payment/history';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Failed to submit payment: ' + err.message);
+            }
+        });
+    </script>
+</body>
+</html>
