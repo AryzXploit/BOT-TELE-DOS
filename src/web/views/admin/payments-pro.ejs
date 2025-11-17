@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/static/css/professional.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-title">ADMIN PANEL</div>
+            <div class="brand-subtitle">System Management</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item"><a href="/admin" class="nav-link"><span class="nav-icon"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg></span>Dashboard</a></div>
+            <div class="nav-item"><a href="/admin/users" class="nav-link"><span class="nav-icon"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg></span>Users</a></div>
+            <div class="nav-item"><a href="/admin/payments" class="nav-link active"><span class="nav-icon"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg></span>Payments</a></div>
+            <div class="nav-item"><a href="/admin/attacks" class="nav-link"><span class="nav-icon"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></span>Attacks</a></div>
+            <div class="nav-item" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);"><a href="/dashboard" class="nav-link"><span class="nav-icon"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></span>User Panel</a></div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <header class="header">
+            <h1 class="header-title">Payment Management</h1>
+            <div class="header-actions">
+                <button id="themeToggle" class="theme-toggle"></button>
+                <div class="user-menu">
+                    <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                    <div class="user-info"><div class="user-name"><%= user.username %></div><div class="user-role">Administrator</div></div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Pending Payments</h2>
+                    <span class="badge badge-warning"><%= payments.length %> Pending</span>
+                </div>
+                <div class="card-body">
+                    <% if (payments && payments.length > 0) { %>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>ID</th><th>User</th><th>Package</th><th>Amount</th><th>Credits</th><th>Method</th><th>Proof</th><th>Date</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                    <% payments.forEach(p => { %>
+                                        <tr>
+                                            <td><code style="font-size: 11px;"><%= p.transaction_id %></code></td>
+                                            <td><strong><%= p.username %></strong><br><small style="color: var(--text-muted);"><%= p.email %></small></td>
+                                            <td><%= p.package_type %></td>
+                                            <td>Rp <%= p.amount.toLocaleString() %></td>
+                                            <td><%= p.credits %></td>
+                                            <td><span class="badge badge-primary"><%= p.payment_method.toUpperCase() %></span></td>
+                                            <td><img src="<%= p.payment_proof %>" style="max-width: 60px; border-radius: 4px; cursor: pointer;" onclick="showProof('<%= p.payment_proof %>')"></td>
+                                            <td><%= new Date(p.created_at).toLocaleString() %></td>
+                                            <td>
+                                                <button class="btn btn-success btn-sm" onclick="approvePayment(<%= p.id %>)">Approve</button>
+                                                <button class="btn btn-danger btn-sm" onclick="rejectPayment(<%= p.id %>)">Reject</button>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">No pending payments</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="proofModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Payment Proof</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="proofImage" src="" style="width: 100%; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/theme.js"></script>
+    <script>
+        function showProof(url) {
+            document.getElementById('proofImage').src = url;
+            document.getElementById('proofModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('proofModal').classList.remove('active');
+        }
+        
+        async function approvePayment(id) {
+            const notes = prompt('Approval notes (optional):');
+            try {
+                const response = await fetch(`/admin/payments/${id}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Payment approved successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        }
+        
+        async function rejectPayment(id) {
+            const reason = prompt('Rejection reason:');
+            if (!reason) return;
+            try {
+                const response = await fetch(`/admin/payments/${id}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Payment rejected');
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        }
+        
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -206,7 +206,7 @@ router.get('/payments', async (req, res) => {
     try {
         const pendingPayments = await Transaction.getPending();
         
-        res.render('admin/payments', {
+        res.render('admin/payments-pro', {
             title: 'Payment Management - Aryzz DDoS Panel',
             user: req.user,
             payments: pendingPayments
@@ -289,7 +289,7 @@ router.get('/attacks', async (req, res) => {
     try {
         const attacks = await Attack.getAll(100);
         
-        res.render('admin/attacks', {
+        res.render('admin/attacks-pro', {
             title: 'Attack Logs - Aryzz DDoS Panel',
             user: req.user,
             attacks

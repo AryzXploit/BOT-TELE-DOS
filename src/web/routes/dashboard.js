@@ -45,7 +45,7 @@ router.get('/profile', async (req, res) => {
         const user = req.user;
         const creditHistory = await Credit.getHistory(user.id, 20);
         
-        res.render('dashboard/profile', {
+        res.render('dashboard/profile-pro', {
             title: 'Profile - Aryzz DDoS Panel',
             user,
             creditHistory
@@ -71,9 +71,9 @@ router.get('/history', async (req, res) => {
         
         const attacks = await Attack.getUserAttacks(user.id, limit);
         
-        res.render('dashboard/history', {
+        res.render('dashboard/history-pro', {
             title: 'Attack History - Aryzz DDoS Panel',
-            user,
+            user: req.user,
             attacks,
             page
         });
