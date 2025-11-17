@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
         // Get system settings
         const settings = await Settings.getAll();
         
-        res.render('dashboard/index', {
+        res.render('dashboard/index-pro', {
             title: 'Dashboard - Aryzz DDoS Panel',
             user,
             recentAttacks,

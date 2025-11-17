@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/static/css/modern-dark.css">
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .action-buttons .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">⚡ ARYZZ ADMIN</div>
+        <div class="navbar-nav">
+            <a href="/admin" class="nav-link">Dashboard</a>
+            <a href="/admin/users" class="nav-link active">Users</a>
+            <a href="/admin/payments" class="nav-link">Payments</a>
+            <a href="/admin/attacks" class="nav-link">Attacks</a>
+            <a href="/dashboard" class="nav-link">User Panel</a>
+            <a href="/auth/logout" class="nav-link">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="section">
+            <h1 class="section-title">👥 User Management</h1>
+        </div>
+        
+        <div class="glass-card">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Credits</th>
+                            <th>Attacks</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(u => { %>
+                            <tr>
+                                <td>#<%= u.id %></td>
+                                <td><strong><%= u.username %></strong></td>
+                                <td><%= u.email %></td>
+                                <td><span class="badge badge-<%= u.role %>"><%= u.role %></span></td>
+                                <td><%= u.credits.toLocaleString() %></td>
+                                <td><%= u.total_attacks %></td>
+                                <td>
+                                    <% if (u.is_banned) { %>
+                                        <span class="badge badge-danger">Banned</span>
+                                    <% } else { %>
+                                        <span class="badge badge-success">Active</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <% if (!u.is_banned) { %>
+                                            <button class="btn btn-danger" onclick="openBanModal(<%= u.id %>, '<%= u.username %>')">Ban</button>
+                                        <% } else { %>
+                                            <button class="btn btn-success" onclick="unbanUser(<%= u.id %>)">Unban</button>
+                                        <% } %>
+                                        <button class="btn btn-primary" onclick="openCreditModal(<%= u.id %>, '<%= u.username %>', <%= u.credits %>)">Credits</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Credits Modal -->
+    <div id="creditModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">💎 Manage Credits</h2>
+                <button class="modal-close" onclick="closeCreditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    User: <strong id="creditUsername"></strong><br>
+                    Current Balance: <strong id="currentBalance"></strong> credits
+                </p>
+                <form id="creditForm">
+                    <input type="hidden" id="creditUserId">
+                    <div class="form-group">
+                        <label class="form-label">Action</label>
+                        <select class="form-control" id="creditAction">
+                            <option value="add">Add Credits</option>
+                            <option value="remove">Remove Credits</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="creditAmount" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
+                        <input type="text" class="form-control" id="creditReason" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ban User Modal -->
+    <div id="banModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🚫 Ban User</h2>
+                <button class="modal-close" onclick="closeBanModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    You are about to ban: <strong id="banUsername"></strong>
+                </p>
+                <form id="banForm">
+                    <input type="hidden" id="banUserId">
+                    <div class="form-group">
+                        <label class="form-label">Ban Reason</label>
+                        <textarea class="form-control" id="banReason" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">Ban User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Credit Modal
+        function openCreditModal(userId, username, currentBalance) {
+            document.getElementById('creditUserId').value = userId;
+            document.getElementById('creditUsername').textContent = username;
+            document.getElementById('currentBalance').textContent = currentBalance.toLocaleString();
+            document.getElementById('creditModal').classList.add('active');
+        }
+        
+        function closeCreditModal() {
+            document.getElementById('creditModal').classList.remove('active');
+            document.getElementById('creditForm').reset();
+        }
+        
+        document.getElementById('creditForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userId = document.getElementById('creditUserId').value;
+            const action = document.getElementById('creditAction').value;
+            const amount = document.getElementById('creditAmount').value;
+            const reason = document.getElementById('creditReason').value;
+            
+            const endpoint = action === 'add' ? 'add-credits' : 'remove-credits';
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: parseInt(amount), reason })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Credits ${action}ed successfully!`);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        });
+        
+        // Ban Modal
+        function openBanModal(userId, username) {
+            document.getElementById('banUserId').value = userId;
+            document.getElementById('banUsername').textContent = username;
+            document.getElementById('banModal').classList.add('active');
+        }
+        
+        function closeBanModal() {
+            document.getElementById('banModal').classList.remove('active');
+            document.getElementById('banForm').reset();
+        }
+        
+        document.getElementById('banForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userId = document.getElementById('banUserId').value;
+            const reason = document.getElementById('banReason').value;
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/ban`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User banned successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        });
+        
+        // Unban
+        async function unbanUser(userId) {
+            if (!confirm('Unban this user?')) return;
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/unban`, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User unbanned successfully!');
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        }
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

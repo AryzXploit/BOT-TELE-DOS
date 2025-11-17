@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/static/css/professional.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-title">ARYZZ PANEL</div>
+            <div class="brand-subtitle">DDoS Testing Platform</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                    </span>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/attack" class="nav-link active">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+                    </span>
+                    Attack Control
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/payment/buy" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                    </span>
+                    Buy Credits
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/dashboard/history" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                    </span>
+                    History
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <header class="header">
+            <h1 class="header-title">Attack Control</h1>
+            <div class="header-actions">
+                <div style="color: var(--text-secondary); margin-right: 20px;">
+                    Credits: <strong style="color: var(--accent);"><span id="userCredits"><%= user.credits %></span></strong>
+                </div>
+                <button id="themeToggle" class="theme-toggle"></button>
+                <div class="user-menu">
+                    <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                    <div class="user-info">
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-role"><%= user.role %></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div id="alertContainer"></div>
+            
+            <div class="card" id="attackForm">
+                <div class="card-header">
+                    <h2 class="card-title">Configure Attack</h2>
+                </div>
+                <div class="card-body">
+                    <form id="startAttackForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label class="form-label">Target URL/IP</label>
+                                <input type="text" id="target" name="target" class="form-control" placeholder="https://example.com or 1.2.3.4:80" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Attack Method</label>
+                                <select id="method" name="method" class="form-control" required>
+                                    <optgroup label="Layer 7 (HTTP)">
+                                        <% layer7Methods.forEach(m => { %>
+                                            <option value="<%= m %>"><%= m %></option>
+                                        <% }) %>
+                                    </optgroup>
+                                    <optgroup label="Layer 4 (Network)">
+                                        <% layer4Methods.forEach(m => { %>
+                                            <option value="<%= m %>"><%= m %></option>
+                                        <% }) %>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label class="form-label">Threads: <strong id="threadsValue">100</strong></label>
+                                <input type="range" id="threads" name="threads" min="50" max="1000" value="100" step="50" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Duration: <strong id="durationValue">60</strong>s</label>
+                                <input type="range" id="duration" name="duration" min="30" max="600" value="60" step="30" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">RPC: <strong id="rpcValue">1</strong></label>
+                                <input type="range" id="rpc" name="rpc" min="1" max="50" value="1" step="1" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div style="background-color: var(--bg-tertiary); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: var(--text-secondary);">Estimated Cost:</span>
+                                <strong style="font-size: 20px; color: var(--accent);"><span id="estimatedCost">10</span> credits</strong>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Launch Attack</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card" id="attackStatus" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Attack Status</h2>
+                    <button class="btn btn-danger btn-sm" id="stopBtn">Stop Attack</button>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Requests</div>
+                            <div class="stat-value" id="totalRequests">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Successful</div>
+                            <div class="stat-value" id="successfulRequests" style="color: var(--success);">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Blocked</div>
+                            <div class="stat-value" id="blockedRequests" style="color: var(--danger);">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Success Rate</div>
+                            <div class="stat-value" id="successRate">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/theme.js"></script>
+    <script>
+        const socket = io();
+        let attackActive = false;
+        
+        document.getElementById('threads').addEventListener('input', function() {
+            document.getElementById('threadsValue').textContent = this.value;
+            calculateCost();
+        });
+        
+        document.getElementById('duration').addEventListener('input', function() {
+            document.getElementById('durationValue').textContent = this.value;
+            calculateCost();
+        });
+        
+        document.getElementById('rpc').addEventListener('input', function() {
+            document.getElementById('rpcValue').textContent = this.value;
+            calculateCost();
+        });
+        
+        function calculateCost() {
+            const threads = parseInt(document.getElementById('threads').value);
+            const duration = parseInt(document.getElementById('duration').value);
+            const rpc = parseInt(document.getElementById('rpc').value);
+            const cost = Math.ceil((threads / 10) * (duration / 60) * rpc);
+            document.getElementById('estimatedCost').textContent = cost;
+        }
+        
+        document.getElementById('startAttackForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                target: document.getElementById('target').value,
+                method: document.getElementById('method').value,
+                threads: document.getElementById('threads').value,
+                duration: document.getElementById('duration').value,
+                rpc: document.getElementById('rpc').value
+            };
+            
+            try {
+                const response = await fetch('/attack/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Attack launched successfully!', 'success');
+                    document.getElementById('attackForm').style.display = 'none';
+                    document.getElementById('attackStatus').style.display = 'block';
+                    document.getElementById('userCredits').textContent = data.remainingCredits;
+                    attackActive = true;
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            } catch (err) {
+                showAlert('Failed to start attack: ' + err.message, 'danger');
+            }
+        });
+        
+        document.getElementById('stopBtn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/attack/stop', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Attack stopped successfully!', 'info');
+                    document.getElementById('attackForm').style.display = 'block';
+                    document.getElementById('attackStatus').style.display = 'none';
+                    attackActive = false;
+                }
+            } catch (err) {
+                showAlert('Failed to stop attack: ' + err.message, 'danger');
+            }
+        });
+        
+        socket.on('stats_update', function(stats) {
+            if (attackActive) {
+                document.getElementById('totalRequests').textContent = stats.totalRequests.toLocaleString();
+                document.getElementById('successfulRequests').textContent = stats.successfulRequests.toLocaleString();
+                document.getElementById('blockedRequests').textContent = stats.blockedRequests.toLocaleString();
+                const rate = stats.totalRequests > 0 ? ((stats.successfulRequests / stats.totalRequests) * 100).toFixed(2) : 0;
+                document.getElementById('successRate').textContent = rate + '%';
+            }
+        });
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.textContent = message;
+            document.getElementById('alertContainer').appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+        
+        fetch('/attack/status').then(r => r.json()).then(data => {
+            if (data.active) {
+                document.getElementById('attackForm').style.display = 'none';
+                document.getElementById('attackStatus').style.display = 'block';
+                attackActive = true;
+            }
+        });
+    </script>
+</body>
+</html>

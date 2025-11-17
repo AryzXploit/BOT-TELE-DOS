@@ -19,7 +19,7 @@ router.get('/login', (req, res) => {
     if (req.session.userId) {
         return res.redirect('/dashboard');
     }
-    res.render('auth/login', {
+    res.render('auth/login-pro', {
         title: 'Login - Aryzz DDoS Panel',
         error: null
     });
@@ -39,7 +39,7 @@ router.post('/login',
             // Validate input
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.render('auth/login', {
+                return res.render('auth/login-pro', {
                     title: 'Login - Aryzz DDoS Panel',
                     error: errors.array()[0].msg
                 });
@@ -58,7 +58,7 @@ router.post('/login',
 
             // Check if banned
             if (user.is_banned) {
-                return res.render('auth/login', {
+                return res.render('auth/login-pro', {
                     title: 'Login - Aryzz DDoS Panel',
                     error: 'Your account has been banned. Reason: ' + user.ban_reason
                 });
@@ -67,7 +67,7 @@ router.post('/login',
             // Verify password
             const isValid = await User.verifyPassword(password, user.password);
             if (!isValid) {
-                return res.render('auth/login', {
+                return res.render('auth/login-pro', {
                     title: 'Login - Aryzz DDoS Panel',
                     error: 'Invalid username or password'
                 });
@@ -84,7 +84,7 @@ router.post('/login',
             res.redirect('/dashboard');
         } catch (err) {
             console.error('Login error:', err);
-            res.render('auth/login', {
+            res.render('auth/login-pro', {
                 title: 'Login - Aryzz DDoS Panel',
                 error: 'An error occurred. Please try again.'
             });
@@ -99,7 +99,7 @@ router.get('/register', (req, res) => {
     if (req.session.userId) {
         return res.redirect('/dashboard');
     }
-    res.render('auth/register', {
+    res.render('auth/register-pro', {
         title: 'Register - Aryzz DDoS Panel',
         error: null,
         success: null
@@ -135,7 +135,7 @@ router.post('/register',
             // Validate input
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.render('auth/register', {
+                return res.render('auth/register-pro', {
                     title: 'Register - Aryzz DDoS Panel',
                     error: errors.array()[0].msg,
                     success: null
@@ -147,7 +147,7 @@ router.post('/register',
             // Check if username exists
             const existingUser = await User.findByUsername(username);
             if (existingUser) {
-                return res.render('auth/register', {
+                return res.render('auth/register-pro', {
                     title: 'Register - Aryzz DDoS Panel',
                     error: 'Username already taken',
                     success: null
@@ -157,7 +157,7 @@ router.post('/register',
             // Check if email exists
             const existingEmail = await User.findByEmail(email);
             if (existingEmail) {
-                return res.render('auth/register', {
+                return res.render('auth/register-pro', {
                     title: 'Register - Aryzz DDoS Panel',
                     error: 'Email already registered',
                     success: null
@@ -173,14 +173,14 @@ router.post('/register',
                 ip: req.ip
             });
 
-            res.render('auth/register', {
+            res.render('auth/register-pro', {
                 title: 'Register - Aryzz DDoS Panel',
                 error: null,
                 success: 'Registration successful! You can now login.'
             });
         } catch (err) {
             console.error('Register error:', err);
-            res.render('auth/register', {
+            res.render('auth/register-pro', {
                 title: 'Register - Aryzz DDoS Panel',
                 error: 'An error occurred. Please try again.',
                 success: null

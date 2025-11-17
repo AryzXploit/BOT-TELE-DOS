@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/static/css/professional.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-title">ADMIN PANEL</div>
+            <div class="brand-subtitle">System Management</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/admin" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+                    </span>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/admin/users" class="nav-link active">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                    </span>
+                    Users
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/admin/payments" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                    </span>
+                    Payments
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/admin/attacks" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    </span>
+                    Attacks
+                </a>
+            </div>
+            <div class="nav-item" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <a href="/dashboard" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                    </span>
+                    User Panel
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <header class="header">
+            <h1 class="header-title">User Management</h1>
+            <div class="header-actions">
+                <button id="themeToggle" class="theme-toggle"></button>
+                <div class="user-menu">
+                    <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                    <div class="user-info">
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Credits</th>
+                                    <th>Attacks</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(u => { %>
+                                    <tr>
+                                        <td>#<%= u.id %></td>
+                                        <td><strong><%= u.username %></strong></td>
+                                        <td><%= u.email %></td>
+                                        <td><span class="badge badge-<%= u.role === 'admin' ? 'danger' : 'primary' %>"><%= u.role %></span></td>
+                                        <td><%= u.credits.toLocaleString() %></td>
+                                        <td><%= u.total_attacks %></td>
+                                        <td>
+                                            <% if (u.is_banned) { %>
+                                                <span class="badge badge-danger">Banned</span>
+                                            <% } else { %>
+                                                <span class="badge badge-success">Active</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (!u.is_banned) { %>
+                                                <button class="btn btn-danger btn-sm" onclick="openBanModal(<%= u.id %>, '<%= u.username %>')">Ban</button>
+                                            <% } else { %>
+                                                <button class="btn btn-success btn-sm" onclick="unbanUser(<%= u.id %>)">Unban</button>
+                                            <% } %>
+                                            <button class="btn btn-primary btn-sm" onclick="openCreditModal(<%= u.id %>, '<%= u.username %>', <%= u.credits %>)">Credits</button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Credit Modal -->
+    <div id="creditModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Manage Credits</h2>
+                <button class="modal-close" onclick="closeCreditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    User: <strong id="creditUsername"></strong><br>
+                    Current Balance: <strong id="currentBalance"></strong> credits
+                </p>
+                <form id="creditForm">
+                    <input type="hidden" id="creditUserId">
+                    <div class="form-group">
+                        <label class="form-label">Action</label>
+                        <select class="form-control" id="creditAction">
+                            <option value="add">Add Credits</option>
+                            <option value="remove">Remove Credits</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="creditAmount" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
+                        <input type="text" class="form-control" id="creditReason" placeholder="Enter reason" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ban Modal -->
+    <div id="banModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Ban User</h2>
+                <button class="modal-close" onclick="closeBanModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    You are about to ban: <strong id="banUsername"></strong>
+                </p>
+                <form id="banForm">
+                    <input type="hidden" id="banUserId">
+                    <div class="form-group">
+                        <label class="form-label">Ban Reason</label>
+                        <textarea class="form-control" id="banReason" rows="4" placeholder="Enter ban reason" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">Ban User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/theme.js"></script>
+    <script>
+        function openCreditModal(userId, username, currentBalance) {
+            document.getElementById('creditUserId').value = userId;
+            document.getElementById('creditUsername').textContent = username;
+            document.getElementById('currentBalance').textContent = currentBalance.toLocaleString();
+            document.getElementById('creditModal').classList.add('active');
+        }
+        
+        function closeCreditModal() {
+            document.getElementById('creditModal').classList.remove('active');
+            document.getElementById('creditForm').reset();
+        }
+        
+        document.getElementById('creditForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const userId = document.getElementById('creditUserId').value;
+            const action = document.getElementById('creditAction').value;
+            const amount = document.getElementById('creditAmount').value;
+            const reason = document.getElementById('creditReason').value;
+            const endpoint = action === 'add' ? 'add-credits' : 'remove-credits';
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: parseInt(amount), reason })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(`Credits ${action}ed successfully!`);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        });
+        
+        function openBanModal(userId, username) {
+            document.getElementById('banUserId').value = userId;
+            document.getElementById('banUsername').textContent = username;
+            document.getElementById('banModal').classList.add('active');
+        }
+        
+        function closeBanModal() {
+            document.getElementById('banModal').classList.remove('active');
+            document.getElementById('banForm').reset();
+        }
+        
+        document.getElementById('banForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const userId = document.getElementById('banUserId').value;
+            const reason = document.getElementById('banReason').value;
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/ban`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('User banned successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        });
+        
+        async function unbanUser(userId) {
+            if (!confirm('Unban this user?')) return;
+            try {
+                const response = await fetch(`/admin/users/${userId}/unban`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    alert('User unbanned successfully!');
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        }
+        
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -56,7 +56,7 @@ router.get('/users', async (req, res) => {
         
         const users = await User.getAll(limit, offset);
         
-        res.render('admin/users', {
+        res.render('admin/users-pro', {
             title: 'User Management - Aryzz DDoS Panel',
             user: req.user,
             users,

@@ -86,7 +86,7 @@ router.get('/buy', async (req, res) => {
     try {
         const settings = await Settings.getAll();
         
-        res.render('payment/buy', {
+        res.render('payment/buy-pro', {
             title: 'Buy Credits - Aryzz DDoS Panel',
             user: req.user,
             packages: PACKAGES,

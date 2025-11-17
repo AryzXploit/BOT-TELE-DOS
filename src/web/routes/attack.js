@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
     try {
         const allMethods = [...LAYER4_METHODS, ...LAYER7_METHODS];
         
-        res.render('attack/control', {
+        res.render('attack/control-pro', {
             title: 'Attack Control - Aryzz DDoS Panel',
             user: req.user,
             methods: allMethods,
