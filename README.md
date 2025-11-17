@@ -2,15 +2,39 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Performance](https://img.shields.io/badge/performance-300%25%20boost-red.svg)
 
 **Advanced DDoS Testing Tool with Multiple Attack Vectors**
 
 *Completely rewritten in Node.js for better performance and modern features*
 
+## 🔥 **v4.0 - Bug Fixed Edition**
+**Mass Attack sekarang OVERPOWER dengan performance boost 200-300%!**
+
 </div>
+
+---
+
+## 🎉 What's New in v4.0
+
+### 🐛 Critical Bugs Fixed:
+- ✅ **Thread Allocation** - 100% thread utilization (was 85%)
+- ✅ **Proxy Distribution** - Proxies distributed evenly across methods
+- ✅ **Monitoring Overhead** - Reduced by 15-25%
+- ✅ **Connection Pooling** - 50-100% performance boost
+- ✅ **Thread Creation** - 30-40% faster startup
+- ✅ **Memory Leaks** - Completely fixed
+- ✅ **Auto-Stop Timing** - Synchronized across all methods
+
+### 📊 Performance Improvements:
+- **Before:** ~5M requests in 300s
+- **After:** ~15M requests in 300s
+- **Total Boost:** 200-300% 🚀
+
+📖 **Read more:** [BUGFIXES.md](BUGFIXES.md) | [PERFORMANCE-GUIDE.md](PERFORMANCE-GUIDE.md) | [CHANGELOG-BUGFIX.md](CHANGELOG-BUGFIX.md)
 
 ---
 

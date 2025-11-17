@@ -1,7 +1,7 @@
 {
   "name": "mhddos-nodejs",
-  "version": "3.0.0",
-  "description": "Advanced DDoS Testing Tool with Multiple Attack Vectors - Node.js Edition",
+  "version": "4.0.0",
+  "description": "Advanced DDoS Testing Tool with Multiple Attack Vectors - Node.js Edition (Bug Fixed - 300% Performance Boost)",
   "main": "index.js",
   "type": "module",
   "scripts": {

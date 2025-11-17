@@ -114,29 +114,47 @@ export class AttackManager {
                 throw new Error(`Invalid or unsupported method: ${this.method}`);
             }
 
-            // Create attack threads (non-blocking)
-            setImmediate(() => {
-                try {
-                    for (let i = 0; i < this.threads; i++) {
-                        try {
-                            const attackInstance = this.createAttackInstance();
-                            if (attackInstance) {
-                                this.attackThreads.push(attackInstance);
-                                attackInstance.start().catch(err => {
-                                    // Log errors but don't stop attack
-                                    logger.debug(`Thread ${i} error: ${err.message}`);
-                                });
-                            } else {
-                                logger.debug(`Failed to create attack instance for thread ${i}`);
-                            }
-                        } catch (threadErr) {
-                            logger.debug(`Error creating thread ${i}: ${threadErr.message}`);
+            // BUG FIX: Create attack threads in batches for better performance
+            const BATCH_SIZE = 50; // Create threads in batches of 50
+            const createThreadBatch = (startIdx, endIdx) => {
+                for (let i = startIdx; i < endIdx && i < this.threads; i++) {
+                    try {
+                        const attackInstance = this.createAttackInstance();
+                        if (attackInstance) {
+                            this.attackThreads.push(attackInstance);
+                            attackInstance.start().catch(err => {
+                                // Log errors but don't stop attack
+                                logger.debug(`Thread ${i} error: ${err.message}`);
+                            });
+                        } else {
+                            logger.debug(`Failed to create attack instance for thread ${i}`);
                         }
+                    } catch (threadErr) {
+                        logger.debug(`Error creating thread ${i}: ${threadErr.message}`);
                     }
-                } catch (err) {
-                    logger.error(`Error in thread creation loop: ${err.message}`);
                 }
-            });
+            };
+
+            // Create threads in batches to prevent event loop blocking
+            let batchIndex = 0;
+            const createNextBatch = () => {
+                const startIdx = batchIndex * BATCH_SIZE;
+                const endIdx = startIdx + BATCH_SIZE;
+                
+                if (startIdx < this.threads) {
+                    setImmediate(() => {
+                        try {
+                            createThreadBatch(startIdx, endIdx);
+                            batchIndex++;
+                            createNextBatch();
+                        } catch (err) {
+                            logger.error(`Error in batch ${batchIndex}: ${err.message}`);
+                        }
+                    });
+                }
+            };
+            
+            createNextBatch();
 
             // Start stats monitoring
             this.startStatsMonitoring();
