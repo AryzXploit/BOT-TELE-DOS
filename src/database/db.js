@@ -41,21 +41,21 @@ export async function initDatabase() {
  */
 async function createDefaultAdmin() {
     try {
-        const adminExists = await db.get('SELECT id FROM users WHERE username = ?', ['admin']);
+        // Delete existing admin first to recreate with correct password
+        await db.run('DELETE FROM users WHERE username = ?', ['admin']);
         
-        if (!adminExists) {
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            
-            await db.run(
-                `INSERT INTO users (username, email, password, role, credits, is_active) 
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                ['admin', 'admin@aryapanel.xyz', hashedPassword, 'admin', 999999, 1]
-            );
-            
-            console.log('✅ Default admin user created');
-            console.log('   Username: admin');
-            console.log('   Password: admin123');
-        }
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        
+        await db.run(
+            `INSERT INTO users (username, email, password, role, credits, is_active) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            ['admin', 'admin@aryapanel.xyz', hashedPassword, 'admin', 999999, 1]
+        );
+        
+        console.log('✅ Default admin user created');
+        console.log('   Username: admin');
+        console.log('   Password: admin123');
+        console.log('   Password Hash:', hashedPassword);
     } catch (err) {
         console.error('Error creating default admin:', err);
     }
