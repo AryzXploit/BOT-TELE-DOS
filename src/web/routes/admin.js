@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
         const recentAttacks = await Attack.getAll(10);
         const runningAttacks = await Attack.getRunning();
         
-        res.render('admin/dashboard', {
+        res.render('admin/dashboard-pro', {
             title: 'Admin Dashboard - Aryzz DDoS Panel',
             user: req.user,
             stats: {

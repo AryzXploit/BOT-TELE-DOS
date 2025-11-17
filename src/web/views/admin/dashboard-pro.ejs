@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/static/css/professional.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-title">ADMIN PANEL</div>
+            <div class="brand-subtitle">System Management</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/admin" class="nav-link active">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+                    </span>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/admin/users" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                    </span>
+                    Users
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/admin/payments" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                    </span>
+                    Payments
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/admin/attacks" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    </span>
+                    Attacks
+                </a>
+            </div>
+            <div class="nav-item" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <a href="/dashboard" class="nav-link">
+                    <span class="nav-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                    </span>
+                    User Panel
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <header class="header">
+            <h1 class="header-title">Admin Dashboard</h1>
+            <div class="header-actions">
+                <button id="themeToggle" class="theme-toggle"></button>
+                <div class="user-menu">
+                    <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                    <div class="user-info">
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value"><%= stats.totalUsers %></div>
+                    <div class="stat-change">Registered accounts</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Total Attacks</div>
+                    <div class="stat-value"><%= stats.totalAttacks %></div>
+                    <div class="stat-change">All time</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Pending Payments</div>
+                    <div class="stat-value" style="color: var(--warning);"><%= stats.pendingPayments %></div>
+                    <div class="stat-change">Awaiting approval</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" style="font-size: 24px;">Rp <%= stats.totalRevenue.toLocaleString() %></div>
+                    <div class="stat-change positive">Approved payments</div>
+                </div>
+            </div>
+            
+            <% if (runningAttacks && runningAttacks.length > 0) { %>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Running Attacks</h2>
+                    <span class="badge badge-warning"><%= runningAttacks.length %> Active</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Target</th>
+                                    <th>Method</th>
+                                    <th>Threads</th>
+                                    <th>Started</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% runningAttacks.forEach(attack => { %>
+                                    <tr>
+                                        <td><strong><%= attack.username %></strong></td>
+                                        <td><%= attack.target %></td>
+                                        <td><span class="badge badge-primary"><%= attack.method %></span></td>
+                                        <td><%= attack.threads %></td>
+                                        <td><%= new Date(attack.started_at).toLocaleString() %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Users</h2>
+                    <a href="/admin/users" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Credits</th>
+                                    <th>Attacks</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% recentUsers.forEach(u => { %>
+                                    <tr>
+                                        <td><strong><%= u.username %></strong></td>
+                                        <td><%= u.email %></td>
+                                        <td><span class="badge badge-<%= u.role === 'admin' ? 'danger' : 'primary' %>"><%= u.role %></span></td>
+                                        <td><%= u.credits.toLocaleString() %></td>
+                                        <td><%= u.total_attacks %></td>
+                                        <td><%= new Date(u.created_at).toLocaleDateString() %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Attacks</h2>
+                    <a href="/admin/attacks" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Target</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Requests</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% recentAttacks.forEach(a => { %>
+                                    <tr>
+                                        <td><%= a.username %></td>
+                                        <td><%= a.target %></td>
+                                        <td><span class="badge badge-primary"><%= a.method %></span></td>
+                                        <td>
+                                            <span class="badge badge-<%= a.status === 'completed' ? 'success' : a.status === 'failed' ? 'danger' : 'warning' %>">
+                                                <%= a.status %>
+                                            </span>
+                                        </td>
+                                        <td><%= a.total_requests ? a.total_requests.toLocaleString() : '0' %></td>
+                                        <td><%= new Date(a.started_at).toLocaleString() %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/theme.js"></script>
+</body>
+</html>

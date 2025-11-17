@@ -172,7 +172,7 @@ router.get('/history', async (req, res) => {
     try {
         const transactions = await Transaction.getUserTransactions(req.user.id, 50);
         
-        res.render('payment/history', {
+        res.render('payment/history-pro', {
             title: 'Transaction History - Aryzz DDoS Panel',
             user: req.user,
             transactions
