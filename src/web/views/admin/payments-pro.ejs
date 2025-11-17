@@ -77,10 +77,50 @@
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
                 <h2 class="modal-title">Payment Proof</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" onclick="closeProofModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <img id="proofImage" src="" style="width: 100%; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+    
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Approve Payment</h2>
+                <button class="modal-close" onclick="closeApproveModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Approve this payment and add credits to user account?</p>
+                <form id="approveForm">
+                    <input type="hidden" id="approvePaymentId">
+                    <div class="form-group">
+                        <label class="form-label">Approval Notes (Optional)</label>
+                        <textarea class="form-control" id="approveNotes" rows="3" placeholder="Enter any notes..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">Approve Payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Reject Payment</h2>
+                <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Reject this payment? User will be notified.</p>
+                <form id="rejectForm">
+                    <input type="hidden" id="rejectPaymentId">
+                    <div class="form-group">
+                        <label class="form-label">Rejection Reason</label>
+                        <textarea class="form-control" id="rejectReason" rows="3" placeholder="Enter rejection reason..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">Reject Payment</button>
+                </form>
             </div>
         </div>
     </div>
@@ -92,12 +132,35 @@
             document.getElementById('proofModal').classList.add('active');
         }
         
-        function closeModal() {
+        function closeProofModal() {
             document.getElementById('proofModal').classList.remove('active');
         }
         
-        async function approvePayment(id) {
-            const notes = prompt('Approval notes (optional):');
+        function approvePayment(id) {
+            document.getElementById('approvePaymentId').value = id;
+            document.getElementById('approveModal').classList.add('active');
+        }
+        
+        function closeApproveModal() {
+            document.getElementById('approveModal').classList.remove('active');
+            document.getElementById('approveForm').reset();
+        }
+        
+        function rejectPayment(id) {
+            document.getElementById('rejectPaymentId').value = id;
+            document.getElementById('rejectModal').classList.add('active');
+        }
+        
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            document.getElementById('rejectForm').reset();
+        }
+        
+        document.getElementById('approveForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('approvePaymentId').value;
+            const notes = document.getElementById('approveNotes').value;
+            
             try {
                 const response = await fetch(`/admin/payments/${id}/approve`, {
                     method: 'POST',
@@ -114,11 +177,13 @@
             } catch (err) {
                 alert('Failed: ' + err.message);
             }
-        }
+        });
         
-        async function rejectPayment(id) {
-            const reason = prompt('Rejection reason:');
-            if (!reason) return;
+        document.getElementById('rejectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('rejectPaymentId').value;
+            const reason = document.getElementById('rejectReason').value;
+            
             try {
                 const response = await fetch(`/admin/payments/${id}/reject`, {
                     method: 'POST',
@@ -133,7 +198,7 @@
             } catch (err) {
                 alert('Failed: ' + err.message);
             }
-        }
+        });
         
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
