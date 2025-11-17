@@ -474,6 +474,16 @@ program
         });
     });
 
+// Web Dashboard command
+program
+    .command('web-dashboard')
+    .description('Start web dashboard server')
+    .option('-p, --port <number>', 'Server port', '3000')
+    .action(async (options) => {
+        const { startWebServer } = await import('./src/web/server.js');
+        await startWebServer(parseInt(options.port));
+    });
+
 // Telegram command
 program
     .command('telegram')

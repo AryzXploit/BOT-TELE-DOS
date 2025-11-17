@@ -1,6 +1,7 @@
 import { AttackManager } from './attack-manager.js';
 import { logger } from '../utils/logger.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../utils/counter.js';
+import { ReportGenerator } from '../utils/report-generator.js';
 
 /**
  * Combo Attack Manager
@@ -143,7 +144,7 @@ export class ComboAttackManager {
     /**
      * Stop all attacks
      */
-    stop() {
+    async stop() {
         try {
             if (!this.active) return;
 
@@ -194,6 +195,9 @@ export class ComboAttackManager {
 
             logger.success('✅ COMBO ATTACK stopped!');
             logger.info(`📊 Final Stats - Requests: ${this.formatNumber(REQUESTS_SENT.get())} | Data: ${this.formatBytes(BYTES_SENT.get())}`);
+            
+            // Generate combo attack report
+            await this.generateReport();
 
         } catch (err) {
             logger.error(`Error stopping combo attack: ${err.message}`);
@@ -258,6 +262,44 @@ export class ComboAttackManager {
         if (bytes === 0) return '0 B';
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+    }
+
+    /**
+     * Generate combo attack report
+     */
+    async generateReport() {
+        try {
+            const elapsed = this.startTime 
+                ? Math.floor((Date.now() - this.startTime) / 1000)
+                : this.duration;
+
+            const reportData = {
+                target: this.target,
+                methods: this.methods,
+                threads: this.threads,
+                duration: this.duration,
+                elapsed: elapsed,
+                rpc: this.rpc,
+                requestsSent: REQUESTS_SENT.get() || 0,
+                bytesSent: BYTES_SENT.get() || 0,
+                proxiesUsed: this.proxies ? this.proxies.length : 0,
+                startTime: this.startTime ? new Date(this.startTime).toISOString() : new Date().toISOString(),
+                endTime: new Date().toISOString()
+            };
+
+            const generator = new ReportGenerator(reportData);
+            const report = await generator.generateReport();
+            
+            // Try to generate PDF if puppeteer is available
+            if (report.html) {
+                await generator.generatePDF(report.html);
+            }
+            
+            return report;
+        } catch (err) {
+            logger.debug(`Report generation error: ${err.message}`);
+            // Don't throw - report generation is optional
+        }
     }
 }
 

@@ -2,6 +2,7 @@ import { REQUESTS_SENT, BYTES_SENT } from '../utils/counter.js';
 import { Tools } from '../utils/tools.js';
 import { logger } from '../utils/logger.js';
 import { startMonitoring } from '../utils/target-monitor.js';
+import { ReportGenerator } from '../utils/report-generator.js';
 
 // Layer 4 Methods
 import {
@@ -566,7 +567,7 @@ export class AttackManager {
     /**
      * Stop the attack
      */
-    stop() {
+    async stop() {
         try {
             if (!this.active) return;
 
@@ -639,6 +640,9 @@ export class AttackManager {
 
             logger.success('✅ Attack stopped successfully!');
             logger.info(`📊 Final Stats - Requests: ${Tools.humanFormat(REQUESTS_SENT.get() || 0)} | Data: ${Tools.humanBytes(BYTES_SENT.get() || 0)}`);
+            
+            // Generate attack report
+            await this.generateReport();
         } catch (err) {
             logger.error(`Error stopping attack: ${err.message}`);
             // Force cleanup even if there's an error
@@ -679,5 +683,43 @@ export class AttackManager {
             requestsSent: Tools.humanFormat(REQUESTS_SENT.get() || 0),
             bytesSent: Tools.humanBytes(BYTES_SENT.get() || 0)
         };
+    }
+
+    /**
+     * Generate attack report
+     */
+    async generateReport() {
+        try {
+            const elapsed = this.startTime 
+                ? Math.floor((Date.now() - this.startTime) / 1000)
+                : this.duration;
+
+            const reportData = {
+                target: this.target,
+                method: this.method,
+                threads: this.threads,
+                duration: this.duration,
+                elapsed: elapsed,
+                rpc: this.rpc,
+                requestsSent: REQUESTS_SENT.get() || 0,
+                bytesSent: BYTES_SENT.get() || 0,
+                proxiesUsed: this.proxies ? this.proxies.length : 0,
+                startTime: this.startTime ? new Date(this.startTime).toISOString() : new Date().toISOString(),
+                endTime: new Date().toISOString()
+            };
+
+            const generator = new ReportGenerator(reportData);
+            const report = await generator.generateReport();
+            
+            // Try to generate PDF if puppeteer is available
+            if (report.html) {
+                await generator.generatePDF(report.html);
+            }
+            
+            return report;
+        } catch (err) {
+            logger.debug(`Report generation error: ${err.message}`);
+            // Don't throw - report generation is optional
+        }
     }
 }

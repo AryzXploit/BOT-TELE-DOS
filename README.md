@@ -36,6 +36,15 @@
 
 📖 **Read more:** [BUGFIXES.md](BUGFIXES.md) | [PERFORMANCE-GUIDE.md](PERFORMANCE-GUIDE.md) | [CHANGELOG-BUGFIX.md](CHANGELOG-BUGFIX.md)
 
+### 📊 New Feature: Advanced Reporting System
+- ✅ **Automatic Report Generation** - HTML + JSON reports after each attack
+- ✅ **PDF Export** - Professional PDF documents (optional)
+- ✅ **Performance Analytics** - Detailed metrics and success scoring
+- ✅ **Smart Recommendations** - AI-powered suggestions for improvement
+- ✅ **Beautiful HTML Reports** - Responsive, professional design
+
+📖 **Learn more:** [REPORTING-GUIDE.md](REPORTING-GUIDE.md) | [INSTALL-REPORTING.md](INSTALL-REPORTING.md)
+
 ---
 
 ## 📋 Table of Contents
