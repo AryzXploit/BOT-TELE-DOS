@@ -45,9 +45,9 @@ export class TelegramBotInline {
         return Markup.inlineKeyboard([
             [Markup.button.callback('GET', 'method_GET'), Markup.button.callback('POST', 'method_POST')],
             [Markup.button.callback('HTTP2', 'method_HTTP2'), Markup.button.callback('HTTP3', 'method_HTTP3')],
+            [Markup.button.callback('🔥 CF-ADVANCED', 'method_CF-ADVANCED'), Markup.button.callback('🌐 BROWSER-EMU', 'method_BROWSER-EMU')],
             [Markup.button.callback('CFB', 'method_CFB'), Markup.button.callback('BYPASS', 'method_BYPASS')],
             [Markup.button.callback('HTTP2-CF', 'method_HTTP2-CF'), Markup.button.callback('ULTIMATE', 'method_ULTIMATE')],
-            [Markup.button.callback('PRIVACYPASS', 'method_PRIVACYPASS'), Markup.button.callback('CAPTCHA', 'method_CAPTCHA')],
             [Markup.button.callback('➡️ More Methods', 'layer7_page2'), Markup.button.callback('« Back', 'back_layer')]
         ]);
     }
@@ -529,6 +529,11 @@ export class TelegramBotInline {
             logger.info(`🔥 Executing attack locally: ${target} (${method})`);
             logger.info(`   Threads: ${threads}, Duration: ${duration}s, RPC: ${rpc}`);
             
+            // Track stats before attack
+            const startRequests = REQUESTS_SENT.get();
+            const startBytes = BYTES_SENT.get();
+            const startTime = Date.now();
+            
             // Load user agents and referers
             const userAgents = [];
             const referers = [];
@@ -549,13 +554,26 @@ export class TelegramBotInline {
                         logger.debug(`Attack progress: ${data.elapsed}s elapsed`);
                     },
                     onComplete: (data) => {
+                        // Calculate actual stats from counter difference
+                        const endRequests = REQUESTS_SENT.get();
+                        const endBytes = BYTES_SENT.get();
+                        const endTime = Date.now();
+                        
+                        const totalRequests = endRequests - startRequests;
+                        const totalBytes = endBytes - startBytes;
+                        const actualDuration = Math.floor((endTime - startTime) / 1000);
+                        const avgSpeed = actualDuration > 0 ? Math.floor(totalRequests / actualDuration) : 0;
+                        
                         ctx.reply(
-                            `✅ *ATTACK KELAR BANGSAT!* ✅\n\n` +
+                            `✅ *COMBO ATTACK KELAR BANGSAT!* ✅\n\n` +
                             `🎯 Target: \`${target}\`\n` +
                             `⚡ Methods: ${methods.join(', ')}\n` +
-                            `⏱ Durasi: ${duration} detik\n\n` +
-                            `📊 *HASIL:*\n` +
-                            `Sukses: ${data.results.filter(r => r.success).length}/${methods.length} methods\n\n` +
+                            `⏱ Durasi: ${actualDuration} detik\n\n` +
+                            `📊 *STATISTIK REAL:*\n` +
+                            `├─ Total Request: *${totalRequests.toLocaleString()}* 🚀\n` +
+                            `├─ Total Bytes: *${(totalBytes / 1024 / 1024).toFixed(2)} MB*\n` +
+                            `├─ Avg Speed: *${avgSpeed} req/s*\n` +
+                            `└─ Methods Sukses: ${data.results?.filter(r => r.success).length || methods.length}/${methods.length}\n\n` +
                             `Target nya udah babak belur cok! 😈`,
                             { parse_mode: 'Markdown', ...this.mainMenu() }
                         );
@@ -579,16 +597,26 @@ export class TelegramBotInline {
                         logger.debug(`Attack progress: ${data.elapsed}s elapsed`);
                     },
                     onComplete: (data) => {
+                        // Calculate actual stats from counter difference
+                        const endRequests = REQUESTS_SENT.get();
+                        const endBytes = BYTES_SENT.get();
+                        const endTime = Date.now();
+                        
+                        const totalRequests = endRequests - startRequests;
+                        const totalBytes = endBytes - startBytes;
+                        const actualDuration = Math.floor((endTime - startTime) / 1000);
+                        const avgSpeed = actualDuration > 0 ? Math.floor(totalRequests / actualDuration) : 0;
+                        
                         ctx.reply(
                             `✅ *ATTACK SELESAI KONTOL!* ✅\n\n` +
                             `🎯 Target: \`${target}\`\n` +
                             `⚡ Method: ${methods[0]}\n` +
-                            `⏱ Durasi: ${duration} detik\n\n` +
-                            `📊 *STATISTIK:*\n` +
-                            `Total Request: ${data.stats?.totalRequests || 0}\n` +
-                            `Sukses: ${data.stats?.successfulRequests || 0}\n` +
-                            `Gagal: ${data.stats?.failedRequests || 0}\n\n` +
-                            `Target nya udah down belum? 😂`,
+                            `⏱ Durasi: ${actualDuration} detik\n\n` +
+                            `📊 *STATISTIK REAL:*\n` +
+                            `├─ Total Request: *${totalRequests.toLocaleString()}* 🚀\n` +
+                            `├─ Total Bytes: *${(totalBytes / 1024 / 1024).toFixed(2)} MB*\n` +
+                            `└─ Avg Speed: *${avgSpeed} req/s*\n\n` +
+                            `Target nya udah babak belur cok! 😈`,
                             { parse_mode: 'Markdown', ...this.mainMenu() }
                         );
                     },
