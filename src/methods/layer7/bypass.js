@@ -4,6 +4,9 @@ import { URL } from 'url';
 import { Tools } from '../../utils/tools.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
 import { logger } from '../../utils/logger.js';
+import { proxyRotator } from '../../utils/proxy-rotator.js';
+import { globalIPRotator } from '../../utils/ip-rotator.js';
+import { globalUserAgentRotator } from '../../utils/user-agent-rotator.js';
 
 /**
  * Cloudflare Bypass using Cloudscraper
@@ -15,6 +18,11 @@ export class CloudflareBypass {
         this.rpc = rpc;
         this.proxies = proxies;
         this.active = true;
+        
+        // Initialize rotation systems with null checks
+        this.proxyRotator = proxyRotator || null;
+        this.ipRotator = globalIPRotator || null;
+        this.uaRotator = globalUserAgentRotator || null;
     }
 
     async start() {
@@ -33,14 +41,14 @@ export class CloudflareBypass {
             if (!this.active) break;
 
             // Try cloudscraper first, fallback to axios if it fails
+            const userAgent = this.uaRotator && this.uaRotator.getNextUserAgent 
+                ? this.uaRotator.getNextUserAgent()
+                : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+                
             const promise = cloudscraper.get(this.url, {
                 timeout: 5000,
                 headers: {
-                    'User-Agent': Tools.randomChoice([
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
-                    ])
+                    'User-Agent': userAgent
                 }
             }).then(response => {
                 REQUESTS_SENT.add(1);

@@ -5,7 +5,9 @@ import { URL } from 'url';
 import { Tools } from '../../utils/tools.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
 import { logger } from '../../utils/logger.js';
+import { proxyRotator } from '../../utils/proxy-rotator.js';
 import { globalIPRotator } from '../../utils/ip-rotator.js';
+import { globalUserAgentRotator } from '../../utils/user-agent-rotator.js';
 
 /**
  * CLOUDFLARE KILLER - OVERPOWER METHOD
@@ -25,6 +27,11 @@ export class CloudflareKiller {
         this.proxies = proxies;
         this.proxyIndex = 0;
         this.active = true;
+        
+        // Initialize rotation systems with null checks
+        this.proxyRotator = proxyRotator || null;
+        this.ipRotator = globalIPRotator || null;
+        this.uaRotator = globalUserAgentRotator || null;
         
         // Cloudflare bypass headers
         this.cfHeaders = [
@@ -362,38 +369,31 @@ export class CloudflareKiller {
      * Get random User-Agent
      */
     getRandomUA() {
-        if (this.userAgents.length > 0) {
+        // Use rotation system first
+        if (this.uaRotator && this.uaRotator.getNextUserAgent) {
+            return this.uaRotator.getNextUserAgent();
+        }
+        
+        // Fallback to provided userAgents with null check
+        if (this.userAgents && this.userAgents.length > 0) {
             return Tools.randomChoice(this.userAgents);
         }
         
-        const uas = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
-        ];
-        
-        return uas[Math.floor(Math.random() * uas.length)];
+        // Final fallback
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
     }
 
     /**
      * Get random Referer
      */
     getRandomReferer() {
-        if (this.referers.length > 0) {
+        // Fallback to provided referers with null check
+        if (this.referers && this.referers.length > 0) {
             return Tools.randomChoice(this.referers);
         }
         
-        const referers = [
-            'https://www.google.com/',
-            'https://www.bing.com/',
-            'https://www.yahoo.com/',
-            'https://www.facebook.com/',
-            'https://www.twitter.com/'
-        ];
-        
-        return referers[Math.floor(Math.random() * referers.length)];
+        // Final fallback
+        return 'https://www.google.com/';
     }
 
     /**
