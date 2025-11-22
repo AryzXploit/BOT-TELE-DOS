@@ -396,7 +396,6 @@ export class MethodExecutor {
         const attacks = [];
 
         for (const [attackId, attackData] of this.activeAttacks) {
-            const stats = attackData.attack.getStats ? attackData.attack.getStats() : {};
             const elapsed = Math.floor((Date.now() - attackData.startTime) / 1000);
 
             attacks.push({
@@ -405,8 +404,7 @@ export class MethodExecutor {
                 target: attackData.config.target,
                 threads: attackData.config.threads,
                 duration: attackData.config.duration,
-                elapsed,
-                stats
+                elapsed
             });
         }
 
@@ -423,7 +421,6 @@ export class MethodExecutor {
             return null;
         }
 
-        const stats = attackData.attack.getStats ? attackData.attack.getStats() : {};
         const elapsed = Math.floor((Date.now() - attackData.startTime) / 1000);
 
         return {
@@ -431,7 +428,11 @@ export class MethodExecutor {
             method: attackData.method,
             target: attackData.config.target,
             elapsed,
-            stats
+            stats: {
+                totalRequests: 0,
+                successfulRequests: 0,
+                failedRequests: 0
+            }
         };
     }
 }
