@@ -1443,7 +1443,8 @@ export class TelegramBot {
                 `⚡ *Layer 4* → Servers (ip:port)\n` +
                 `   Best for: Game servers, VPS, Network\n\n` +
                 `🛡️ *Cloudflare Sites:*\n` +
-                `   Use HTTP2-CF or CFB method\n` +
+                `   🚀 HTTP2-ENHANCED (TERBARU!)\n` +
+                `   🔥 HTTP2-CF atau CF-KILLER\n` +
                 `   95% bypass success rate!\n\n` +
                 `🔥 *More Power:*\n` +
                 `   Higher threads = more requests\n` +

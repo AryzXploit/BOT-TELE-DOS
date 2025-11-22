@@ -1,0 +1,10 @@
+[2025-11-22T18:17:59.897Z] [ERROR] Unhandled Promise Rejection: request to https://api.telegram.org/bot7952535432:[REDACTED]/getMe failed, reason: 
+FetchError: request to https://api.telegram.org/bot7952535432:[REDACTED]/getMe failed, reason: 
+    at ClientRequest.<anonymous> (/home/arya/BOT-TELE-DOS/node_modules/node-fetch/lib/index.js:1501:11)
+    at ClientRequest.emit (node:events:524:28)
+    at emitErrorEvent (node:_http_client:101:11)
+    at TLSSocket.socketErrorListener (node:_http_client:504:5)
+    at TLSSocket.emit (node:events:524:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)

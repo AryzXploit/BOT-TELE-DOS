@@ -7,7 +7,7 @@
     "enabled": true
   },
   "license_bot": {
-    "token": "8528500952:AAG25t9ZC-IZOw8DCCXChM0PkxXyjoMcu6M",
+    "token": "7952535432:AAGe8z85itPc63l_yOADCvaz7vtbkzhpVmo",
     "admin_ids": ["8426540797"],
     "seller_ids": [],
     "enabled": true
@@ -32,12 +32,29 @@
     }
   },
   "attack_defaults": {
-    "max_threads": 1000000,
-    "max_duration": 60000,
-    "max_rpc": 100,
-    "default_threads": 500,
-    "default_duration": 120,
-    "default_rpc": 10
+    "max_threads": 2000000,
+    "max_duration": 120000,
+    "max_rpc": 500,
+    "default_threads": 1000,
+    "default_duration": 300,
+    "default_rpc": 50
+  },
+  "http2_optimization": {
+    "enabled": true,
+    "max_concurrent_streams": 1000,
+    "connection_pool_size": 100,
+    "frame_size": 65536,
+    "window_size": 6291456,
+    "header_table_size": 65536
+  },
+  "cloudflare_bypass": {
+    "enabled": true,
+    "max_bypass_attempts": 10,
+    "challenge_solver": true,
+    "turnstile_bypass": true,
+    "captcha_bypass": true,
+    "js_challenge_bypass": true,
+    "bot_fight_mode_bypass": true
   },
   "proxy-providers": [
     {

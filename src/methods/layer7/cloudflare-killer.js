@@ -119,7 +119,7 @@ export class CloudflareKiller {
                         });
 
                         req.on('response', () => {
-                            REQUESTS_SENT.increment();
+                            REQUESTS_SENT.add(1);
                             BYTES_SENT.add(1024);
                         });
 
@@ -165,7 +165,7 @@ export class CloudflareKiller {
                 };
 
                 const req = protocol.request(options, (res) => {
-                    REQUESTS_SENT.increment();
+                    REQUESTS_SENT.add(1);
                     BYTES_SENT.add(res.headers['content-length'] || 1024);
                     
                     // Keep connection alive
@@ -226,7 +226,7 @@ export class CloudflareKiller {
                 };
 
                 const req = protocol.request(options, (res) => {
-                    REQUESTS_SENT.increment();
+                    REQUESTS_SENT.add(1);
                     BYTES_SENT.add(res.headers['content-length'] || 1024);
                     res.on('data', () => {});
                     res.on('end', () => resolve());
@@ -276,7 +276,7 @@ export class CloudflareKiller {
                 };
 
                 const req = protocol.request(options, (res) => {
-                    REQUESTS_SENT.increment();
+                    REQUESTS_SENT.add(1);
                     BYTES_SENT.add(res.headers['content-length'] || 1024);
                     res.on('data', () => {});
                     res.on('end', () => resolve());

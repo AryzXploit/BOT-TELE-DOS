@@ -21,6 +21,7 @@ import { ProxyManager } from './src/utils/proxy-manager.js';
 import { logger } from './src/utils/logger.js';
 import { LAYER4_METHODS } from './src/methods/layer4/index.js';
 import { LAYER7_METHODS } from './src/methods/layer7/index.js';
+import { performanceMaximizer } from './src/utils/performance-maximizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -141,6 +142,10 @@ verifyIntegrity();
 
 // Run password check before everything
 await verifyPassword();
+
+// Initialize performance maximizer
+logger.info('🚀 Initializing performance maximizer...');
+await performanceMaximizer.maximize();
 
 // ASCII Banner
 const banner = `

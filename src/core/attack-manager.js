@@ -37,6 +37,8 @@ import {
     HTTP2CFBypass 
 } from '../methods/layer7/http2.js';
 
+import { HTTP2EnhancedCFKiller } from '../methods/layer7/http2-enhanced.js';
+
 import { 
     CloudflareBypass, 
     AdvancedBypass, 
@@ -330,6 +332,17 @@ export class AttackManager {
 
         if (['HTTP2-CF', 'CFB'].includes(method)) {
             return new HTTP2CFBypass(
+                this.target, 
+                this.duration, 
+                this.rpc, 
+                this.userAgents, 
+                this.referers, 
+                this.proxies
+            );
+        }
+
+        if (['HTTP2-ENHANCED'].includes(method)) {
+            return new HTTP2EnhancedCFKiller(
                 this.target, 
                 this.duration, 
                 this.rpc, 

@@ -1,6 +1,7 @@
 // Import maximized versions (will override originals)
 export { HTTPGetFlood, HTTPPostFlood, HTTPSlowAttack } from './http-maximized.js';
 export { HTTP2Flood, HTTP2PostFlood, HTTP2CFBypass } from './http2.js';
+export { HTTP2EnhancedCFKiller } from './http2-enhanced.js';
 export { CloudflareBypass, AdvancedBypass, BotSimulation } from './bypass.js';
 export { 
     StressAttack, 
@@ -33,6 +34,7 @@ export const LAYER7_METHODS = [
     'HTTP2',
     'HTTP2-POST',
     'HTTP2-CF',
+    'HTTP2-ENHANCED',
     'HTTP3',
     'HTTP3-POST',
     'CFB',

