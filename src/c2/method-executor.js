@@ -116,8 +116,8 @@ export class MethodExecutor {
             logger.info(`🔥 Executing ${methodUpper} attack on ${target}`);
             logger.info(`   Threads: ${threads}, Duration: ${duration}s, RPC: ${rpc}`);
 
-            // Create attack instances - scale with threads but cap to prevent OOM
-            const numInstances = Math.min(Math.max(Math.floor(threads / 10), 5), 50); // Min 5, Max 50 instances
+            // Create attack instances - REDUCED for Codespaces stability
+            const numInstances = Math.min(Math.max(Math.floor(threads / 20), 3), 15); // Min 3, Max 15 instances
             const attacks = [];
             
             logger.info(`   Creating ${numInstances} attack instances (threads: ${threads})`);

