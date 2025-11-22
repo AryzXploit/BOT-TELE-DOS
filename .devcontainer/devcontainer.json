@@ -1,0 +1,42 @@
+{
+  "name": "Aryzz C2 DDoS Bot",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+
+  "forwardPorts": [8080, 3000],
+  
+  "portsAttributes": {
+    "8080": {
+      "label": "C2 Server",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "Web Dashboard",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "npm install",
+  
+  "postStartCommand": "echo '🎯 Aryzz C2 Server Ready!' && echo '📡 Start C2 Server: npm run c2-server' && echo '🤖 Start Bot Agent: npm run c2-agent' && echo '📚 Read guide: cat DEPLOY-FREE.md'",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-json"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "remoteUser": "node"
+}

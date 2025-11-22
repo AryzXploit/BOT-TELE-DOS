@@ -1,0 +1,59 @@
+[2025-11-18T08:58:33.123Z] [INFO] 🔄 Generating IP pool...
+[2025-11-18T08:58:33.144Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
+[2025-11-18T09:01:26.254Z] [INFO] 📊 Statistics tracking started
+[2025-11-18T09:01:26.257Z] [INFO] 🎯 Starting CFBUAM attack on https://aryapanel.xyz
+[2025-11-18T09:01:26.258Z] [INFO] ⚙️  Threads: 400, Duration: 120s
+[2025-11-18T09:01:26.258Z] [WARNING] ⚠️  No proxies loaded! Attack may be less effective.
+[2025-11-18T09:01:27.464Z] [INFO] 📊 Progress: 0% | Requests: 0 | Data: 0 B | Time: 1s / 120s
+[2025-11-18T09:01:29.532Z] [INFO] 📊 Progress: 2% | Requests: 0 | Data: 0 B | Time: 3s / 120s
+[2025-11-18T09:01:31.339Z] [INFO] 📊 Progress: 4% | Requests: 0 | Data: 0 B | Time: 5s / 120s
+[2025-11-18T09:01:33.010Z] [INFO] 📊 Progress: 5% | Requests: 0 | Data: 0 B | Time: 6s / 120s
+[2025-11-18T09:01:35.437Z] [INFO] 📊 Progress: 7% | Requests: 11 | Data: 11.25 kB | Time: 9s / 120s
+[2025-11-18T09:01:38.390Z] [INFO] 📊 Progress: 10% | Requests: 12 | Data: 12.28 kB | Time: 12s / 120s
+[2025-11-18T09:01:39.042Z] [INFO] 📊 Statistics tracking stopped
+[2025-11-18T09:01:40.808Z] [INFO] 📊 Progress: 11% | Requests: 12 | Data: 12.28 kB | Time: 14s / 120s
+[2025-11-18T09:01:43.640Z] [INFO] 📊 Progress: 14% | Requests: 13 | Data: 13.30 kB | Time: 17s / 120s
+[2025-11-18T09:01:46.247Z] [INFO] 📊 Progress: 15% | Requests: 13 | Data: 13.30 kB | Time: 19s / 120s
+[2025-11-18T09:01:49.615Z] [INFO] 📊 Progress: 19% | Requests: 13 | Data: 13.30 kB | Time: 23s / 120s
+[2025-11-18T09:01:54.711Z] [INFO] 📊 Progress: 23% | Requests: 13 | Data: 13.30 kB | Time: 28s / 120s
+[2025-11-18T09:01:57.422Z] [INFO] 📊 Progress: 25% | Requests: 13 | Data: 13.30 kB | Time: 31s / 120s
+[2025-11-18T09:02:00.086Z] [INFO] 📊 Progress: 27% | Requests: 13 | Data: 13.30 kB | Time: 33s / 120s
+[2025-11-18T09:02:01.749Z] [INFO] 📊 Progress: 29% | Requests: 13 | Data: 13.30 kB | Time: 35s / 120s
+[2025-11-18T09:02:04.194Z] [INFO] 📊 Progress: 30% | Requests: 34 | Data: 1.07 MB | Time: 37s / 120s
+[2025-11-18T09:02:06.500Z] [INFO] 📊 Progress: 33% | Requests: 34 | Data: 1.07 MB | Time: 40s / 120s
+[2025-11-18T09:02:09.789Z] [INFO] 📊 Progress: 35% | Requests: 44 | Data: 1.57 MB | Time: 43s / 120s
+[2025-11-18T09:02:11.923Z] [INFO] 📊 Progress: 37% | Requests: 52 | Data: 1.98 MB | Time: 45s / 120s
+[2025-11-18T09:02:14.434Z] [INFO] 📊 Progress: 40% | Requests: 55 | Data: 2.13 MB | Time: 48s / 120s
+[2025-11-18T09:02:15.682Z] [INFO] 📊 Progress: 40% | Requests: 55 | Data: 2.13 MB | Time: 49s / 120s
+[2025-11-18T09:02:18.667Z] [INFO] 📊 Progress: 43% | Requests: 55 | Data: 2.13 MB | Time: 52s / 120s
+[2025-11-18T09:02:21.520Z] [INFO] 📊 Progress: 45% | Requests: 55 | Data: 2.13 MB | Time: 55s / 120s
+[2025-11-18T09:02:23.215Z] [INFO] 📊 Progress: 46% | Requests: 55 | Data: 2.13 MB | Time: 56s / 120s
+[2025-11-18T09:02:26.335Z] [INFO] 📊 Progress: 50% | Requests: 55 | Data: 2.13 MB | Time: 60s / 120s
+[2025-11-18T09:02:27.874Z] [INFO] 📊 Progress: 50% | Requests: 55 | Data: 2.13 MB | Time: 61s / 120s
+[2025-11-18T09:02:29.625Z] [INFO] 📊 Progress: 52% | Requests: 61 | Data: 2.43 MB | Time: 63s / 120s
+[2025-11-18T09:02:31.123Z] [INFO] 📊 Progress: 53% | Requests: 61 | Data: 2.43 MB | Time: 64s / 120s
+[2025-11-18T09:02:36.129Z] [INFO] 📊 Progress: 57% | Requests: 61 | Data: 2.43 MB | Time: 69s / 120s
+[2025-11-18T09:02:39.882Z] [INFO] 📊 Progress: 60% | Requests: 61 | Data: 2.43 MB | Time: 73s / 120s
+[2025-11-18T09:02:41.455Z] [INFO] 📊 Progress: 62% | Requests: 61 | Data: 2.43 MB | Time: 75s / 120s
+[2025-11-18T09:02:42.522Z] [INFO] 📊 Progress: 63% | Requests: 61 | Data: 2.43 MB | Time: 76s / 120s
+[2025-11-18T09:02:43.524Z] [INFO] 📊 Progress: 64% | Requests: 61 | Data: 2.43 MB | Time: 77s / 120s
+[2025-11-18T09:02:44.545Z] [INFO] 📊 Progress: 65% | Requests: 61 | Data: 2.43 MB | Time: 78s / 120s
+[2025-11-18T09:02:45.545Z] [INFO] 📊 Progress: 65% | Requests: 61 | Data: 2.43 MB | Time: 79s / 120s
+[2025-11-18T09:02:46.564Z] [INFO] 📊 Progress: 66% | Requests: 61 | Data: 2.43 MB | Time: 80s / 120s
+[2025-11-18T09:02:47.565Z] [INFO] 📊 Progress: 67% | Requests: 61 | Data: 2.43 MB | Time: 81s / 120s
+[2025-11-18T09:02:48.650Z] [INFO] 📊 Progress: 68% | Requests: 61 | Data: 2.43 MB | Time: 82s / 120s
+[2025-11-18T09:02:49.814Z] [INFO] 📊 Progress: 69% | Requests: 61 | Data: 2.43 MB | Time: 83s / 120s
+[2025-11-18T09:02:50.830Z] [INFO] 📊 Progress: 70% | Requests: 61 | Data: 2.43 MB | Time: 84s / 120s
+[2025-11-18T09:02:51.830Z] [INFO] 📊 Progress: 70% | Requests: 61 | Data: 2.43 MB | Time: 85s / 120s
+[2025-11-18T09:02:52.830Z] [INFO] 📊 Progress: 71% | Requests: 61 | Data: 2.43 MB | Time: 86s / 120s
+[2025-11-18T09:02:53.831Z] [INFO] 📊 Progress: 72% | Requests: 61 | Data: 2.43 MB | Time: 87s / 120s
+[2025-11-18T09:02:54.909Z] [INFO] 📊 Progress: 73% | Requests: 61 | Data: 2.43 MB | Time: 88s / 120s
+[2025-11-18T09:02:55.929Z] [INFO] 📊 Progress: 74% | Requests: 61 | Data: 2.43 MB | Time: 89s / 120s
+[2025-11-18T09:02:57.435Z] [INFO] 📊 Progress: 75% | Requests: 61 | Data: 2.43 MB | Time: 91s / 120s
+[2025-11-18T09:03:00.210Z] [INFO] 📊 Progress: 77% | Requests: 61 | Data: 2.43 MB | Time: 93s / 120s
+[2025-11-18T09:03:05.556Z] [INFO] 📊 Progress: 82% | Requests: 61 | Data: 2.43 MB | Time: 99s / 120s
+[2025-11-18T09:03:07.467Z] [INFO] 📊 Progress: 84% | Requests: 61 | Data: 2.43 MB | Time: 101s / 120s
+[2025-11-18T09:03:08.775Z] [INFO] 📊 Progress: 85% | Requests: 61 | Data: 2.43 MB | Time: 102s / 120s
+[2025-11-18T09:03:09.775Z] [INFO] 📊 Progress: 85% | Requests: 61 | Data: 2.43 MB | Time: 103s / 120s
+[2025-11-18T09:03:10.802Z] [INFO] 📊 Progress: 86% | Requests: 61 | Data: 2.43 MB | Time: 104s / 120s
+[2025-11-18T09:03:12.466Z] [INFO] 📊 Progress: 88% | Requests: 61 | Data: 2.43 MB | Time: 106s / 120s

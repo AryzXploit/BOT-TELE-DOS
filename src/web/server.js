@@ -80,14 +80,9 @@ io.on('connection', (socket) => {
         socket.join(`user_${socket.request.session.userId}`);
     }
     
-    // Listen to statistics updates
-    globalStats.on('update', (stats) => {
-        socket.emit('stats_update', stats);
-    });
-    
-    globalStats.on('request', (data) => {
-        socket.emit('request_update', data);
-    });
+    // Disabled real-time stats to prevent web server lag
+    // Stats tracking causes high CPU usage and makes web panel slow
+    // Use child process attacks instead for better performance
     
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);

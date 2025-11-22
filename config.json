@@ -17,6 +17,19 @@
     "require_license": false,
     "free_trial_enabled": true
   },
+  "c2": {
+    "enabled": true,
+    "url": "http://localhost:8080",
+    "apiKey": "aryzz-c2-api-key-2024",
+    "server": {
+      "port": 8080,
+      "host": "0.0.0.0"
+    },
+    "agent": {
+      "reconnectInterval": 10000,
+      "heartbeatInterval": 60000
+    }
+  },
   "attack_defaults": {
     "max_threads": 1000000,
     "max_duration": 60000,

@@ -13,6 +13,8 @@
     "telegram": "node --max-old-space-size=8192 --expose-gc index.js telegram",
     "web": "node --max-old-space-size=8192 index.js web-dashboard",
     "web-dev": "nodemon --max-old-space-size=8192 index.js web-dashboard",
+    "c2-server": "node --max-old-space-size=8192 index.js c2-server",
+    "c2-agent": "node --max-old-space-size=8192 index.js c2-agent",
     "dev": "nodemon --max-old-space-size=8192 index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "license-bot": "node src/license/license-bot.js"

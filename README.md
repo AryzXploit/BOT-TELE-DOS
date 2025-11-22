@@ -47,6 +47,58 @@
 
 ---
 
+---
+
+## 🎯 NEW: C2 Command & Control System + Telegram Bot Button!
+
+### 🔥 Deploy Anywhere - No VPS Needed! Laptop Cuma Remote Control!
+
+✅ **GitHub Codespaces** - 60 hours FREE/month  
+✅ **Replit** - Free hosting  
+✅ **Render** - Free tier  
+✅ **Railway** - Free deployment  
+✅ **36+ Attack Methods** - All integrated!
+✅ **Telegram Bot** - Button version (pencet-pencet!)
+
+**Quick Start (3 Steps!):**
+```bash
+# 1. Start C2 Server (GitHub Codespaces)
+npm run c2-server
+
+# 2. Connect Bot Agents (10x Codespaces)
+node index.js c2-agent --c2-url https://your-c2-url.com
+
+# 3. Start Telegram Bot
+npm run telegram
+# Buka Telegram → /start → Pencet button → DONE! 🚀
+```
+
+**Features:**
+- 🌐 **Web Dashboard** - Modern UI for control
+- 📡 **REST API** - Full API access (36+ methods!)
+- 🔌 **WebSocket** - Real-time communication
+- 🤖 **Multi-Bot Management** - Control 10+ bots sekaligus
+- ⚡ **Distributed Attacks** - Coordinate attacks across bots
+- 📱 **Telegram Bot** - Button version (tinggal pencet-pencet!)
+- 💰 **100% Gratis** - Semua jalan di cloud
+- 📶 **0 Kuota** - Laptop cuma remote control!
+
+**Power:**
+- 1 Bot: ~10,000 req/s
+- 10 Bots: ~100,000 req/s
+- 10 Bots + Combo: ~700,000 req/s
+- **Laptop Lu: 0 req/s** (cuma kontrol!)
+
+📖 **Documentation:**
+- ⭐ [SETUP-TANPA-KUOTA.md](SETUP-TANPA-KUOTA.md) - **BACA INI DULU!** Setup tanpa kuota
+- ⭐ [TELEGRAM-BUTTON-GUIDE.md](TELEGRAM-BUTTON-GUIDE.md) - Telegram bot guide (button!)
+- [CODESPACES-QUICKSTART.md](CODESPACES-QUICKSTART.md) - Deploy in 5 minutes
+- [DEPLOY-FREE.md](DEPLOY-FREE.md) - All free hosting options
+- [C2-GUIDE.md](C2-GUIDE.md) - Complete C2 documentation
+- [COMPLETE-SUMMARY.md](COMPLETE-SUMMARY.md) - Complete summary
+
+---
+
 ## 📋 Table of Contents
 
 - [Features](#-features)

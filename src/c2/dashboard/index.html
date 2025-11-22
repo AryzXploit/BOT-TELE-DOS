@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aryzz C2 Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Header -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-cyan-400">
+                        <i class="fas fa-satellite-dish mr-2"></i>
+                        Aryzz C2 Dashboard
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="connection-status" class="px-3 py-1 rounded-full text-sm bg-red-600">
+                        <i class="fas fa-circle mr-1"></i> Disconnected
+                    </span>
+                    <button onclick="refreshData()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Bots</p>
+                        <p id="stat-total-bots" class="text-3xl font-bold text-white">0</p>
+                    </div>
+                    <i class="fas fa-robot text-4xl text-cyan-400"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Online Bots</p>
+                        <p id="stat-online-bots" class="text-3xl font-bold text-green-400">0</p>
+                    </div>
+                    <i class="fas fa-check-circle text-4xl text-green-400"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Running Attacks</p>
+                        <p id="stat-running-attacks" class="text-3xl font-bold text-red-400">0</p>
+                    </div>
+                    <i class="fas fa-bolt text-4xl text-red-400"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Requests</p>
+                        <p id="stat-total-requests" class="text-3xl font-bold text-yellow-400">0</p>
+                    </div>
+                    <i class="fas fa-chart-line text-4xl text-yellow-400"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6">
+            <div class="border-b border-gray-700">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="switchTab('bots')" id="tab-bots" class="tab-button border-b-2 border-cyan-400 py-4 px-1 text-cyan-400 font-medium">
+                        <i class="fas fa-robot mr-2"></i> Bots
+                    </button>
+                    <button onclick="switchTab('attacks')" id="tab-attacks" class="tab-button border-b-2 border-transparent py-4 px-1 text-gray-400 hover:text-gray-300">
+                        <i class="fas fa-bolt mr-2"></i> Attacks
+                    </button>
+                    <button onclick="switchTab('control')" id="tab-control" class="tab-button border-b-2 border-transparent py-4 px-1 text-gray-400 hover:text-gray-300">
+                        <i class="fas fa-gamepad mr-2"></i> Control Panel
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Bots Tab -->
+        <div id="content-bots" class="tab-content">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-700">
+                    <h2 class="text-xl font-bold">Connected Bots</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Hostname</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">IP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">OS</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Last Seen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bots-table" class="bg-gray-800 divide-y divide-gray-700">
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-400">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attacks Tab -->
+        <div id="content-attacks" class="tab-content hidden">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-700">
+                    <h2 class="text-xl font-bold">Attack History</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Target</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Method</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Threads</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Requests</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attacks-table" class="bg-gray-800 divide-y divide-gray-700">
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-400">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel Tab -->
+        <div id="content-control" class="tab-content hidden">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                <h2 class="text-xl font-bold mb-6">Launch Attack</h2>
+                <form id="attack-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Target URL/IP</label>
+                        <input type="text" id="attack-target" required
+                            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-cyan-400"
+                            placeholder="https://example.com or 1.2.3.4:80">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Method</label>
+                            <select id="attack-method" required
+                                class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-cyan-400">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="HTTP2">HTTP2</option>
+                                <option value="BYPASS">BYPASS</option>
+                                <option value="FLOOD">FLOOD</option>
+                                <option value="UDP">UDP</option>
+                                <option value="TCP">TCP</option>
+                                <option value="SYN">SYN</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Duration (seconds)</label>
+                            <input type="number" id="attack-duration" required value="60" min="1"
+                                class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-cyan-400">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Threads</label>
+                            <input type="number" id="attack-threads" required value="100" min="1"
+                                class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-cyan-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">RPC</label>
+                            <input type="number" id="attack-rpc" required value="10" min="1"
+                                class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-cyan-400">
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 rounded font-bold text-lg">
+                        <i class="fas fa-rocket mr-2"></i> Launch Attack
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

