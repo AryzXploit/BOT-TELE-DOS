@@ -1,0 +1,148 @@
+[2025-11-22T22:11:27.426Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:11:27.427Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+    at async startC2Agent (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:282:5)
+    at async Command.<anonymous> (file:///workspaces/BOT-TELE-DOS/index.js:516:9)
+[2025-11-22T22:11:32.776Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:11:32.776Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:11:38.074Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:11:38.074Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:16.783Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:16.784Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+    at async startC2Agent (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:282:5)
+    at async Command.<anonymous> (file:///workspaces/BOT-TELE-DOS/index.js:516:9)
+[2025-11-22T22:12:22.164Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:22.164Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:27.460Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:27.461Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:32.754Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:32.754Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:38.049Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:38.050Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:43.342Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:43.342Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:48.636Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:48.637Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:53.986Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:53.986Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
+[2025-11-22T22:12:59.338Z] [ERROR] Failed to register bot: Request failed with status code 400
+[2025-11-22T22:12:59.338Z] [ERROR] Failed to start C2 agent: Request failed with status code 400
+AxiosError: Request failed with status code 400
+    at settle (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/settle.js:19:12)
+    at IncomingMessage.handleStreamEnd (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/adapters/http.js:793:11)
+    at IncomingMessage.emit (node:events:529:35)
+    at endReadableNT (node:internal/streams/readable:1400:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at Axios.request (file:///workspaces/BOT-TELE-DOS/node_modules/axios/lib/core/Axios.js:45:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async C2Agent.registerBot (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:57:30)
+    at async C2Agent.start (file:///workspaces/BOT-TELE-DOS/src/c2/agent.js:28:13)
