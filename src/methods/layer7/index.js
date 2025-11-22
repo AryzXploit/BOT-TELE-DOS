@@ -20,7 +20,7 @@ export {
     HTTP3PostAttack
 } from './http3.js';
 export { CloudflareKiller } from './cloudflare-killer.js';
-export { UltimateCfBypass, NuclearCfBypass } from './ultimate-cf-bypass.js';
+export { SimpleUltimate, BrutalUltimate } from './simple-ultimate.js';
 
 /**
  * Layer 7 Attack Methods
@@ -49,6 +49,6 @@ export const LAYER7_METHODS = [
     'APACHE',
     'NULL',
     'CF-KILLER',
-    'ULTIMATE-CF',
-    'NUCLEAR-CF'
+    'SIMPLE-ULTIMATE',
+    'BRUTAL-ULTIMATE'
 ];

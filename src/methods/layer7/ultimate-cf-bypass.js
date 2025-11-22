@@ -19,13 +19,15 @@ export class UltimateCfBypass {
         this.proxies = proxies;
         this.active = true;
         
-        // Pre-generate bypass tokens
+        // Pre-generate bypass tokens (order matters!)
         this.bypassTokens = {
-            turnstile: this.generateTurnstileTokens(100),
-            cfClearance: this.generateCfClearanceTokens(100),
-            jsChallenge: this.generateJsChallengeTokens(100),
             browserFingerprints: this.generateBrowserFingerprints(50)
         };
+        
+        // Generate tokens yang depend on browserFingerprints
+        this.bypassTokens.turnstile = this.generateTurnstileTokens(100);
+        this.bypassTokens.cfClearance = this.generateCfClearanceTokens(100);
+        this.bypassTokens.jsChallenge = this.generateJsChallengeTokens(100);
         
         logger.info('🔥 ULTIMATE CF BYPASS initialized with 350+ bypass tokens');
     }
@@ -106,6 +108,19 @@ export class UltimateCfBypass {
     }
 
     generateBrowserFingerprint() {
+        // Generate on-the-fly kalau belum ada pool
+        if (!this.bypassTokens || !this.bypassTokens.browserFingerprints || this.bypassTokens.browserFingerprints.length === 0) {
+            return {
+                screen: `${Tools.randomChoice([1920, 1366, 1440, 1536, 2560])}x${Tools.randomChoice([1080, 768, 900, 864, 1440])}`,
+                timezone: Tools.randomChoice([-480, -420, -360, -300, -240, -180, 0, 60, 120, 180, 240, 300, 360, 480, 540]),
+                language: Tools.randomChoice(['en-US', 'en-GB', 'id-ID', 'ja-JP', 'de-DE', 'fr-FR', 'es-ES']),
+                platform: Tools.randomChoice(['Win32', 'MacIntel', 'Linux x86_64', 'Linux armv7l']),
+                webgl: Tools.randomString(16),
+                canvas: Tools.randomString(32),
+                plugins: Tools.randomInt(5, 25),
+                fonts: Tools.randomInt(50, 200)
+            };
+        }
         return Tools.randomChoice(this.bypassTokens.browserFingerprints);
     }
 
