@@ -21,6 +21,7 @@
     "enabled": true,
     "url": "https://super-duper-waddle-4jwqw567q4x925jj6-8080.app.github.dev",
     "apiKey": "aryzz-c2-api-key-2024",
+    "useLocalExecution": true,
     "server": {
       "port": 8080,
       "host": "0.0.0.0"

