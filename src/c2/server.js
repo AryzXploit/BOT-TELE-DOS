@@ -8,6 +8,7 @@ import { C2Controller } from './controller.js';
 import { C2Database } from './database.js';
 import { authMiddleware } from './middleware/auth.js';
 import { methodExecutor } from './method-executor.js';
+import { attackMonitor } from './monitor.js';
 import { logger } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -227,6 +228,15 @@ export class C2Server {
                     layer4: methods.layer4,
                     total: methods.total
                 }
+            });
+        });
+
+        // Monitor stats endpoint
+        router.get('/monitor/stats', authMiddleware(this.config.apiKey), (req, res) => {
+            const stats = attackMonitor.getStats();
+            res.json({
+                success: true,
+                stats
             });
         });
 

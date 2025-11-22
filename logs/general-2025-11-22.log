@@ -168,3 +168,59 @@ FetchError: request to https://api.telegram.org/bot7952535432:[REDACTED]/getMe f
 [2025-11-22T22:00:51.654Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
 [2025-11-22T22:00:51.655Z] [INFO] 🔄 Generating user agent pool...
 [2025-11-22T22:00:51.656Z] [INFO] ✅ Generated 57 user agents for rotation
+[2025-11-22T22:26:15.979Z] [INFO] 🔄 Loading proxies (optimized mode)...
+[2025-11-22T22:26:15.991Z] [INFO] 🎯 Premium proxies loaded: 210 (optimized mode)
+[2025-11-22T22:26:15.991Z] [INFO] 💎 Your premium proxies: 195 | Manual proxies: 15
+[2025-11-22T22:26:15.992Z] [INFO] 🔄 Generating IP pool...
+[2025-11-22T22:26:16.018Z] [SUCCESS] ✅ Generated 10800 IPs for rotation
+[2025-11-22T22:26:16.019Z] [INFO] 🔄 Generating user agent pool...
+[2025-11-22T22:26:16.020Z] [INFO] ✅ Generated 57 user agents for rotation
+[2025-11-22T22:26:18.295Z] [INFO] 🚀 Initializing Proxy Optimizer...
+[2025-11-22T22:26:18.319Z] [INFO] 📊 Proxy categorization:
+[2025-11-22T22:26:18.320Z] [INFO]    Premium proxies: 200
+[2025-11-22T22:26:18.320Z] [INFO]    Other proxies: 10
+[2025-11-22T22:26:18.321Z] [INFO] 🔧 Optimizing proxy performance...
+[2025-11-22T22:26:18.327Z] [INFO] ⚡ Fast proxies identified: 0
+[2025-11-22T22:26:18.329Z] [SUCCESS] ✅ Proxy optimization complete: 0 working proxies
+[2025-11-22T22:26:24.408Z] [INFO] 🚀 Initializing performance maximizer...
+[2025-11-22T22:26:24.408Z] [INFO] 🚀 PERFORMANCE MAXIMIZER - Starting ultimate optimization...
+[2025-11-22T22:26:24.409Z] [INFO] 🧠 Optimizing memory management...
+[2025-11-22T22:26:24.410Z] [SUCCESS] ✅ Memory optimization complete
+[2025-11-22T22:26:24.412Z] [INFO] 🌐 Optimizing network performance...
+[2025-11-22T22:26:24.415Z] [SUCCESS] ✅ Network optimization complete
+[2025-11-22T22:26:24.415Z] [INFO] ⚡ Optimizing CPU performance...
+[2025-11-22T22:26:24.422Z] [SUCCESS] ✅ CPU optimization complete
+[2025-11-22T22:26:24.422Z] [INFO] 💾 Optimizing I/O performance...
+[2025-11-22T22:26:24.432Z] [SUCCESS] ✅ I/O optimization complete
+[2025-11-22T22:26:24.433Z] [INFO] 🗑️ Optimizing garbage collection...
+[2025-11-22T22:26:24.434Z] [SUCCESS] ✅ Garbage collection optimization complete
+[2025-11-22T22:26:24.435Z] [INFO] 🔧 Applying system-level optimizations...
+[2025-11-22T22:26:24.435Z] [SUCCESS] ✅ System-level optimizations complete
+[2025-11-22T22:26:24.436Z] [SUCCESS] ✅ PERFORMANCE MAXIMIZER - All optimizations complete!
+[2025-11-22T22:26:24.436Z] [INFO] 
+╔═══════════════════════════════════════════════════════════════╗
+[2025-11-22T22:26:24.436Z] [INFO] ║                🚀 PERFORMANCE MAXIMIZER REPORT 🚀             ║
+[2025-11-22T22:26:24.437Z] [INFO] ╚═══════════════════════════════════════════════════════════════╝
+[2025-11-22T22:26:24.437Z] [INFO] 📊 Optimization Duration: 6139ms
+[2025-11-22T22:26:24.437Z] [INFO] ⚡ Performance Gain: 100%
+[2025-11-22T22:26:24.437Z] [INFO] 🧠 Memory Optimized: -1.86 KB
+[2025-11-22T22:26:24.437Z] [INFO] 🌐 Network Proxies: 0
+[2025-11-22T22:26:24.437Z] [INFO] 
+🔧 Optimization Status:
+[2025-11-22T22:26:24.438Z] [INFO]    ✅ Memory: Optimized
+[2025-11-22T22:26:24.438Z] [INFO]    ✅ Network: Optimized
+[2025-11-22T22:26:24.438Z] [INFO]    ✅ Cpu: Optimized
+[2025-11-22T22:26:24.438Z] [INFO]    ✅ Io: Optimized
+[2025-11-22T22:26:24.438Z] [INFO]    ✅ Gc: Optimized
+[2025-11-22T22:26:24.438Z] [INFO] 
+💡 Recommendations:
+[2025-11-22T22:26:24.439Z] [INFO]    • Use HTTP2-ENHANCED method for maximum CF bypass
+[2025-11-22T22:26:24.439Z] [INFO]    • Use CF-KILLER for aggressive Cloudflare attacks
+[2025-11-22T22:26:24.439Z] [INFO]    • Monitor memory usage during long attacks
+[2025-11-22T22:26:24.439Z] [INFO]    • Use premium proxies for best performance
+[2025-11-22T22:26:24.439Z] [INFO] 
+[2025-11-22T22:26:25.325Z] [SUCCESS] ✅ Bot registered successfully
+[2025-11-22T22:26:25.337Z] [SUCCESS] 🤖 C2 Agent started - Bot ID: fe414ca8-d5c3-4f68-84fd-2484559c604d
+[2025-11-22T22:26:25.338Z] [INFO] 📡 Connected to C2: https://super-duper-waddle-4jwqw567q4x925jj6-8080.app.github.dev
+[2025-11-22T22:36:12.096Z] [WARNING] 
+⚠️  Shutting down agent...
