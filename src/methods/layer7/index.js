@@ -1,6 +1,7 @@
 // Import maximized versions (will override originals)
 export { HTTPGetFlood, HTTPPostFlood, HTTPSlowAttack } from './http-maximized.js';
-export { HTTP2Flood, HTTP2PostFlood, HTTP2CFBypass } from './http2.js';
+export { HTTP2Flood, HTTP2PostFlood } from './http2.js';
+export { HTTP2Optimized, HTTP2CFBypass } from './http2-optimized.js';
 export { HTTP2EnhancedCFKiller } from './http2-enhanced.js';
 export { CloudflareBypass, AdvancedBypass, BotSimulation } from './bypass.js';
 export { 

