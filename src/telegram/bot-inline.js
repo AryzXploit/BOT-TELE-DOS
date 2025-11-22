@@ -43,9 +43,9 @@ export class TelegramBotInline {
     // Layer 7 methods (split into pages)
     layer7MethodsPage1() {
         return Markup.inlineKeyboard([
+            [Markup.button.callback('🔥 ULTIMATE-CF', 'method_ULTIMATE-CF'), Markup.button.callback('☢️ NUCLEAR-CF', 'method_NUCLEAR-CF')],
             [Markup.button.callback('GET', 'method_GET'), Markup.button.callback('POST', 'method_POST')],
             [Markup.button.callback('HTTP2', 'method_HTTP2'), Markup.button.callback('HTTP3', 'method_HTTP3')],
-            [Markup.button.callback('🔥 CF-ADVANCED', 'method_CF-ADVANCED'), Markup.button.callback('🌐 BROWSER-EMU', 'method_BROWSER-EMU')],
             [Markup.button.callback('CFB', 'method_CFB'), Markup.button.callback('BYPASS', 'method_BYPASS')],
             [Markup.button.callback('HTTP2-CF', 'method_HTTP2-CF'), Markup.button.callback('ULTIMATE', 'method_ULTIMATE')],
             [Markup.button.callback('➡️ More Methods', 'layer7_page2'), Markup.button.callback('« Back', 'back_layer')]

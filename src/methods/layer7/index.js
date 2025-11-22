@@ -20,9 +20,7 @@ export {
     HTTP3PostAttack
 } from './http3.js';
 export { CloudflareKiller } from './cloudflare-killer.js';
-export { CloudflareAdvancedBypass, BrowserEmulationAttack } from './cf-advanced.js';
-export { CloudflareCaptchaSolver, HybridCloudflareBypass } from './captcha-solver.js';
-export { ManualCaptchaBypass, AdvancedManualBypass } from './manual-captcha-bypass.js';
+export { UltimateCfBypass, NuclearCfBypass } from './ultimate-cf-bypass.js';
 
 /**
  * Layer 7 Attack Methods
@@ -51,10 +49,6 @@ export const LAYER7_METHODS = [
     'APACHE',
     'NULL',
     'CF-KILLER',
-    'CF-ADVANCED',
-    'BROWSER-EMU',
-    'CAPTCHA-SOLVER',
-    'HYBRID-CF',
-    'MANUAL-BYPASS',
-    'ADVANCED-MANUAL'
+    'ULTIMATE-CF',
+    'NUCLEAR-CF'
 ];
