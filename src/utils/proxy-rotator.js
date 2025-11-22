@@ -9,30 +9,67 @@ export class ProxyRotator {
         this.proxies = [];
         this.currentIndex = 0;
         this.isLoaded = false;
-        this.loadProxies();
+        
+        // Load proxies with timeout protection
+        this.loadProxiesWithTimeout();
+    }
+    
+    async loadProxiesWithTimeout() {
+        try {
+            // Set timeout for proxy loading (10 seconds max)
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Proxy loading timeout')), 10000);
+            });
+            
+            await Promise.race([this.loadProxies(), timeoutPromise]);
+        } catch (error) {
+            logger.warn(`⚠️ Proxy loading issue: ${error.message}`);
+            logger.info('🔄 Using fallback proxy mode...');
+            
+            // Fallback: Load only premium proxies
+            this.loadFallbackProxies();
+        }
+    }
+    
+    loadFallbackProxies() {
+        // Quick load premium proxies only
+        const premiumProxies = [
+            // Just load your premium proxies for instant startup
+            '45.3.48.79:3129', '65.111.13.128:3129', '45.3.53.244:3129',
+            '45.3.38.96:3129', '45.3.37.197:3129', '65.111.9.6:3129',
+            '216.26.224.133:3129', '65.111.25.59:3129', '193.56.28.24:3129',
+            '104.207.40.165:3129' // First 10 for quick startup
+        ];
+        
+        this.proxies = premiumProxies;
+        this.isLoaded = true;
+        logger.info(`🚀 Fallback mode: ${this.proxies.length} premium proxies loaded instantly`);
     }
 
     async loadProxies() {
         try {
-            // Free proxy sources
+            logger.info('🔄 Loading proxies (optimized mode)...');
+            
+            // Skip free proxy loading for faster startup - use premium only
+            // Free proxy sources (commented out for performance)
+            /*
             const proxyLists = [
                 'https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt',
                 'https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt',
                 'https://raw.githubusercontent.com/prxchk/proxy-list/main/http.txt',
                 'https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/http.txt'
             ];
-
-            logger.info('🔄 Loading free proxies...');
             
             for (const url of proxyLists) {
                 try {
                     const proxies = await this.fetchProxyList(url);
-                    this.proxies.push(...proxies);
-                    logger.info(`✅ Loaded ${proxies.length} proxies from ${url}`);
+                    this.proxies.push(...proxies.slice(0, 1000)); // Limit to 1000 per source
+                    logger.info(`✅ Loaded ${Math.min(proxies.length, 1000)} proxies from ${url}`);
                 } catch (err) {
                     logger.debug(`❌ Failed to load from ${url}: ${err.message}`);
                 }
             }
+            */
 
             // Add manual proxy list (reliable ones + USER PROXIES)
             const manualProxies = [
@@ -260,7 +297,8 @@ export class ProxyRotator {
             this.proxies = [...new Set(this.proxies)];
             this.shuffleProxies();
             
-            logger.info(`🎯 Total proxies loaded: ${this.proxies.length}`);
+            logger.info(`🎯 Premium proxies loaded: ${this.proxies.length} (optimized mode)`);
+            logger.info(`💎 Your premium proxies: 195 | Manual proxies: ${this.proxies.length - 195}`);
             this.isLoaded = true;
             
         } catch (error) {
