@@ -34,10 +34,10 @@ export class HTTP2Optimized {
             totalPackets: 0
         };
         
-        // Connection pool - ultra conservative for memory
+        // Connection pool - SINGLE connection per instance
         this.connectionPool = [];
-        this.maxConnections = 5; // Very low to prevent OOM
-        this.requestsPerConnection = 200; // Rotate frequently
+        this.maxConnections = 1; // Only 1 connection per instance!
+        this.requestsPerConnection = 100; // Rotate after 100 requests
         this.connectionCounter = new Map();
     }
 
@@ -197,16 +197,16 @@ export class HTTP2Optimized {
         const client = await this.getConnection();
         if (!client) return;
 
-        // Send in small batches to prevent memory overflow
-        const batchSize = 50;
+        // Send in tiny batches with delays
+        const batchSize = 10; // Very small batches
         for (let i = 0; i < this.rpc; i += batchSize) {
             const end = Math.min(i + batchSize, this.rpc);
             for (let j = i; j < end; j++) {
-                this.sendRequest(client); // Fire and forget!
+                this.sendRequest(client);
             }
-            // Tiny delay every batch to let GC breathe
+            // Small delay between batches for memory
             if (i + batchSize < this.rpc) {
-                await new Promise(resolve => setImmediate(resolve));
+                await new Promise(resolve => setTimeout(resolve, 10));
             }
         }
     }
