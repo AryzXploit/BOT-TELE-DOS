@@ -36,8 +36,8 @@ export class HTTP2Optimized {
         
         // Connection pool
         this.connectionPool = [];
-        this.maxConnections = 10; // Max concurrent connections
-        this.requestsPerConnection = 100; // Requests before rotating connection
+        this.maxConnections = 100; // Max concurrent connections (10x increase!)
+        this.requestsPerConnection = 1000; // Requests before rotating connection (10x increase!)
         this.connectionCounter = new Map();
     }
 
@@ -91,11 +91,11 @@ export class HTTP2Optimized {
                 const proxy = proxyRotator.getNextProxy();
                 const connectOptions = {
                     rejectUnauthorized: false,
-                    maxSessionMemory: 10, // Limit memory per session
+                    maxSessionMemory: 100, // Increase memory limit
                     settings: {
                         enablePush: false,
                         initialWindowSize: 65535,
-                        maxConcurrentStreams: 1000
+                        maxConcurrentStreams: 10000 // 10x increase for parallel requests!
                     }
                 };
                 

