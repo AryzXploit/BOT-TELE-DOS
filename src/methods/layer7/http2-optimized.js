@@ -3,6 +3,8 @@ import { URL } from 'url';
 import { Tools } from '../../utils/tools.js';
 import { logger } from '../../utils/logger.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
+import { proxyRotator } from '../../utils/proxy-rotator.js';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 /**
  * HTTP/2 Optimized - No Drop After 50k!
@@ -84,7 +86,9 @@ export class HTTP2Optimized {
         // Create new connection if needed
         if (this.connectionPool.length < this.maxConnections) {
             try {
-                const client = http2.connect(this.url.origin, {
+                // Get rotating proxy
+                const proxy = proxyRotator.getNextProxy();
+                const connectOptions = {
                     rejectUnauthorized: false,
                     maxSessionMemory: 10, // Limit memory per session
                     settings: {
@@ -92,7 +96,15 @@ export class HTTP2Optimized {
                         initialWindowSize: 65535,
                         maxConcurrentStreams: 1000
                     }
-                });
+                };
+                
+                // Add proxy agent if available
+                if (proxy) {
+                    const proxyUrl = `http://${proxy}`;
+                    connectOptions.agent = new HttpsProxyAgent(proxyUrl);
+                }
+                
+                const client = http2.connect(this.url.origin, connectOptions);
 
                 client.on('error', () => {
                     try {
