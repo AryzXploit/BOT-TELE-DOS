@@ -187,7 +187,7 @@ export class HTTP2Optimized {
         if (!client) return;
 
         const promises = [];
-        const batchSize = Math.min(this.rpc, 50); // Max 50 concurrent per batch
+        const batchSize = this.rpc; // Use full RPC, no limit!
 
         for (let i = 0; i < batchSize; i++) {
             promises.push(this.sendRequest(client));
@@ -195,8 +195,7 @@ export class HTTP2Optimized {
 
         await Promise.allSettled(promises);
         
-        // Small delay to prevent overwhelming
-        await new Promise(resolve => setTimeout(resolve, 10));
+        // No delay - maximum speed!
     }
 
     async start() {
