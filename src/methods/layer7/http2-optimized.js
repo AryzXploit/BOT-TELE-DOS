@@ -34,10 +34,10 @@ export class HTTP2Optimized {
             totalPackets: 0
         };
         
-        // Connection pool - balanced for memory
+        // Connection pool - ultra conservative for memory
         this.connectionPool = [];
-        this.maxConnections = 50; // Balanced: enough speed, won't OOM
-        this.requestsPerConnection = 500; // Rotate to prevent memory buildup
+        this.maxConnections = 5; // Very low to prevent OOM
+        this.requestsPerConnection = 200; // Rotate frequently
         this.connectionCounter = new Map();
     }
 
@@ -79,18 +79,26 @@ export class HTTP2Optimized {
     }
 
     async getConnection() {
-        // Clean up old connections
+        // Aggressive cleanup of old connections
         this.connectionPool = this.connectionPool.filter(conn => {
             const count = this.connectionCounter.get(conn) || 0;
             if (count >= this.requestsPerConnection || conn.destroyed) {
                 try {
                     conn.close();
+                    conn.destroy(); // Force destroy
                 } catch (e) {}
                 this.connectionCounter.delete(conn);
                 return false;
             }
             return true;
         });
+        
+        // Force GC hint if too many connections
+        if (this.connectionPool.length >= this.maxConnections) {
+            if (global.gc) {
+                global.gc();
+            }
+        }
 
         // Create new connection if needed
         if (this.connectionPool.length < this.maxConnections) {
@@ -119,11 +127,12 @@ export class HTTP2Optimized {
                     }
                 };
                 
-                // Add proxy agent if available
-                if (proxy) {
-                    const proxyUrl = `http://${proxy}`;
-                    connectOptions.agent = new HttpsProxyAgent(proxyUrl);
-                }
+                // Proxy disabled temporarily - causes memory leak with HTTP/2
+                // TODO: Fix proxy implementation for HTTP/2
+                // if (proxy) {
+                //     const proxyUrl = `http://${proxy}`;
+                //     connectOptions.agent = new HttpsProxyAgent(proxyUrl);
+                // }
                 
                 const client = http2.connect(this.url.origin, connectOptions);
 
