@@ -34,10 +34,10 @@ export class HTTP2Optimized {
             totalPackets: 0
         };
         
-        // Connection pool
+        // Connection pool - balanced for memory
         this.connectionPool = [];
-        this.maxConnections = 100; // Max concurrent connections (10x increase!)
-        this.requestsPerConnection = 1000; // Requests before rotating connection (10x increase!)
+        this.maxConnections = 50; // Balanced: enough speed, won't OOM
+        this.requestsPerConnection = 500; // Rotate to prevent memory buildup
         this.connectionCounter = new Map();
     }
 
@@ -91,11 +91,11 @@ export class HTTP2Optimized {
                 const proxy = proxyRotator.getNextProxy();
                 const connectOptions = {
                     rejectUnauthorized: false,
-                    maxSessionMemory: 100, // Increase memory limit
+                    maxSessionMemory: 10, // Keep low to prevent OOM
                     settings: {
                         enablePush: false,
                         initialWindowSize: 65535,
-                        maxConcurrentStreams: 10000 // 10x increase for parallel requests!
+                        maxConcurrentStreams: 100 // Balanced for memory safety
                     }
                 };
                 
@@ -168,9 +168,17 @@ export class HTTP2Optimized {
         const client = await this.getConnection();
         if (!client) return;
 
-        // Fire all requests immediately - don't wait!
-        for (let i = 0; i < this.rpc; i++) {
-            this.sendRequest(client); // No await - fire and forget!
+        // Send in small batches to prevent memory overflow
+        const batchSize = 50;
+        for (let i = 0; i < this.rpc; i += batchSize) {
+            const end = Math.min(i + batchSize, this.rpc);
+            for (let j = i; j < end; j++) {
+                this.sendRequest(client); // Fire and forget!
+            }
+            // Tiny delay every batch to let GC breathe
+            if (i + batchSize < this.rpc) {
+                await new Promise(resolve => setImmediate(resolve));
+            }
         }
     }
 
