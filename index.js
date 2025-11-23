@@ -140,8 +140,10 @@ process.on('uncaughtException', (error) => {
 // Verify integrity
 verifyIntegrity();
 
-// Run password check before everything
-await verifyPassword();
+// Run password check before everything (skip if automated bot)
+if (!process.env.SKIP_PASSWORD) {
+    await verifyPassword();
+}
 
 // Initialize performance maximizer
 logger.info('🚀 Initializing performance maximizer...');

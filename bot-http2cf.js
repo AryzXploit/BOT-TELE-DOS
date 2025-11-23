@@ -305,7 +305,7 @@ function connectWebSocket() {
             heartbeatTimer = setInterval(sendHeartbeat, 30000);
             
             if (statsTimer) clearInterval(statsTimer);
-            statsTimer = setInterval(sendStats, 2000); // Update stats every 2s
+            statsTimer = setInterval(sendStats, 5000); // Update stats every 5s
         }
     });
 

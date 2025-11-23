@@ -110,6 +110,15 @@ export class C2Server {
             }
         });
 
+        router.post('/bot/:id/stats', async (req, res) => {
+            try {
+                await this.controller.updateBotStats(req.params.id, req.body);
+                res.json({ success: true });
+            } catch (error) {
+                res.status(400).json({ success: false, error: error.message });
+            }
+        });
+
         // ============================================
         // ⚡ ATTACK MANAGEMENT ROUTES
         // ============================================

