@@ -4,7 +4,8 @@ import { Tools } from '../../utils/tools.js';
 import { logger } from '../../utils/logger.js';
 import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
 import { proxyRotator } from '../../utils/proxy-rotator.js';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import pkg from 'https-proxy-agent';
+const { HttpsProxyAgent } = pkg;
 
 /**
  * HTTP/2 Optimized - No Drop After 50k!
