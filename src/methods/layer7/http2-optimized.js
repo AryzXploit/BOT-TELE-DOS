@@ -2,6 +2,7 @@ import http2 from 'http2';
 import { URL } from 'url';
 import { Tools } from '../../utils/tools.js';
 import { logger } from '../../utils/logger.js';
+import { REQUESTS_SENT, BYTES_SENT } from '../../utils/counter.js';
 
 /**
  * HTTP/2 Optimized - No Drop After 50k!
@@ -137,10 +138,12 @@ export class HTTP2Optimized {
                     clearTimeout(timeout);
                     this.stats.successfulRequests++;
                     this.stats.totalPackets++;
+                    REQUESTS_SENT.add(1); // Update global counter
                 });
 
                 req.on('data', (chunk) => {
                     this.stats.totalBytes += chunk.length;
+                    BYTES_SENT.add(chunk.length); // Update global counter
                 });
 
                 req.on('end', () => {
@@ -157,6 +160,7 @@ export class HTTP2Optimized {
                 req.end();
                 this.stats.totalRequests++;
                 this.stats.totalBytes += 200; // Header size estimate
+                BYTES_SENT.add(200); // Update global counter
 
             } catch (e) {
                 this.stats.failedRequests++;
