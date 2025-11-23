@@ -162,7 +162,26 @@ export class TelegramBotInline {
         this.bot.hears('📊 Status', async (ctx) => {
             if (!this.isAdmin(ctx.from.id)) return;
             
-            await this.showC2Status(ctx);
+            // Send initial status
+            const msg = await this.showC2Status(ctx);
+            
+            // Auto-refresh every 5 seconds for 30 seconds
+            let refreshCount = 0;
+            const maxRefresh = 6; // 6 x 5s = 30s
+            
+            const refreshInterval = setInterval(async () => {
+                refreshCount++;
+                if (refreshCount >= maxRefresh) {
+                    clearInterval(refreshInterval);
+                    return;
+                }
+                
+                try {
+                    await this.showC2Status(ctx, msg?.message_id);
+                } catch (e) {
+                    clearInterval(refreshInterval);
+                }
+            }, 5000);
         });
 
         this.bot.hears('🤖 Lihat Bots', async (ctx) => {
@@ -666,7 +685,7 @@ export class TelegramBotInline {
         );
     }
 
-    async showC2Status(ctx) {
+    async showC2Status(ctx, messageId = null) {
         const useLocalExecution = this.config.c2?.useLocalExecution !== false;
         
         // If using local execution, show local stats
@@ -675,7 +694,7 @@ export class TelegramBotInline {
             const totalRequests = REQUESTS_SENT.get();
             const totalBytes = BYTES_SENT.get();
             
-            ctx.reply(
+            const statusText = 
                 `╔═══════════════════════════════╗\n` +
                 `║   📊 *STATUS BOT LOKAL* 📊   ║\n` +
                 `╚═══════════════════════════════╝\n\n` +
@@ -694,9 +713,24 @@ export class TelegramBotInline {
                     : '• Tidak ada attack yang jalan\n') +
                 `\n\n────────────────────────\n` +
                 `⏰ Update: ${new Date().toLocaleTimeString('id-ID')}\n` +
-                `🔥 *BOT LAGI NGANCURIN TARGET!* 🔥`,
-                { parse_mode: 'Markdown', ...this.mainMenu() }
-            );
+                `🔥 *BOT LAGI NGANCURIN TARGET!* 🔥`;
+            
+            if (messageId) {
+                try {
+                    await ctx.telegram.editMessageText(
+                        ctx.chat.id,
+                        messageId,
+                        null,
+                        statusText,
+                        { parse_mode: 'Markdown' }
+                    );
+                } catch (e) {
+                    // If edit fails, send new message
+                    return await ctx.reply(statusText, { parse_mode: 'Markdown', ...this.mainMenu() });
+                }
+            } else {
+                return await ctx.reply(statusText, { parse_mode: 'Markdown', ...this.mainMenu() });
+            }
             return;
         }
         

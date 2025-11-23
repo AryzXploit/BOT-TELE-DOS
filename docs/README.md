@@ -109,37 +109,54 @@ Complete documentation for Aryzz-Stresser Premium Edition v4.0
 docs/
 ├── README.md (this file)
 │
-├── Getting Started/
-│   ├── INSTALLATION.md
-│   ├── QUICK_START_MAXIMIZED.md
-│   └── QUICK_IMPLEMENTATION_GUIDE.md
+├── setup/ - Setup & Installation Guides
+│   ├── CODESPACES-QUICKSTART.md
+│   ├── DEPLOY-FREE.md
+│   ├── FINAL-SETUP.md
+│   ├── QUICK-DEPLOY.md
+│   ├── QUICK-START.md
+│   ├── QUICK-START-MONITOR.md
+│   ├── SETUP-TANPA-KUOTA.md
+│   ├── CLOUDFLARE-SETUP.md
+│   └── INSTALL-REPORTING.md
 │
-├── Protection/
-│   ├── PROTECTION_GUIDE.md
-│   ├── LICENSE_SYSTEM.md
-│   └── README_LICENSE.md
+├── guides/ - Complete Guides
+│   ├── C2-GUIDE.md
+│   ├── CLOUDFLARE-BYPASS.md
+│   ├── DOMAIN-MONITORING.md
+│   ├── HOW_TO_ENCRYPT.md
+│   ├── MONITOR-GUIDE.md
+│   ├── PAYMENT-CONFIG.md
+│   ├── PERFORMANCE-GUIDE.md
+│   ├── PROXY-ROTATION.md
+│   ├── README-C2.md
+│   ├── REPORTING-GUIDE.md
+│   ├── SIMPLE-BOT-GUIDE.md
+│   ├── TARGET-MONITOR.md
+│   └── TELEGRAM-BUTTON-GUIDE.md
 │
-├── Telegram Bot/
-│   ├── TELEGRAM_SETUP.md
-│   └── SETUP_BOT.md
+├── bugfixes/ - Bug Fixes & Patches
+│   ├── BUG-FIX-SUMMARY.txt
+│   ├── BUG-FIXES-COMPLETE.md
+│   ├── BUG-FIXES.md
+│   ├── BUGFIXES.md
+│   ├── BUG-FIXES-COMPLETE-v2.md ⭐ LATEST
+│   ├── CHANGELOG-BUGFIX.md
+│   ├── FIX-50K-DROP.md
+│   ├── FIX-ALL-METHODS.md
+│   ├── MEMORY-FIX.md
+│   └── UNIVERSAL-STATS-FIX.md
 │
-├── Logging/
-│   ├── LOGGING_SYSTEM.md
-│   └── LOGGING_GUIDE.md
-│
-├── Implementation/
-│   ├── IMPLEMENTATION_SUMMARY.md
-│   ├── IMPROVEMENTS_SUMMARY.md
-│   ├── ALL_METHODS_MAXIMIZED.md
-│   ├── FINAL_SUMMARY.md
-│   └── MIGRATION.md
-│
-└── Bug Fixes/
-    ├── BUG_FIXES_SUMMARY.md
-    ├── FIX_STUCK_MESSAGES.md
-    ├── FIX_SUMMARY_CONFIRMATION_BUG.md
-    ├── CONFIRMATION_FIX.md
-    └── QUICK_FIX_SUMMARY.md
+└── features/ - Features & Summaries
+    ├── FEATURES.md
+    ├── MAXIMIZE-REQUESTS.md
+    ├── CREATE-FRONTEND.md
+    ├── COMPLETE-SUMMARY.md
+    ├── FINAL-WEB-DASHBOARD-SUMMARY.md
+    ├── WEB-DASHBOARD-COMPLETE.md
+    ├── WEB-DASHBOARD-SUMMARY.md
+    ├── REPORTING-SUMMARY.txt
+    └── SELESAI.md
 ```
 
 ---
