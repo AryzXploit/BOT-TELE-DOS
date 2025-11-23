@@ -165,11 +165,12 @@ export class HTTP2Optimized {
             const count = this.connectionCounter.get(client) || 0;
             this.connectionCounter.set(client, count + 1);
 
-            // Fire and forget - don't wait for response!
+            // Aggressive cleanup - close request ASAP
             req.on('response', () => {
                 this.stats.successfulRequests++;
                 this.stats.totalPackets++;
                 REQUESTS_SENT.add(1);
+                req.close(); // Close immediately after response
             });
 
             req.on('data', (chunk) => {
@@ -179,14 +180,24 @@ export class HTTP2Optimized {
 
             req.on('error', () => {
                 this.stats.failedRequests++;
+                try { req.close(); } catch (e) {}
+            });
+
+            req.on('end', () => {
+                try { req.close(); } catch (e) {}
             });
 
             req.end();
             
-            // Count immediately, don't wait
+            // Count immediately
             this.stats.totalRequests++;
             this.stats.totalBytes += 200;
             BYTES_SENT.add(200);
+
+            // Force close after 1 second timeout
+            setTimeout(() => {
+                try { req.close(); } catch (e) {}
+            }, 1000);
 
         } catch (e) {
             this.stats.failedRequests++;
@@ -197,16 +208,16 @@ export class HTTP2Optimized {
         const client = await this.getConnection();
         if (!client) return;
 
-        // Send in tiny batches with delays
-        const batchSize = 10; // Very small batches
+        // Send in tiny batches with proper delays
+        const batchSize = 5; // Ultra small batches
         for (let i = 0; i < this.rpc; i += batchSize) {
             const end = Math.min(i + batchSize, this.rpc);
             for (let j = i; j < end; j++) {
                 this.sendRequest(client);
             }
-            // Small delay between batches for memory
+            // Delay between batches for GC
             if (i + batchSize < this.rpc) {
-                await new Promise(resolve => setTimeout(resolve, 10));
+                await new Promise(resolve => setTimeout(resolve, 50));
             }
         }
     }
