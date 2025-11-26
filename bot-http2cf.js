@@ -8,7 +8,7 @@
  */
 
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import io from 'socket.io-client';
 import os from 'os';
 import crypto from 'crypto';
 import http2 from 'http2';
